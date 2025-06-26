@@ -385,15 +385,27 @@ if (strlen($nomina) == 7) {
 
       }
 
+      document.getElementById('txtGrammerNoU').addEventListener('keyup', function(event) {
+          if (event.key === 'Enter' || event.keyCode === 13) {
+              document.getElementById("txtPvbU").focus();
+          }
+      });
+
       document.getElementById('txtPvbU').addEventListener('keyup', function(event) {
           if (event.key === 'Enter' || event.keyCode === 13) {
               enviarDatosP(1);
           }
       });
 
-      document.getElementById('txtGrammerNoU').addEventListener('keyup', function(event) {
+      document.getElementById('txtBinB').addEventListener('keyup', function(event) {
           if (event.key === 'Enter' || event.keyCode === 13) {
-              document.getElementById("txtPvbU").focus();
+              document.getElementById("txtStTypeB").focus();
+          }
+      });
+
+      document.getElementById('txtStTypeB').addEventListener('keyup', function(event) {
+          if (event.key === 'Enter' || event.keyCode === 13) {
+              enviarDatosB(1);
           }
       });
 

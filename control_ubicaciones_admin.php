@@ -391,6 +391,12 @@ if (strlen($nomina) == 7) {
           }
       });
 
+      document.getElementById('txtGrammerNoU').addEventListener('keyup', function(event) {
+          if (event.key === 'Enter' || event.keyCode === 13) {
+              document.getElementById("txtPvbU").focus();
+          }
+      });
+
     </script>
   </body>
 </html>

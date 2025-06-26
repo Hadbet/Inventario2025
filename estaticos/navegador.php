@@ -3,8 +3,8 @@
 session_start();
 
 if ($_SESSION["nominaCurso"] == "" && $_SESSION["nominaCurso"]== null && $_SESSION["rol"]== "" && $_SESSION["rol"]== null) {
-    //echo "<META HTTP-EQUIV='REFRESH' CONTENT='1; URL=index.html'>";
-    //session_destroy();
+    echo "<META HTTP-EQUIV='REFRESH' CONTENT='1; URL=index.html'>";
+    session_destroy();
 }else{
     session_start();
     $rol =$_SESSION['rol'];

@@ -126,7 +126,7 @@
 
     llenarAreas();
     function llenarAreas() {
-        $.getJSON('https://grammermx.com/Logistica/Inventario2024/dao/consultaArea.php', function (data) {
+        $.getJSON('https://grammermx.com/Logistica/Inventario2025/dao/consultaArea.php', function (data) {
             for (var i = 0; i < data.data.length; i++) {
                 var option = $('<option/>');
                 option.attr({ 'value': data.data[i].IdArea }).text(data.data[i].AreaNombre);
@@ -138,7 +138,7 @@
     var chartDos;
     graficaCostoCarga();
     function graficaCostoCarga() {
-        $.getJSON('https://grammermx.com/Logistica/Inventario2024/dao/graficaCosto.php?area='+document.getElementById("cbArea").value, function (data) {
+        $.getJSON('https://grammermx.com/Logistica/Inventario2025/dao/graficaCosto.php?area='+document.getElementById("cbArea").value, function (data) {
             var AreaNombreCosto = [];
             var PrimerConteoCosto = [];
             var SegundoConteoCosto = [];
@@ -231,7 +231,7 @@
     Apu();
     setInterval(Apu, 60000); // Actualiza cada minuto
     function Apu() {
-        $.getJSON('https://grammermx.com/Logistica/Inventario2024/dao/graficaGeneral.php', function (data) {
+        $.getJSON('https://grammermx.com/Logistica/Inventario2025/dao/graficaGeneral.php', function (data) {
             var AreaNombre = [];
             var PrimerConteo = [];
             var SegundoConteo = [];

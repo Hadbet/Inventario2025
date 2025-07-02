@@ -389,8 +389,8 @@ if (strlen($nomina) == 7) {
                                     cell1.innerHTML = data.data[i].StorageUnit;
                                     cell2.innerHTML = numeroParte;
                                     cell3.innerHTML = cantidad;
-                                    cell1.contentEditable = "true";
-                                    cell2.contentEditable = "true";
+                                    //cell1.contentEditable = "true";
+                                    //cell2.contentEditable = "true";
                                     cell3.contentEditable = "true";
                                     totalUnit = totalUnit+parseFloat(cantidad);
 
@@ -1019,8 +1019,8 @@ if (strlen($nomina) == 7) {
                     cell1.innerHTML = sun;
                     cell2.innerHTML = numeroParte;
                     cell3.innerHTML = cantidad;
-                    cell1.contentEditable = "true";
-                    cell2.contentEditable = "true";
+                    //cell1.contentEditable = "true";
+                    //cell2.contentEditable = "true";
                     cell3.contentEditable = "true";
                     totalUnit = totalUnit+parseFloat(cantidad);
                     document.getElementById("txtTotalUnit").innerText = 'Total storage unit : '+totalUnit;

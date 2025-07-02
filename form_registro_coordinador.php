@@ -127,7 +127,7 @@ if (strlen($nomina) == 7) {
                                     </div>
                                 </div>
 
-                                <strong class="card-title h4">Storage Unit Faltantes</strong>
+                                <strong class="card-title h4">Storage Unit Escaneados</strong><br>
 
                                 <table id="data-table" class="table table-hover">
                                     <thead>
@@ -141,7 +141,7 @@ if (strlen($nomina) == 7) {
                                     </tbody>
                                 </table>
 
-                                <strong class="card-title h4">Storage Unit Faltantes</strong>
+                                <strong class="card-title h4">Storage Unit Faltantes</strong><br>
 
                                 <table id="data-table-faltantes" class="table table-hover">
                                     <thead>
@@ -965,7 +965,7 @@ if (strlen($nomina) == 7) {
 
     document.getElementById('scanner_input').addEventListener('keyup', function(event) {
         if (event.key === 'Enter' || event.keyCode === 13) {
-            escaneo();
+            manualMarbete();
         }
     });
 

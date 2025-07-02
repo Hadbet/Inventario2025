@@ -117,17 +117,17 @@ if (strlen($nomina) == 7) {
                                             class="fe fe-chevron-right fe-16 ml-2"></span></button>
                             </div>
                             <div class="card-body">
-                                <div class="row">
 
+                                <!--<div class="row">
                                     <div class="col-md-6">
                                         <div class="form-group">
                                             <br>
                                             <button class="btn btn-success text-white mt-2" onclick="agregarFila()">Activar Escaner</button>
                                         </div>
                                     </div>
-                                </div>
+                                </div> -->
 
-                                <strong class="card-title h4">Storage Unit Escaneados</strong><br>
+                                <strong class="card-title h4">Storage Unit Escaneados</strong><br><br>
 
                                 <table id="data-table" class="table table-hover">
                                     <thead>
@@ -141,7 +141,7 @@ if (strlen($nomina) == 7) {
                                     </tbody>
                                 </table>
 
-                                <strong class="card-title h4">Storage Unit Faltantes</strong><br>
+                                <strong class="card-title h4">Storage Unit Faltantes</strong><br><br>
 
                                 <table id="data-table-faltantes" class="table table-hover">
                                     <thead>

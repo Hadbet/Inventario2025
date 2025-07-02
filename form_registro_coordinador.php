@@ -989,7 +989,7 @@ if (strlen($nomina) == 7) {
             }
         }).then((result) => {
             if (result.dismiss === Swal.DismissReason.timer) {
-                location.reload();
+
             }
         });
     }

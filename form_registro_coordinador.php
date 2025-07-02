@@ -1016,7 +1016,7 @@ if (strlen($nomina) == 7) {
                     var cell1 = row.insertCell(0);
                     var cell2 = row.insertCell(1);
                     var cell3 = row.insertCell(2);
-                    cell1.innerHTML = data.data[i].StorageUnit;
+                    cell1.innerHTML = sun;
                     cell2.innerHTML = numeroParte;
                     cell3.innerHTML = cantidad;
                     cell1.contentEditable = "true";

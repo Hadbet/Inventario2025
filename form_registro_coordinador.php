@@ -339,12 +339,12 @@ if (strlen($nomina) == 7) {
     var addedStorageUnits = {};
 
     var auxConteo="3";
+    var totalUnit = 0.0;
 
     function manualMarbete() {
 
         var marbete = parseInt(document.getElementById("scanner_input").value.split('.')[0], 10);
         var conteoM = document.getElementById("scanner_input").value.split('.')[1];
-        var totalUnit = 0.0;
 
         $.getJSON('https://grammermx.com/Logistica/Inventario2025/dao/consultaMarbeteCordinadores.php?marbete='+marbete, function (data) {
             for (var i = 0; i < data.data.length; i++) {
@@ -406,11 +406,9 @@ if (strlen($nomina) == 7) {
                                     cell1F.innerHTML = data.data[i].StorageUnit;
                                     cell2F.innerHTML = numeroParte;
                                     cell3F.innerHTML = cantidad;
-                                    cell4F.innerHTML = '<button onclick="" id="" class="btn btn-primary">Capturar</button>';
+                                    cell4F.innerHTML = '<button onclick="agregarSun(\''+data.data[i].StorageUnit+'\',\''+marbete+'\',\'1\',\''+cantidad+'\',\''+numeroParte+'\', event)" id="" class="btn btn-primary">Capturar</button>';
 
                                 }
-
-
                             }
                         }else{
                             Swal.fire({
@@ -969,6 +967,70 @@ if (strlen($nomina) == 7) {
                 location.reload();
             }
         });
+    }
+
+    function mostrarAviso(mensaje) {
+        let timerInterval;
+        Swal.fire({
+            title: mensaje,
+            html: "Te regresaremos a la pagina <b></b> milliseconds.",
+            timer: 1500,
+            timerProgressBar: true,
+            icon: "success",
+            didOpen: () => {
+                Swal.showLoading();
+                const timer = Swal.getPopup().querySelector("b");
+                timerInterval = setInterval(() => {
+                    timer.textContent = `${Swal.getTimerLeft()}`;
+                }, 100);
+            },
+            willClose: () => {
+                clearInterval(timerInterval);
+            }
+        }).then((result) => {
+            if (result.dismiss === Swal.DismissReason.timer) {
+                location.reload();
+            }
+        });
+    }
+
+    function agregarSun(sun, marberte,estatus,cantidad,numeroParte,event) {
+
+        var formData = new FormData();
+
+        formData.append('sun', sun);
+        formData.append('marbete', marberte);
+        formData.append('estatus', estatus);
+
+        fetch('https://grammermx.com/Logistica/Inventario2025/dao/actualizarAgregarSun.php', {
+            method: 'POST',
+            body: formData
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    mostrarAviso(data.message);
+
+                    var table = document.getElementById("data-table");
+                    var row = table.insertRow(-1);
+                    var cell1 = row.insertCell(0);
+                    var cell2 = row.insertCell(1);
+                    var cell3 = row.insertCell(2);
+                    cell1.innerHTML = data.data[i].StorageUnit;
+                    cell2.innerHTML = numeroParte;
+                    cell3.innerHTML = cantidad;
+                    cell1.contentEditable = "true";
+                    cell2.contentEditable = "true";
+                    cell3.contentEditable = "true";
+                    totalUnit = totalUnit+parseFloat(cantidad);
+
+                    event.target.closest('tr').remove();
+
+                } else {
+                    console.log("Hubo un error en la operación");
+                    console.log("Las unidades de almacenamiento que fallaron son: ", data.message);
+                }
+            });
     }
 
     document.getElementById('scanner_input').addEventListener('keyup', function(event) {

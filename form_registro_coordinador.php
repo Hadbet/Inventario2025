@@ -126,6 +126,9 @@ if (strlen($nomina) == 7) {
                                         </div>
                                     </div>
                                 </div>
+
+                                <strong class="card-title h4">Storage Unit Faltantes</strong>
+
                                 <table id="data-table" class="table table-hover">
                                     <thead>
                                     <tr>
@@ -138,6 +141,7 @@ if (strlen($nomina) == 7) {
                                     </tbody>
                                 </table>
 
+                                <strong class="card-title h4">Storage Unit Faltantes</strong>
 
                                 <table id="data-table-faltantes" class="table table-hover">
                                     <thead>

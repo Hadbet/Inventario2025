@@ -30,13 +30,14 @@ function ContadorApu($marbete)
     B.StorageType, 
     B.Area, 
     COALESCE(S.Id_StorageUnit, 'NA') AS StorageUnit,
-    COALESCE(S.Cantidad, 'NA') AS CantidadStorage
+    COALESCE(S.Cantidad, 'NA') AS CantidadStorage,
+    S.Estatus AS EstatusStorage
 FROM 
     Bitacora_Inventario B 
 LEFT JOIN 
     Storage_Unit S 
 ON 
-    B.FolioMarbete = S.FolioMarbete AND S.Estatus=1
+    B.FolioMarbete = S.FolioMarbete
 WHERE 
     B.FolioMarbete = '$marbete' 
     and B.Estatus = 1;");

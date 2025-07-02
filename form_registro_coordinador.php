@@ -137,6 +137,21 @@ if (strlen($nomina) == 7) {
                                     <tbody>
                                     </tbody>
                                 </table>
+
+
+                                <table id="data-table-faltantes" class="table table-hover">
+                                    <thead>
+                                    <tr>
+                                        <th>Storage Unit</th>
+                                        <th>Numero Parte</th>
+                                        <th>Cantidad</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    </tbody>
+                                </table>
+
                             </div>
                             <div class="card-footer">
                                 <button type="submit"
@@ -356,17 +371,35 @@ if (strlen($nomina) == 7) {
                                 document.getElementById("pasoDos").style.display = 'block';
                                 document.getElementById("pasoUno").style.display = 'none';
                                 cantidad =  data.data[i].CantidadStorage;
-                                var table = document.getElementById("data-table");
-                                var row = table.insertRow(-1);
-                                var cell1 = row.insertCell(0);
-                                var cell2 = row.insertCell(1);
-                                var cell3 = row.insertCell(2);
-                                cell1.innerHTML = data.data[i].StorageUnit;
-                                cell2.innerHTML = numeroParte;
-                                cell3.innerHTML = cantidad;
-                                cell1.contentEditable = "true";
-                                cell2.contentEditable = "true";
-                                cell3.contentEditable = "true";
+
+                                if (data.data[i].EstatusStorage == 1){
+                                    var table = document.getElementById("data-table");
+                                    var row = table.insertRow(-1);
+                                    var cell1 = row.insertCell(0);
+                                    var cell2 = row.insertCell(1);
+                                    var cell3 = row.insertCell(2);
+                                    cell1.innerHTML = data.data[i].StorageUnit;
+                                    cell2.innerHTML = numeroParte;
+                                    cell3.innerHTML = cantidad;
+                                    cell1.contentEditable = "true";
+                                    cell2.contentEditable = "true";
+                                    cell3.contentEditable = "true";
+                                }else{
+                                    var tableFaltantes = document.getElementById("data-table-faltantes");
+                                    var rowFaltantes = tableFaltantes.insertRow(-1);
+
+                                    var cell1F = rowFaltantes.insertCell(0);
+                                    var cell2F = rowFaltantes.insertCell(1);
+                                    var cell3F = rowFaltantes.insertCell(2);
+                                    var cell4F = rowFaltantes.insertCell(3);
+
+                                    cell1F.innerHTML = data.data[i].StorageUnit;
+                                    cell2F.innerHTML = numeroParte;
+                                    cell3F.innerHTML = cantidad;
+                                    cell4F.innerHTML = '<button onclick="" id="" class="btn btn-primary">Capturar</button>';
+
+                                }
+
 
                             }
                         }else{

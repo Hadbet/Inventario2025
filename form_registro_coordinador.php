@@ -1023,6 +1023,7 @@ if (strlen($nomina) == 7) {
                     cell2.contentEditable = "true";
                     cell3.contentEditable = "true";
                     totalUnit = totalUnit+parseFloat(cantidad);
+                    document.getElementById("txtTotalUnit").innerText = 'Total storage unit : '+totalUnit;
 
                     event.target.closest('tr').remove();
 

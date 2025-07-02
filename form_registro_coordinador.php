@@ -156,6 +156,9 @@ if (strlen($nomina) == 7) {
                                     </tbody>
                                 </table>
 
+
+                                <strong id="txtTotalUnit" class="card-title h4"></strong><br><br>
+
                             </div>
                             <div class="card-footer">
                                 <button type="submit"
@@ -341,6 +344,7 @@ if (strlen($nomina) == 7) {
 
         var marbete = parseInt(document.getElementById("scanner_input").value.split('.')[0], 10);
         var conteoM = document.getElementById("scanner_input").value.split('.')[1];
+        var totalUnit;
 
         $.getJSON('https://grammermx.com/Logistica/Inventario2025/dao/consultaMarbeteCordinadores.php?marbete='+marbete, function (data) {
             for (var i = 0; i < data.data.length; i++) {
@@ -388,6 +392,8 @@ if (strlen($nomina) == 7) {
                                     cell1.contentEditable = "true";
                                     cell2.contentEditable = "true";
                                     cell3.contentEditable = "true";
+                                    totalUnit = totalUnit+parseFloat(cantidad);
+
                                 }else{
                                     var tableFaltantes = document.getElementById("data-table-faltantes");
                                     var rowFaltantes = tableFaltantes.insertRow(-1);
@@ -429,6 +435,8 @@ if (strlen($nomina) == 7) {
                 }
 
             }
+
+            document.getElementById("txtTotalUnit").innerText = totalUnit;
 
             html5QrcodeScanner.clear();
             html5QrcodeScanner.pause();

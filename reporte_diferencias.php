@@ -156,9 +156,31 @@ if (strlen($nomina) == 7) {
                     totalDinero += parseFloat(data.data[i].Total);
                     totalCantidad += parseFloat(data.data[i].Cantidad);
                 }
+                verificarDiferenciaSap(totalDinero,totalCantidad);
+            }else{
+                Swal.fire({
+                    title: "Tu conteo esta bien",
+                    text: "No necesitas ir a segundos conteos",
+                    icon: "success"
+                });
+            }
+        });
+    }
 
-                document.getElementById("lblDinero").innerText = (totalDinero).toLocaleString("es-MX", {style: "currency", currency: "MXN"});
-                document.getElementById("lblCantidad").innerText = (totalCantidad).toFixed(2);
+    function verificarDiferenciaSap(totalDinero,totalCantidad) {
+
+        var totalDineroSap = 0.0;
+        var totalCantidadSap = 0.0;
+
+        $.getJSON('https://grammermx.com/Logistica/Inventario2025/dao/consultaSegundosConteosCostoSapAdminNew.php', function (data) {
+            if (data && data.data && data.data.length > 0) {
+                for (var i = 0; i < data.data.length; i++) {
+                    totalDineroSap += parseFloat(data.data[i].Total);
+                    totalCantidadSap += parseFloat(data.data[i].Cantidad);
+                }
+
+                document.getElementById("lblDinero").innerText = (totalDineroSap-totalDinero).toLocaleString("es-MX", {style: "currency", currency: "MXN"});
+                document.getElementById("lblCantidad").innerText = (totalCantidadSap-totalCantidad).toFixed(2);
 
                 crearTabla();
             }else{

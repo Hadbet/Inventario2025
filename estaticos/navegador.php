@@ -55,12 +55,12 @@ if ($tipoArea==0){
                 <img src="assets/images/Grammer_Logo.ico" style="width: 30%">
             </a>
         </div>
-
+        <span>Area <?php echo $areaNombre?></span>
         <?php
         if ($rol==4){
+
             echo '<p class="text-muted nav-heading mt-4 mb-1">
 
-            <span>Area <?php echo $areaNombre?></span>
             <span>Administración</span>
         </p>
         <ul class="navbar-nav flex-fill w-100 mb-2">

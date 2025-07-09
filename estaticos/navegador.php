@@ -55,7 +55,7 @@ if ($tipoArea==0){
                 <img src="assets/images/Grammer_Logo.ico" style="width: 30%">
             </a>
         </div>
-        <span>Area <?php echo $areaNombre?></span>
+        <h3 class="mb-2 page-title">Area <?php echo $areaNombre?></h3>
         <?php
         if ($rol==4){
 

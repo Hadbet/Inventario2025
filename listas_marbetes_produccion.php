@@ -11,9 +11,6 @@ $areaNombre =$_SESSION['AreaNombre'];
 $bin =$_SESSION['StBin'];
 $nombre =$_SESSION['nombre'];
 
-
-
-
 $con = new LocalConector();
 $conex = $con->conectar();
 
@@ -44,6 +41,7 @@ FROM
 LEFT JOIN 
     Parte P ON B.NumeroParte = P.GrammerNo
 WHERE B.Area = $area");
+
 $stmt->execute();
 $result = $stmt->get_result();
 
@@ -121,13 +119,13 @@ $result = $stmt->get_result();
                                                 $nominaV = $parts[0];
                                                 $nombreV = isset($parts[1]) ? $parts[1] : 'Vacio';
                                                 $fotoV = '<div class="col-auto">
-                                                    <a href="#" class="avatar avatar-md">
-                                                        <img src="https://grammermx.com/Fotos/'.$nominaV.'.png" alt="..." class="avatar-img rounded-circle">
-                                                    </a>
-                                                </div>
-                                                <div class="col ml-n2">
-                                                    <strong class="mb-1" id="lblNombre">'.$nombreV.'</strong>
-                                                </div>';
+                                                                <a href="#" class="avatar avatar-md">
+                                                                    <img src="https://grammermx.com/Fotos/'.$nominaV.'.png" alt="..." class="avatar-img rounded-circle">
+                                                                </a>
+                                                            </div>
+                                                            <div class="col ml-n2">
+                                                                <strong class="mb-1" id="lblNombre">'.$nombreV.'</strong>
+                                                            </div>';
                                             } else {
                                                 $nominaV = 'Vacio';
                                                 $nombreV = 'Vacio';

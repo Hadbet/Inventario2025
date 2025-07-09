@@ -156,7 +156,7 @@ if (strlen($nomina) == 7) {
         });
     }
 
-    async function cancelar(id) {
+    async function cancelarIndi(id) {
         const {value: comentario} = await Swal.fire({
             title: "Ingresa tus comentarios",
             input: "text",

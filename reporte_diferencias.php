@@ -157,7 +157,7 @@ if (strlen($nomina) == 7) {
                     totalCantidad +=parseFloat(data.data.Cantidad[i]);
                 }
 
-                document.getElementById("lblDinero").innerText = (totalDinero).toLocaleString("es-MX", {style: "currency", currency: "MXN"}));
+                document.getElementById("lblDinero").innerText = (totalDinero).toLocaleString("es-MX", {style: "currency", currency: "MXN"});
                 document.getElementById("lblCantidad").innerText = (totalCantidad).toFixed(2);
 
                 crearTabla();

@@ -54,6 +54,9 @@ if ($tipoArea==0){
             <a class="navbar-brand mx-auto mt-2 flex-fill text-center" href="inicio.php">
                 <img src="assets/images/Grammer_Logo.ico" style="width: 30%">
             </a>
+
+
+            <span>Area <?php echo $areaNombre?></span>
         </div>
 
         <?php

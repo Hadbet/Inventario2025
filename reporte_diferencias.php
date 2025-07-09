@@ -146,14 +146,20 @@ if (strlen($nomina) == 7) {
     verificacionDiferencia();
 
     function verificacionDiferencia() {
+        var totalDinero = 0.0;
+        var totalCantidad = 0.0;
 
-        $.getJSON('https://grammermx.com/Logistica/Inventario2025/dao/consultaSegundosConteosCostoAdmin.php', function (data) {
+        $.getJSON('https://grammermx.com/Logistica/Inventario2025/dao/consultaSegundosConteosCostoAdminNew.php', function (data) {
 
             if (data && data.data && data.data.length > 0) {
                 for (var i = 0; i < data.data.length; i++) {
-                    document.getElementById("lblDinero").innerText = (parseFloat(data.data[i].CostoTotalInventarioSap - data.data[i].CostoTotalPrimerConteoBitacora).toLocaleString("es-MX", {style: "currency", currency: "MXN"}));
-                    document.getElementById("lblCantidad").innerText = (data.data[i].TotalInventarioSap - data.data[i].TotalPrimerConteoBitacora).toFixed(2);
+                    totalDinero +=parseFloat(data.data.Total[i]);
+                    totalCantidad +=parseFloat(data.data.Cantidad[i]);
                 }
+
+                document.getElementById("lblDinero").innerText = (totalDinero).toLocaleString("es-MX", {style: "currency", currency: "MXN"}));
+                document.getElementById("lblCantidad").innerText = (totalCantidad).toFixed(2);
+
                 crearTabla();
             }else{
                 Swal.fire({

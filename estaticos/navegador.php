@@ -54,14 +54,13 @@ if ($tipoArea==0){
             <a class="navbar-brand mx-auto mt-2 flex-fill text-center" href="inicio.php">
                 <img src="assets/images/Grammer_Logo.ico" style="width: 30%">
             </a>
-
-
-            <span>Area <?php echo $areaNombre?></span>
         </div>
 
         <?php
         if ($rol==4){
             echo '<p class="text-muted nav-heading mt-4 mb-1">
+
+            <span>Area <?php echo $areaNombre?></span>
             <span>Administración</span>
         </p>
         <ul class="navbar-nav flex-fill w-100 mb-2">

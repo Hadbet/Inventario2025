@@ -55,6 +55,11 @@ if (strlen($nomina) == 7) {
     <main role="main" class="main-content">
         <center><img src="images/tituloInventario.png" style="width: 50%"></center>
 
+        <div class="row align-items-center my-4">
+            <div class="col">
+                <h2 class="h3 mb-0 page-title">Valores Sap</h2>
+            </div>
+        </div>
 
         <div class="row">
 
@@ -92,6 +97,16 @@ if (strlen($nomina) == 7) {
                 </div>
             </div>
 
+        </div>
+
+        <div class="row align-items-center my-4">
+            <div class="col">
+                <h2 class="h3 mb-0 page-title">Valores Inventario Real</h2>
+            </div>
+        </div>
+
+        <div class="row">
+
             <div class="col-md-6 mb-4">
                 <div class="card shadow">
                     <div class="card-body">
@@ -125,7 +140,15 @@ if (strlen($nomina) == 7) {
                     </div>
                 </div>
             </div>
+        </div>
 
+        <div class="row align-items-center my-4">
+            <div class="col">
+                <h2 class="h3 mb-0 page-title">Diferencias de Inventario</h2>
+            </div>
+        </div>
+
+        <div class="row">
 
         <div class="col-md-6 mb-4">
             <div class="card shadow">

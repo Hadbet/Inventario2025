@@ -58,6 +58,40 @@ if (strlen($nomina) == 7) {
 
         <div class="row">
 
+            <div class="col-md-6 mb-4">
+                <div class="card shadow">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col">
+                                <span class="h2 mb-0" id="lblDineroSap"></span>
+                                <p class="small text-muted mb-0">de Valor de Inventario Sap</p>
+                                <span class="badge badge-pill badge-success"></span>
+                            </div>
+                            <div class="col-auto">
+                                <span class="fe fe-32 fe-shopping-bag text-muted mb-0"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 mb-4">
+                <div class="card shadow">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col">
+                                <span class="h2 mb-0" id="lblCantidadSap"></span>
+                                <p class="small text-muted mb-0">de cantidad de Inventario Sap</p>
+                                <span class="badge badge-pill badge-success"></span>
+                            </div>
+                            <div class="col-auto">
+                                <span class="fe fe-32 fe-shopping-bag text-muted mb-0"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
 
         <div class="col-md-6 mb-4">
             <div class="card shadow">
@@ -178,6 +212,9 @@ if (strlen($nomina) == 7) {
                     totalDineroSap += parseFloat(data.data[i].Total);
                     totalCantidadSap += parseFloat(data.data[i].Cantidad);
                 }
+
+                document.getElementById("lblDineroSap").innerText = (totalDineroSap).toLocaleString("es-MX", {style: "currency", currency: "MXN"});
+                document.getElementById("lblCantidadSap").innerText = (totalCantidadSap).toFixed(2);
 
                 document.getElementById("lblDinero").innerText = (totalDineroSap-totalDinero).toLocaleString("es-MX", {style: "currency", currency: "MXN"});
                 document.getElementById("lblCantidad").innerText = (totalCantidadSap-totalCantidad).toFixed(2);

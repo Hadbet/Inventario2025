@@ -153,8 +153,8 @@ if (strlen($nomina) == 7) {
 
             if (data && data.data && data.data.length > 0) {
                 for (var i = 0; i < data.data.length; i++) {
-                    totalDinero +=parseFloat(data.data.Total[i]);
-                    totalCantidad +=parseFloat(data.data.Cantidad[i]);
+                    totalDinero += parseFloat(data.data[i].Total);
+                    totalCantidad += parseFloat(data.data[i].Cantidad);
                 }
 
                 document.getElementById("lblDinero").innerText = (totalDinero).toLocaleString("es-MX", {style: "currency", currency: "MXN"});

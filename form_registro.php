@@ -55,7 +55,14 @@ if (strlen($nomina) == 7) {
     <script src="lib/sweetalert2.all.min.js"></script>
 
     <link rel="stylesheet" href="css/generales.css">
+    <style>
 
+        .blurred {
+            filter: blur(6px);
+            user-select: none;
+        }
+
+    </style>
 </head>
 <body class="vertical  light  ">
 <div class="wrapper">
@@ -1081,7 +1088,11 @@ if (strlen($nomina) == 7) {
                             var tableFaltantes = document.getElementById("data-table-faltantes");
                             var rowFaltantes = tableFaltantes.insertRow(-1);
 
-                            var cell1F = rowFaltantes.insertCell(0);
+                            var storageUnit = data.data[i].StorageUnit;
+                            var visible = storageUnit.slice(-4);
+                            var hidden = storageUnit.slice(0, -4);
+
+                            var cell1F.innerHTML = `<span class="blurred">${hidden}</span>${visible}`;
                             var cell2F = rowFaltantes.insertCell(1);
                             var cell3F = rowFaltantes.insertCell(2);
 

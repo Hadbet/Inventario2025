@@ -1048,6 +1048,12 @@ if (strlen($nomina) == 7) {
 
     function manualMarbeteFaltantes() {
 
+        var tableFaltantes = document.getElementById("data-table-faltantes");
+
+        while (tableFaltantes.rows.length > 1) {
+            tableFaltantes.deleteRow(1);
+        }
+
         var marbete = parseInt(document.getElementById("scanner_input").value.split('.')[0], 10);
         var conteoM = document.getElementById("scanner_input").value.split('.')[1];
 
@@ -1070,7 +1076,6 @@ if (strlen($nomina) == 7) {
                             cell3F.innerHTML = data.data[i].CantidadStorage;
                         }
                     }
-
                 } else {
                     Swal.fire({
                         title: "El marbete no esta cargado",

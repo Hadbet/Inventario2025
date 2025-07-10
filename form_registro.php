@@ -371,6 +371,7 @@ if (strlen($nomina) == 7) {
                         if (data.data[i].FolioMarbete) {
                             if (data.data[i].Estatus === '0') {
                                 if (data.data[i].Area === '<?php echo $area;?>') {
+                                    manualMarbeteFaltantes();
                                     numeroParte = data.data[i].NumeroParte;
                                     storageBin = data.data[i].StorageBin;
                                     storageType = data.data[i].StorageType;
@@ -400,6 +401,7 @@ if (strlen($nomina) == 7) {
                         if (data.data[i].FolioMarbete) {
                             if (data.data[i].SegFolio === '2') {
                                 if (data.data[i].Area === '<?php echo $area;?>') {
+                                    manualMarbeteFaltantes();
                                     numeroParte = data.data[i].NumeroParte;
                                     storageBin = data.data[i].StorageBin;
                                     document.getElementById("reader").style.display = 'none';

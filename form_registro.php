@@ -1092,7 +1092,7 @@ if (strlen($nomina) == 7) {
                             var visible = storageUnit.slice(-4);
                             var hidden = storageUnit.slice(0, -4);
 
-                            var cell1F;
+                            var cell1F = rowFaltantes.insertCell(0);
                             var cell2F = rowFaltantes.insertCell(1);
                             var cell3F = rowFaltantes.insertCell(2);
 

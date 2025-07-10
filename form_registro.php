@@ -593,6 +593,15 @@ if (strlen($nomina) == 7) {
                                     return;
                                 }
 
+                                var tableFaltantes = document.getElementById("data-table-faltantes");
+                                for (var j = 1; j < tableFaltantes.rows.length; j++) {
+                                    var cellValue = tableFaltantes.rows[j].cells[0].innerText;
+                                    if (cellValue === data.data[i].Id_StorageUnit) {
+                                        tableFaltantes.deleteRow(j);
+                                        break;
+                                    }
+                                }
+
                                 addedStorageUnits[data.data[i].Id_StorageUnit] = {
                                     numeroParte: data.data[i].Numero_Parte,
                                     cantidad: data.data[i].Cantidad

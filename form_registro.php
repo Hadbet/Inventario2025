@@ -1054,30 +1054,23 @@ if (strlen($nomina) == 7) {
         $.getJSON('https://grammermx.com/Logistica/Inventario2025/dao/consultaMarbeteFaltantesSun.php?marbete=' + marbete, function (data) {
             for (var i = 0; i < data.data.length; i++) {
                 if (data.data[i].FolioMarbete) {
-                    if (data.data[i].Estatus === '1') {
-                        if (data.data[i].StorageUnit === 'NA') {
-                        } else {
-                            if (data.data[i].EstatusStorage == 1) {
-                            } else {
-                                var tableFaltantes = document.getElementById("data-table-faltantes");
-                                var rowFaltantes = tableFaltantes.insertRow(-1);
-
-                                var cell1F = rowFaltantes.insertCell(0);
-                                var cell2F = rowFaltantes.insertCell(1);
-                                var cell3F = rowFaltantes.insertCell(2);
-
-                                cell1F.innerHTML = data.data[i].StorageUnit;
-                                cell2F.innerHTML = numeroParte;
-                                cell3F.innerHTML = cantidad;
-                            }
-                        }
+                    if (data.data[i].StorageUnit === 'NA') {
                     } else {
-                        Swal.fire({
-                            title: "El marbete no pertenece al 3 conteo",
-                            text: "Escanea otro marbete",
-                            icon: "error"
-                        });
+                        if (data.data[i].EstatusStorage == 1) {
+                        } else {
+                            var tableFaltantes = document.getElementById("data-table-faltantes");
+                            var rowFaltantes = tableFaltantes.insertRow(-1);
+
+                            var cell1F = rowFaltantes.insertCell(0);
+                            var cell2F = rowFaltantes.insertCell(1);
+                            var cell3F = rowFaltantes.insertCell(2);
+
+                            cell1F.innerHTML = data.data[i].StorageUnit;
+                            cell2F.innerHTML = numeroParte;
+                            cell3F.innerHTML = cantidad;
+                        }
                     }
+
                 } else {
                     Swal.fire({
                         title: "El marbete no esta cargado",

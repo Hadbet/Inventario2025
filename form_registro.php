@@ -1066,8 +1066,8 @@ if (strlen($nomina) == 7) {
                             var cell3F = rowFaltantes.insertCell(2);
 
                             cell1F.innerHTML = data.data[i].StorageUnit;
-                            cell2F.innerHTML = numeroParte;
-                            cell3F.innerHTML = cantidad;
+                            cell2F.innerHTML = data.data[i].NumeroParte;
+                            cell3F.innerHTML = data.data[i].CantidadStorage;
                         }
                     }
 

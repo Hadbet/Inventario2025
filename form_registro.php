@@ -1092,11 +1092,12 @@ if (strlen($nomina) == 7) {
                             var visible = storageUnit.slice(-4);
                             var hidden = storageUnit.slice(0, -4);
 
-                            var cell1F.innerHTML = `<span class="blurred">${hidden}</span>${visible}`;
+                            var cell1F;
                             var cell2F = rowFaltantes.insertCell(1);
                             var cell3F = rowFaltantes.insertCell(2);
 
-                            cell1F.innerHTML = data.data[i].StorageUnit;
+
+                            cell1F.innerHTML = `<span class="blurred">${hidden}</span>${visible}`;
                             cell2F.innerHTML = data.data[i].NumeroParte;
                             cell3F.innerHTML = data.data[i].CantidadStorage;
                         }

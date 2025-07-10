@@ -854,6 +854,15 @@ if (strlen($nomina) == 7) {
                 return;
             }
 
+            var tableFaltantes = document.getElementById("data-table-faltantes");
+            for (var i = 1; i < tableFaltantes.rows.length; i++) {
+                var cellValue = tableFaltantes.rows[i].cells[0].innerText;
+                if (cellValue === unit) {
+                    tableFaltantes.deleteRow(i);
+                    break;
+                }
+            }
+
             addedStorageUnits[unit] = {
                 numeroParte: numeroParte,
                 cantidad: cantidad
@@ -1048,11 +1057,7 @@ if (strlen($nomina) == 7) {
 
     function manualMarbeteFaltantes() {
 
-        var tableFaltantes = document.getElementById("data-table-faltantes");
 
-        while (tableFaltantes.rows.length > 1) {
-            tableFaltantes.deleteRow(1);
-        }
 
         var marbete = parseInt(document.getElementById("scanner_input").value.split('.')[0], 10);
         var conteoM = document.getElementById("scanner_input").value.split('.')[1];

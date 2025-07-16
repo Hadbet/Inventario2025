@@ -337,10 +337,10 @@ if (strlen($nomina) == 7) {
         var marbete = parseInt(document.getElementById("scanner_input").value.split('.')[0], 10);
         var conteoM = document.getElementById("scanner_input").value.split('.')[1];
 
-        $.getJSON('https://grammermx.com/Logistica/Inventario2025/dao/consultaMarbeteCordinadores.php?marbete=' + marbete, function (data) {
+        $.getJSON('https://grammermx.com/Logistica/Inventario2025/dao/consultaMarbeteCordinadoresConteos.php?marbete=' + marbete, function (data) {
             for (var i = 0; i < data.data.length; i++) {
                 if (data.data[i].FolioMarbete) {
-                    if (data.data[i].Estatus === '1') {
+                    if (data.data[i].Estatus === '5') {
                         if (data.data[i].StorageUnit === 'NA') {
 
                             numeroParte = data.data[0].NumeroParte;
@@ -402,7 +402,7 @@ if (strlen($nomina) == 7) {
                         }
                     } else {
                         Swal.fire({
-                            title: "El marbete no pertenece al 3 conteo",
+                            title: "El marbete esta cancelado",
                             text: "Escanea otro marbete",
                             icon: "error"
                         });

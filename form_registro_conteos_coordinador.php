@@ -306,8 +306,6 @@ if (strlen($nomina) == 7) {
                             var separado = usuario.split("-"); // Esto dividirá la cadena en dos partes en el lugar donde se encuentra el guión.
                             var numeroNomina = separado[0]; // Esto te dará la primera parte, que es el número de nómina.
                             var nombre = separado[1]; // Esto te dará la segunda parte, que es el nombre.
-                            document.getElementById("lblNombreCapturador").innerText = nombre;
-                            document.getElementById("imagenCapturador").src = 'https://grammermx.com/Fotos/' + numeroNomina + '.png';
                             document.getElementById("reader").style.display = 'none';
                             document.getElementById("lblFolio").innerHTML = marbete;
                             document.getElementById("pasoTres").style.display = 'block';

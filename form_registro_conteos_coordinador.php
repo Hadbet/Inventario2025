@@ -341,6 +341,12 @@ if (strlen($nomina) == 7) {
             for (var i = 0; i < data.data.length; i++) {
                 if (data.data[i].FolioMarbete) {
                     if (data.data[i].Estatus === '5') {
+                        Swal.fire({
+                            title: "El marbete esta cancelado",
+                            text: "Escanea otro marbete",
+                            icon: "error"
+                        });
+                    } else {
                         if (data.data[i].StorageUnit === 'NA') {
 
                             numeroParte = data.data[0].NumeroParte;
@@ -400,12 +406,6 @@ if (strlen($nomina) == 7) {
 
                             }
                         }
-                    } else {
-                        Swal.fire({
-                            title: "El marbete esta cancelado",
-                            text: "Escanea otro marbete",
-                            icon: "error"
-                        });
                     }
                 } else {
                     Swal.fire({

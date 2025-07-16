@@ -77,6 +77,9 @@ if ($tipoArea==0){
                         <a class="nav-link pl-3" href="crear_user.php"><span class="ml-1 item-text">Usuarios</span></a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link pl-3" href="form_registro_conteos_coordinador.php"><span class="ml-1 item-text">Primer conteo / Segundo conteo</span></a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link pl-3" href="form_registro_coordinador.php"><span class="ml-1 item-text">Terceros conteos</span></a>
                     </li>
                     <li class="nav-item">

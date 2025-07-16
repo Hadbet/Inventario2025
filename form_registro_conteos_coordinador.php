@@ -55,6 +55,7 @@ if (strlen($nomina) == 7) {
     ?>
 
     <main role="main" class="main-content">
+        <h2 class="page-title">Conteo : <span id="txtConteoActual"></span></h2>
         <center><img src="images/tituloInventario.png" style="width: 50%"></center>
         <br><br>
 
@@ -337,7 +338,6 @@ if (strlen($nomina) == 7) {
 
         $.getJSON('https://grammermx.com/Logistica/Inventario2025/dao/consultaMarbeteCordinadores.php?marbete='+marbete, function (data) {
             for (var i = 0; i < data.data.length; i++) {
-                if (auxConteo===conteoM){
                     if (data.data[i].FolioMarbete) {
                         if (data.data[i].Estatus === '1'){
                             if (data.data[i].StorageUnit === 'NA'){
@@ -413,12 +413,7 @@ if (strlen($nomina) == 7) {
                             icon: "error"
                         });
                     }
-                }else{
-                    Swal.fire({
-                        title: "El marbete no pertenece al conteo "+auxConteo,
-                        text: "Verificalo con tu lider",
-                        icon: "error"
-                    });
+                    document.getElementById("txtConteoActual").innerHTML = auxConteo;
                 }
 
             }

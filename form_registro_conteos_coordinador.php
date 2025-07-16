@@ -1,12 +1,11 @@
-
 <?php
 session_start();
-$rol =$_SESSION['rol'];
-$area =$_SESSION['area'];
-$areaNombre =$_SESSION['AreaNombre'];
-$bin =$_SESSION['StBin'];
-$nomina =$_SESSION['nomina'];
-$nombre =$_SESSION['nombre'];
+$rol = $_SESSION['rol'];
+$area = $_SESSION['area'];
+$areaNombre = $_SESSION['AreaNombre'];
+$bin = $_SESSION['StBin'];
+$nomina = $_SESSION['nomina'];
+$nombre = $_SESSION['nombre'];
 
 if (strlen($nomina) == 1) {
     $nomina = "0000000" . $nomina;
@@ -51,7 +50,7 @@ if (strlen($nomina) == 7) {
 <div class="wrapper">
 
     <?php
-            require_once('estaticos/navegador.php');
+    require_once('estaticos/navegador.php');
     ?>
 
     <main role="main" class="main-content">
@@ -62,33 +61,35 @@ if (strlen($nomina) == 7) {
         <div class="container-fluid" id="pasoUno">
             <div class="row justify-content-center">
                 <div class="col-12">
-                    <h2 class="page-title">Paso 1 : Escaneo de marbete para verificar el conteo</h2>
+                    <h2 class="page-title">Paso 1 : Escaneo de marbete</h2>
                     <div class="card shadow mb-4">
                         <div class="card-header">
                             <strong class="card-title">Captura</strong>
                         </div>
                         <div class="card-body">
                             <div class="row">
-                               <div class="col-md-6">
-                                        <div class="form-group mb-3">
-                                            <label for="txtFolio">Escanea el marbete</label>
-                                            <div id="reader" width="600px"></div>
-                                            <input type="text" class="form-control"
-                                                   id="scanner_input" autocomplete="off">
-                                            <br>
-                                       </div>
-                                    </div> <!-- /.col -->
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <br>
-                                            <button class="btn btn-success text-white mt-2" onclick="escaneo()">Escanear</button>
-                                        </div>
+                                <div class="col-md-6">
+                                    <div class="form-group mb-3">
+                                        <label for="txtFolio">Escanea el marbete</label>
+                                        <div id="reader" width="600px"></div>
+                                        <input type="text" class="form-control"
+                                               id="scanner_input" autocomplete="off">
+                                        <br>
                                     </div>
+                                </div> <!-- /.col -->
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <br>
+                                        <button class="btn btn-success text-white mt-2" onclick="escaneo()">Escanear
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div class="card-footer">
-                            <button class="btn mb-2 btn-success float-right text-white" onclick="manualMarbete()">Siguiente<span
-                                    class="fe fe-chevron-right fe-16 ml-2"></span></button>
+                            <button class="btn mb-2 btn-success float-right text-white" onclick="manualMarbete()">
+                                Siguiente<span
+                                        class="fe fe-chevron-right fe-16 ml-2"></span></button>
                         </div>
                     </div> <!-- / .card -->
                 </div> <!-- .col-12 -->
@@ -100,73 +101,70 @@ if (strlen($nomina) == 7) {
                 <div class="col-12">
                     <h2 class="page-title">Paso 2 : Escaneo de Storage Unit</h2>
                     <div class="card shadow mb-4">
-                            <div class="card-header">
-                                <strong id="Ubicacion" class="card-title h4"></strong>
-                                <button
-                                        class="btn btn-info float-right text-white" data-toggle="modal" data-target=".modal-right">Caja Abierta<span
-                                            class="fe fe-chevron-right fe-16 ml-2"></span></button>
-                            </div>
-                            <div class="card-body">
+                        <div class="card-header">
+                            <strong id="Ubicacion" class="card-title h4"></strong>
+                            <button
+                                    class="btn btn-info float-right text-white" data-toggle="modal"
+                                    data-target=".modal-right">Caja Abierta<span
+                                        class="fe fe-chevron-right fe-16 ml-2"></span></button>
+                        </div>
+                        <div class="card-body">
 
-                                <!--<div class="row">
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <br>
-                                            <button class="btn btn-success text-white mt-2" onclick="agregarFila()">Activar Escaner</button>
-                                        </div>
+                            <!--<div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <br>
+                                        <button class="btn btn-success text-white mt-2" onclick="agregarFila()">Activar Escaner</button>
                                     </div>
-                                </div> -->
+                                </div>
+                            </div> -->
 
-                                <strong class="card-title h4">Storage Unit Escaneados</strong><br><br>
+                            <strong class="card-title h4">Storage Unit Escaneados</strong><br><br>
 
-                                <table id="data-table" class="table table-hover">
-                                    <thead>
-                                    <tr>
-                                        <th>Storage Unit</th>
-                                        <th>Numero Parte</th>
-                                        <th>Cantidad</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    </tbody>
-                                </table>
+                            <table id="data-table" class="table table-hover">
+                                <thead>
+                                <tr>
+                                    <th>Storage Unit</th>
+                                    <th>Numero Parte</th>
+                                    <th>Cantidad</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
 
-                                <strong class="card-title h4">Storage Unit Faltantes</strong><br><br>
+                            <strong class="card-title h4">Storage Unit Faltantes</strong><br><br>
 
-                                <table id="data-table-faltantes" class="table table-hover">
-                                    <thead>
-                                    <tr>
-                                        <th>Storage Unit</th>
-                                        <th>Numero Parte</th>
-                                        <th>Cantidad</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    </tbody>
-                                </table>
+                            <table id="data-table-faltantes" class="table table-hover">
+                                <thead>
+                                <tr>
+                                    <th>Storage Unit</th>
+                                    <th>Numero Parte</th>
+                                    <th>Cantidad</th>
+                                    <th>Acciones</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
 
 
-                                <strong id="txtTotalUnit" class="card-title h4"></strong><br><br>
+                            <strong id="txtTotalUnit" class="card-title h4"></strong><br><br>
 
-                            </div>
-                            <div class="card-footer">
-                                <button type="submit"
-                                        class="btn mb-2 btn-success float-right text-white" onclick="enviarDatos()">Finalizar Captura<span
-                                            class="fe fe-chevron-right fe-16 ml-2"></span></button>
-                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <button type="submit"
+                                    class="btn mb-2 btn-success float-right text-white" onclick="enviarDatos()">
+                                Finalizar Captura<span
+                                        class="fe fe-chevron-right fe-16 ml-2"></span></button>
+                        </div>
                     </div> <!-- / .card -->
                 </div> <!-- .col-12 -->
             </div> <!-- .row -->
         </div> <!-- .container-fluid -->
 
 
-
-
-
-
-
-            <div class="container-fluid" id="pasoTres" style="display: none">
+        <div class="container-fluid" id="pasoTres" style="display: none">
             <div class="row">
                 <div class="col-md-6">
                     <div class="card shadow mb-4">
@@ -175,7 +173,9 @@ if (strlen($nomina) == 7) {
 
                             <label for="basic-url">Cantidad</label>
                             <div class="input-group mb-3">
-                                <input type="text" id="txtCantidad" class="form-control" aria-label="Recipient's username" aria-describedby="basic-addon2" autocomplete="off">
+                                <input type="text" id="txtCantidad" class="form-control"
+                                       aria-label="Recipient's username" aria-describedby="basic-addon2"
+                                       autocomplete="off">
                                 <div class="input-group-append">
                                     <span class="input-group-text" id="txtUnidadMedida" style=""></span>
                                 </div>
@@ -184,11 +184,13 @@ if (strlen($nomina) == 7) {
                             <div class="row align-items-center">
                                 <div class="col-auto">
                                     <a href="profile-posts.html" class="avatar avatar-md">
-                                        <img src="https://grammermx.com/Fotos/<?php echo $nomina?>.png" alt="..." class="avatar-img rounded-circle">
+                                        <img src="https://grammermx.com/Fotos/<?php echo $nomina ?>.png" alt="..."
+                                             class="avatar-img rounded-circle">
                                     </a>
                                 </div>
                                 <div class="col ml-n2">
-                                    <strong class="mb-1" id="lblNombre"><?php echo $nombre?></strong><span class="dot dot-lg bg-success ml-1"></span>
+                                    <strong class="mb-1" id="lblNombre"><?php echo $nombre ?></strong><span
+                                            class="dot dot-lg bg-success ml-1"></span>
                                     <p class="small text-muted mb-1" id="lblRol">Verificador</p>
                                 </div>
                             </div>
@@ -217,7 +219,7 @@ if (strlen($nomina) == 7) {
                             <div class="d-flex" style="display: none !important">
                                 <div class="flex-fill">
                                     <span class="card-title">Cantidad</span>
-                                    <h4 class="mb-0" id="lblCantidad"> <span id="lblUm"></span></h4>
+                                    <h4 class="mb-0" id="lblCantidad"><span id="lblUm"></span></h4>
                                 </div>
                             </div>
                             <hr>
@@ -249,13 +251,15 @@ if (strlen($nomina) == 7) {
                                     </a>
                                 </div>
                                 <div class="col ml-n2">
-                                    <strong class="mb-1" id="lblNombreCapturador"></strong><span class="dot dot-lg bg-success ml-1"></span>
+                                    <strong class="mb-1" id="lblNombreCapturador"></strong><span
+                                            class="dot dot-lg bg-success ml-1"></span>
                                     <p class="small text-muted mb-1" id="lblRol">Capturista</p>
                                 </div>
                             </div>
                             <hr>
-                            <button id="btnFin" class="btn mb-2 btn-success float-right text-white" onclick="enviarDatosPro()">Finalizar Captura<span
-                                        class="fe fe-chevron-right fe-16 ml-2" ></span></button>
+                            <button id="btnFin" class="btn mb-2 btn-success float-right text-white"
+                                    onclick="enviarDatosPro()">Finalizar Captura<span
+                                        class="fe fe-chevron-right fe-16 ml-2"></span></button>
                         </div> <!-- .card-body -->
                     </div> <!-- .card -->
                 </div> <!-- .col -->
@@ -264,16 +268,12 @@ if (strlen($nomina) == 7) {
         </div> <!-- .container-fluid -->
 
 
-
-
-
-
-
     </main> <!-- main -->
 
 </div> <!-- .wrapper -->
 
-<div class="modal fade modal-right modal-slide" tabindex="-1" role="dialog" aria-labelledby="defaultModalLabel" aria-hidden="true">
+<div class="modal fade modal-right modal-slide" tabindex="-1" role="dialog" aria-labelledby="defaultModalLabel"
+     aria-hidden="true">
     <div class="modal-dialog modal-sm" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -283,25 +283,26 @@ if (strlen($nomina) == 7) {
                 </button>
             </div>
             <div class="modal-body">
-                    <div id="readerAbierto" width="600px"></div>
-                    <button onclick="escaneoUnitAbierto()" id="" class="btn btn-primary">Activar escaner</button>
+                <div id="readerAbierto" width="600px"></div>
+                <button onclick="escaneoUnitAbierto()" id="" class="btn btn-primary">Activar escaner</button>
                 <br><br>
-                    <label for="txtFolio">Storage Unit</label>
-                    <input type="text" class="form-control"
-                           id="txtStorageUnitA" name="txtStorageUnitA" value="">
-                    <br>
-                    <label for="txtFolio">Ingresar NP</label>
-                    <input type="text" class="form-control"
-                           id="txtNumeroParteA" name="txtNumeroParteA" value="">
-                    <br>
-                    <label for="txtFolio">Ingresar la cantidad</label>
-                    <input type="text" class="form-control"
-                           id="txtCantidadA" name="txtCantidadA" value="">
-                    <br>
-                    <button onclick="cargaCajaAbierta()" id="btnEnviarNuevos" class="btn btn-primary">Enviar</button>
+                <label for="txtFolio">Storage Unit</label>
+                <input type="text" class="form-control"
+                       id="txtStorageUnitA" name="txtStorageUnitA" value="">
+                <br>
+                <label for="txtFolio">Ingresar NP</label>
+                <input type="text" class="form-control"
+                       id="txtNumeroParteA" name="txtNumeroParteA" value="">
+                <br>
+                <label for="txtFolio">Ingresar la cantidad</label>
+                <input type="text" class="form-control"
+                       id="txtCantidadA" name="txtCantidadA" value="">
+                <br>
+                <button onclick="cargaCajaAbierta()" id="btnEnviarNuevos" class="btn btn-primary">Enviar</button>
             </div>
             <div class="modal-footer">
-                <button id="btnCerrarModal" type="button" class="btn mb-2 btn-secondary" data-dismiss="modal">Cerrar</button>
+                <button id="btnCerrarModal" type="button" class="btn mb-2 btn-secondary" data-dismiss="modal">Cerrar
+                </button>
             </div>
         </div>
     </div>
@@ -328,7 +329,7 @@ if (strlen($nomina) == 7) {
     var cantidad;
     var addedStorageUnits = {};
 
-    var auxConteo="3";
+    var auxConteo = "3";
     var totalUnit = 0.0;
 
     function manualMarbete() {
@@ -336,89 +337,86 @@ if (strlen($nomina) == 7) {
         var marbete = parseInt(document.getElementById("scanner_input").value.split('.')[0], 10);
         var conteoM = document.getElementById("scanner_input").value.split('.')[1];
 
-        $.getJSON('https://grammermx.com/Logistica/Inventario2025/dao/consultaMarbeteCordinadores.php?marbete='+marbete, function (data) {
+        $.getJSON('https://grammermx.com/Logistica/Inventario2025/dao/consultaMarbeteCordinadores.php?marbete=' + marbete, function (data) {
             for (var i = 0; i < data.data.length; i++) {
-                    if (data.data[i].FolioMarbete) {
-                        if (data.data[i].Estatus === '1'){
-                            if (data.data[i].StorageUnit === 'NA'){
+                if (data.data[i].FolioMarbete) {
+                    if (data.data[i].Estatus === '1') {
+                        if (data.data[i].StorageUnit === 'NA') {
 
-                                numeroParte=data.data[0].NumeroParte;
-                                storageBin=data.data[0].StorageBin;
-                                cantidad=data.data[0].SegundoConteo;
-                                var usuario = data.data[0].Usuario;
-                                var separado = usuario.split("-"); // Esto dividirá la cadena en dos partes en el lugar donde se encuentra el guión.
-                                var numeroNomina = separado[0]; // Esto te dará la primera parte, que es el número de nómina.
-                                var nombre = separado[1]; // Esto te dará la segunda parte, que es el nombre.
-                                document.getElementById("lblNombreCapturador").innerText = nombre;
-                                document.getElementById("imagenCapturador").src = 'https://grammermx.com/Fotos/'+numeroNomina+'.png';
-                                document.getElementById("reader").style.display = 'none';
-                                document.getElementById("lblFolio").innerHTML = marbete;
-                                document.getElementById("pasoTres").style.display = 'block';
-                                document.getElementById("pasoUno").style.display = 'none';
-                                document.getElementById("lblStorageBin").innerText = storageBin;
-                                document.getElementById("lblNumeroParte").innerText = numeroParte;
-                                document.getElementById("lblCantidad").innerText = data.data[0].SegundoConteo;
-                                cargaPrimer(numeroParte);
+                            numeroParte = data.data[0].NumeroParte;
+                            storageBin = data.data[0].StorageBin;
+                            cantidad = data.data[0].SegundoConteo;
+                            var usuario = data.data[0].Usuario;
+                            var separado = usuario.split("-"); // Esto dividirá la cadena en dos partes en el lugar donde se encuentra el guión.
+                            var numeroNomina = separado[0]; // Esto te dará la primera parte, que es el número de nómina.
+                            var nombre = separado[1]; // Esto te dará la segunda parte, que es el nombre.
+                            document.getElementById("lblNombreCapturador").innerText = nombre;
+                            document.getElementById("imagenCapturador").src = 'https://grammermx.com/Fotos/' + numeroNomina + '.png';
+                            document.getElementById("reader").style.display = 'none';
+                            document.getElementById("lblFolio").innerHTML = marbete;
+                            document.getElementById("pasoTres").style.display = 'block';
+                            document.getElementById("pasoUno").style.display = 'none';
+                            document.getElementById("lblStorageBin").innerText = storageBin;
+                            document.getElementById("lblNumeroParte").innerText = numeroParte;
+                            document.getElementById("lblCantidad").innerText = data.data[0].SegundoConteo;
+                            cargaPrimer(numeroParte);
 
-                            }else{
-                                numeroParte=data.data[i].NumeroParte;
-                                storageBin=data.data[i].StorageBin;
-                                document.getElementById("reader").style.display = 'none';
-                                document.getElementById("Ubicacion").innerHTML = "Ubicación : "+storageBin;
-                                document.getElementById("pasoDos").style.display = 'block';
-                                document.getElementById("pasoUno").style.display = 'none';
-                                cantidad =  data.data[i].CantidadStorage;
+                        } else {
+                            numeroParte = data.data[i].NumeroParte;
+                            storageBin = data.data[i].StorageBin;
+                            document.getElementById("reader").style.display = 'none';
+                            document.getElementById("Ubicacion").innerHTML = "Ubicación : " + storageBin;
+                            document.getElementById("pasoDos").style.display = 'block';
+                            document.getElementById("pasoUno").style.display = 'none';
+                            cantidad = data.data[i].CantidadStorage;
 
-                                if (data.data[i].EstatusStorage == 1){
-                                    var table = document.getElementById("data-table");
-                                    var row = table.insertRow(-1);
-                                    var cell1 = row.insertCell(0);
-                                    var cell2 = row.insertCell(1);
-                                    var cell3 = row.insertCell(2);
-                                    cell1.innerHTML = data.data[i].StorageUnit;
-                                    cell2.innerHTML = numeroParte;
-                                    cell3.innerHTML = cantidad;
-                                    //cell1.contentEditable = "true";
-                                    //cell2.contentEditable = "true";
-                                    cell3.contentEditable = "true";
-                                    totalUnit = totalUnit+parseFloat(cantidad);
+                            if (data.data[i].EstatusStorage == 1) {
+                                var table = document.getElementById("data-table");
+                                var row = table.insertRow(-1);
+                                var cell1 = row.insertCell(0);
+                                var cell2 = row.insertCell(1);
+                                var cell3 = row.insertCell(2);
+                                cell1.innerHTML = data.data[i].StorageUnit;
+                                cell2.innerHTML = numeroParte;
+                                cell3.innerHTML = cantidad;
+                                //cell1.contentEditable = "true";
+                                //cell2.contentEditable = "true";
+                                cell3.contentEditable = "true";
+                                totalUnit = totalUnit + parseFloat(cantidad);
 
-                                }else{
-                                    var tableFaltantes = document.getElementById("data-table-faltantes");
-                                    var rowFaltantes = tableFaltantes.insertRow(-1);
+                            } else {
+                                var tableFaltantes = document.getElementById("data-table-faltantes");
+                                var rowFaltantes = tableFaltantes.insertRow(-1);
 
-                                    var cell1F = rowFaltantes.insertCell(0);
-                                    var cell2F = rowFaltantes.insertCell(1);
-                                    var cell3F = rowFaltantes.insertCell(2);
-                                    var cell4F = rowFaltantes.insertCell(3);
+                                var cell1F = rowFaltantes.insertCell(0);
+                                var cell2F = rowFaltantes.insertCell(1);
+                                var cell3F = rowFaltantes.insertCell(2);
+                                var cell4F = rowFaltantes.insertCell(3);
 
-                                    cell1F.innerHTML = data.data[i].StorageUnit;
-                                    cell2F.innerHTML = numeroParte;
-                                    cell3F.innerHTML = cantidad;
-                                    cell4F.innerHTML = '<button onclick="agregarSun(\''+data.data[i].StorageUnit+'\',\''+marbete+'\',\'1\',\''+cantidad+'\',\''+numeroParte+'\', event)" id="" class="btn btn-primary">Capturar</button>';
+                                cell1F.innerHTML = data.data[i].StorageUnit;
+                                cell2F.innerHTML = numeroParte;
+                                cell3F.innerHTML = cantidad;
+                                cell4F.innerHTML = '<button onclick="agregarSun(\'' + data.data[i].StorageUnit + '\',\'' + marbete + '\',\'1\',\'' + cantidad + '\',\'' + numeroParte + '\', event)" id="" class="btn btn-primary">Capturar</button>';
 
-                                }
                             }
-                        }else{
-                            Swal.fire({
-                                title: "El marbete no pertenece al 3 conteo",
-                                text: "Escanea otro marbete",
-                                icon: "error"
-                            });
                         }
                     } else {
                         Swal.fire({
-                            title: "El marbete no esta cargado",
-                            text: "Verificalo con la mesa central",
+                            title: "El marbete no pertenece al 3 conteo",
+                            text: "Escanea otro marbete",
                             icon: "error"
                         });
                     }
-                    document.getElementById("txtConteoActual").innerHTML = auxConteo;
+                } else {
+                    Swal.fire({
+                        title: "El marbete no esta cargado",
+                        text: "Verificalo con la mesa central",
+                        icon: "error"
+                    });
                 }
-
             }
-
-            document.getElementById("txtTotalUnit").innerText = 'Total storage unit : '+totalUnit;
+            document.getElementById("txtConteoActual").innerHTML = auxConteo;
+            document.getElementById("txtTotalUnit").innerText = 'Total storage unit : ' + totalUnit;
 
             html5QrcodeScanner.clear();
             html5QrcodeScanner.pause();
@@ -426,19 +424,19 @@ if (strlen($nomina) == 7) {
     }
 
     function cargaPrimer(numeroParte) {
-        $.getJSON('https://grammermx.com/Logistica/Inventario2025/dao/consultaParte.php?parte='+numeroParte, function (data) {
+        $.getJSON('https://grammermx.com/Logistica/Inventario2025/dao/consultaParte.php?parte=' + numeroParte, function (data) {
             for (var i = 0; i < data.data.length; i++) {
                 if (data.data[i].GrammerNo) {
                     document.getElementById('lblDescripcion').innerText = data.data[i].Descripcion;
                     document.getElementById('txtUnidadMedida').innerText = data.data[i].UM;
                     costoUnitario = data.data[i].Costo / data.data[i].Por;
                     document.getElementById('lblCosto').innerText = costoUnitario;
-                    var resultado = costoUnitario*cantidad;
+                    var resultado = costoUnitario * cantidad;
                     document.getElementById('lblMontoTotal').innerText = resultado.toFixed(2);
                     document.getElementById('txtCantidad').focus();
-                    bandera=1;
+                    bandera = 1;
                 } else {
-                    bandera=0;
+                    bandera = 0;
                     Swal.fire({
                         title: "El numero de parte no existe",
                         text: "Verificalo con la mesa de control",
@@ -470,30 +468,30 @@ if (strlen($nomina) == 7) {
         var marbete = decodedText.split('.')[0]
         var conteoM = decodedText.split('.')[1];
 
-        $.getJSON('https://grammermx.com/Logistica/Inventario2025/dao/consultaMarbete.php?marbete='+marbete, function (data) {
+        $.getJSON('https://grammermx.com/Logistica/Inventario2025/dao/consultaMarbete.php?marbete=' + marbete, function (data) {
             for (var i = 0; i < data.data.length; i++) {
-                if (auxConteo===conteoM && conteoM==="1"){
+                if (auxConteo === conteoM && conteoM === "1") {
                     if (data.data[i].FolioMarbete) {
-                        if (data.data[i].Estatus === '0'){
-                            if (data.data[i].Area === '<?php echo $area;?>'){
-                                numeroParte=data.data[i].NumeroParte;
-                                storageBin=data.data[i].StorageBin;
+                        if (data.data[i].Estatus === '0') {
+                            if (data.data[i].Area === '<?php echo $area;?>') {
+                                numeroParte = data.data[i].NumeroParte;
+                                storageBin = data.data[i].StorageBin;
                                 console.log(`Code matched = ${decodedText}`, decodedResult);
                                 document.getElementById("scanner_input").value = decodedText;
                                 document.getElementById("reader").style.display = 'none';
-                                document.getElementById("Ubicacion").innerHTML = "Ubicación : "+storageBin;
+                                document.getElementById("Ubicacion").innerHTML = "Ubicación : " + storageBin;
                                 document.getElementById("pasoDos").style.display = 'block';
                                 document.getElementById("pasoUno").style.display = 'none';
                                 html5QrcodeScanner.clear();
                                 html5QrcodeScanner.pause();
-                            }else{
+                            } else {
                                 Swal.fire({
                                     title: "El marbete no pertenece al area",
                                     text: "Escanea otro marbete",
                                     icon: "error"
                                 });
                             }
-                        }else{
+                        } else {
                             Swal.fire({
                                 title: "El marbete ya fue registrado",
                                 text: "Escanea otro marbete",
@@ -507,28 +505,28 @@ if (strlen($nomina) == 7) {
                             icon: "error"
                         });
                     }
-                }else if(auxConteo===conteoM && conteoM==="2"){
+                } else if (auxConteo === conteoM && conteoM === "2") {
                     if (data.data[i].FolioMarbete) {
-                        if (data.data[i].SegFolio === '2'){
-                            if (data.data[i].Area === '<?php echo $area;?>'){
-                                numeroParte=data.data[i].NumeroParte;
-                                storageBin=data.data[i].StorageBin;
+                        if (data.data[i].SegFolio === '2') {
+                            if (data.data[i].Area === '<?php echo $area;?>') {
+                                numeroParte = data.data[i].NumeroParte;
+                                storageBin = data.data[i].StorageBin;
                                 console.log(`Code matched = ${decodedText}`, decodedResult);
                                 document.getElementById("scanner_input").value = decodedText;
                                 document.getElementById("reader").style.display = 'none';
-                                document.getElementById("Ubicacion").innerHTML = "Ubicación : "+storageBin;
+                                document.getElementById("Ubicacion").innerHTML = "Ubicación : " + storageBin;
                                 document.getElementById("pasoDos").style.display = 'block';
                                 document.getElementById("pasoUno").style.display = 'none';
                                 html5QrcodeScanner.clear();
                                 html5QrcodeScanner.pause();
-                            }else{
+                            } else {
                                 Swal.fire({
                                     title: "El marbete no pertenece al area",
                                     text: "Escanea otro marbete",
                                     icon: "error"
                                 });
                             }
-                        }else{
+                        } else {
                             Swal.fire({
                                 title: "El marbete no pertenece al segundo conteo o ya fue registrado",
                                 text: "Escanea otro marbete",
@@ -542,9 +540,9 @@ if (strlen($nomina) == 7) {
                             icon: "error"
                         });
                     }
-                }else{
+                } else {
                     Swal.fire({
-                        title: "El marbete no pertenece al conteo "+auxConteo,
+                        title: "El marbete no pertenece al conteo " + auxConteo,
                         text: "Verificalo con tu lider",
                         icon: "error"
                     });
@@ -561,7 +559,7 @@ if (strlen($nomina) == 7) {
     function escaneo() {
         html5QrcodeScanner = new Html5QrcodeScanner(
             "reader",
-            { fps: 10, qrbox: {width: 250, height: 250} },
+            {fps: 10, qrbox: {width: 250, height: 250}},
             /* verbose= */ false);
         document.getElementById("reader").style.display = 'block';
         html5QrcodeScanner.render(lecturaCorrecta, errorLectura);
@@ -569,7 +567,7 @@ if (strlen($nomina) == 7) {
 
 
     function storageUnitManual() {
-        $.getJSON('https://grammermx.com/Logistica/Inventario2025/dao/consultaStorageUnit.php?storageUnit='+document.getElementById("txtStorageUnit").value+'&bin='+storageBin, function (data) {
+        $.getJSON('https://grammermx.com/Logistica/Inventario2025/dao/consultaStorageUnit.php?storageUnit=' + document.getElementById("txtStorageUnit").value + '&bin=' + storageBin, function (data) {
             if (data.Estatus) {
                 Swal.fire({
                     title: data.Estatus,
@@ -635,7 +633,7 @@ if (strlen($nomina) == 7) {
 
 
     function lecturaCorrectaUnit(decodedText, decodedResult) {
-        $.getJSON('https://grammermx.com/Inventario/dao/consultaStorageUnit.php?storageUnit='+decodedText, function (data) {
+        $.getJSON('https://grammermx.com/Inventario/dao/consultaStorageUnit.php?storageUnit=' + decodedText, function (data) {
 
             if (data.Estatus) {
                 Swal.fire({
@@ -646,8 +644,8 @@ if (strlen($nomina) == 7) {
             } else {
                 for (var i = 0; i < data.data.length; i++) {
                     if (data.data[i].Id_StorageUnit) {
-                        numeroParteUnit=data.data[i].Numero_Parte;
-                        if (numeroParteUnit===numeroParte){
+                        numeroParteUnit = data.data[i].Numero_Parte;
+                        if (numeroParteUnit === numeroParte) {
                             if (addedStorageUnits[data.data[i].Id_StorageUnit]) {
                                 return;
                             }
@@ -657,7 +655,7 @@ if (strlen($nomina) == 7) {
                                 cantidad: data.data[i].Cantidad
                             };
 
-                            cantidad=data.data[i].Cantidad;
+                            cantidad = data.data[i].Cantidad;
                             console.log(`Code matched = ${decodedText}`, decodedResult);
                             document.getElementById("txtStorageUnit").value = decodedText;
                             //document.getElementById("readerDos").style.display = 'none';
@@ -674,7 +672,7 @@ if (strlen($nomina) == 7) {
                             //html5QrcodeScannerUnit.pause();
                             Swal.fire({
                                 title: "Storage unit escaneado",
-                                text: "Unit : "+data.data[i].Id_StorageUnit,
+                                text: "Unit : " + data.data[i].Id_StorageUnit,
                                 icon: "success"
                             });
                         } else {
@@ -703,7 +701,7 @@ if (strlen($nomina) == 7) {
     function escaneoUnit() {
         html5QrcodeScannerUnit = new Html5QrcodeScanner(
             "readerDos",
-            { fps: 10, qrbox: {width: 250, height: 250} },
+            {fps: 10, qrbox: {width: 250, height: 250}},
             /* verbose= */ false);
         document.getElementById("readerDos").style.display = 'block';
         html5QrcodeScannerUnit.render(lecturaCorrectaUnit, errorLecturaUnit);
@@ -776,10 +774,8 @@ if (strlen($nomina) == 7) {
     }
 
 
-
-
     function lecturaCorrectaUnitAbierto(decodedText, decodedResult) {
-        $.getJSON('https://grammermx.com/Inventario/dao/consultaStorageUnit.php?storageUnit='+decodedText, function (data) {
+        $.getJSON('https://grammermx.com/Inventario/dao/consultaStorageUnit.php?storageUnit=' + decodedText, function (data) {
 
             if (data.Estatus) {
                 Swal.fire({
@@ -790,8 +786,8 @@ if (strlen($nomina) == 7) {
             } else {
                 for (var i = 0; i < data.data.length; i++) {
                     if (data.data[i].Id_StorageUnit) {
-                        numeroParteUnit=data.data[i].Numero_Parte;
-                        if (numeroParteUnit===numeroParte){
+                        numeroParteUnit = data.data[i].Numero_Parte;
+                        if (numeroParteUnit === numeroParte) {
                             document.getElementById("txtStorageUnitA").value = decodedText;
                             document.getElementById("txtNumeroParteA").value = numeroParteUnit;
                             html5QrcodeScannerUnitA.clear();
@@ -799,7 +795,7 @@ if (strlen($nomina) == 7) {
                             document.getElementById("readerAbierto").style.display = 'none';
                             Swal.fire({
                                 title: "Storage unit escaneado",
-                                text: "Unit : "+data.data[i].Id_StorageUnit,
+                                text: "Unit : " + data.data[i].Id_StorageUnit,
                                 icon: "success"
                             });
                         } else {
@@ -828,7 +824,7 @@ if (strlen($nomina) == 7) {
     function escaneoUnitAbierto() {
         html5QrcodeScannerUnitA = new Html5QrcodeScanner(
             "readerAbierto",
-            { fps: 10, qrbox: {width: 250, height: 250} },
+            {fps: 10, qrbox: {width: 250, height: 250}},
             /* verbose= */ false);
         document.getElementById("readerAbierto").style.display = 'block';
         html5QrcodeScannerUnitA.render(lecturaCorrectaUnitAbierto, errorLecturaAbierto);
@@ -854,27 +850,27 @@ if (strlen($nomina) == 7) {
             cantidad: cantidadA
         };
 
-            var table = document.getElementById("data-table");
-            var row = table.insertRow(-1);
-            var cell1 = row.insertCell(0);
-            var cell2 = row.insertCell(1);
-            var cell3 = row.insertCell(2);
-            cell1.innerHTML = storageA;
-            cell2.innerHTML = numeroParteA;
-            cell3.innerHTML = cantidadA;
+        var table = document.getElementById("data-table");
+        var row = table.insertRow(-1);
+        var cell1 = row.insertCell(0);
+        var cell2 = row.insertCell(1);
+        var cell3 = row.insertCell(2);
+        cell1.innerHTML = storageA;
+        cell2.innerHTML = numeroParteA;
+        cell3.innerHTML = cantidadA;
 
-            document.getElementById("btnCerrarModal").click();
+        document.getElementById("btnCerrarModal").click();
 
-            document.getElementById("txtStorageUnitA").value = "";
-            document.getElementById("txtNumeroParteA").value = "";
-            document.getElementById("txtCantidadA").value = "";
+        document.getElementById("txtStorageUnitA").value = "";
+        document.getElementById("txtNumeroParteA").value = "";
+        document.getElementById("txtCantidadA").value = "";
 
-            Swal.fire({
-                title: "Storage unit escaneado",
-                text: "Unit : " + storageA,
-                icon: "success"
-            });
-            document.getElementById("txtStorageUnit").value = '';
+        Swal.fire({
+            title: "Storage unit escaneado",
+            text: "Unit : " + storageA,
+            icon: "success"
+        });
+        document.getElementById("txtStorageUnit").value = '';
     }
 
     async function enviarDatosPro() {
@@ -884,7 +880,7 @@ if (strlen($nomina) == 7) {
         var cantidadAnterior = document.getElementById("lblCantidad").innerText;
 
         if (cantidad === cantidadAnterior || await confirmarCambio()) {
-            enviarSolicitud('<?php echo $nomina;?>-'+nombre, marbete, cantidad,auxConteo);
+            enviarSolicitud('<?php echo $nomina;?>-' + nombre, marbete, cantidad, auxConteo);
         }
     }
 
@@ -907,7 +903,7 @@ if (strlen($nomina) == 7) {
         });
     }
 
-    function enviarSolicitud(nombre, marbete, cantidad,conteo) {
+    function enviarSolicitud(nombre, marbete, cantidad, conteo) {
         var formData = new FormData();
         formData.append('nombre', nombre);
         formData.append('folioMarbete', marbete);
@@ -978,7 +974,7 @@ if (strlen($nomina) == 7) {
         });
     }
 
-    function agregarSun(sun, marberte,estatus,cantidad,numeroParte,event) {
+    function agregarSun(sun, marberte, estatus, cantidad, numeroParte, event) {
 
         var formData = new FormData();
 
@@ -1006,8 +1002,8 @@ if (strlen($nomina) == 7) {
                     //cell1.contentEditable = "true";
                     //cell2.contentEditable = "true";
                     cell3.contentEditable = "true";
-                    totalUnit = totalUnit+parseFloat(cantidad);
-                    document.getElementById("txtTotalUnit").innerText = 'Total storage unit : '+totalUnit;
+                    totalUnit = totalUnit + parseFloat(cantidad);
+                    document.getElementById("txtTotalUnit").innerText = 'Total storage unit : ' + totalUnit;
 
                     event.target.closest('tr').remove();
 
@@ -1018,13 +1014,13 @@ if (strlen($nomina) == 7) {
             });
     }
 
-    document.getElementById('scanner_input').addEventListener('keyup', function(event) {
+    document.getElementById('scanner_input').addEventListener('keyup', function (event) {
         if (event.key === 'Enter' || event.keyCode === 13) {
             manualMarbete();
         }
     });
 
-    document.getElementById('txtCantidad').addEventListener('keyup', function(event) {
+    document.getElementById('txtCantidad').addEventListener('keyup', function (event) {
         if (event.key === 'Enter' || event.keyCode === 13) {
             enviarDatosPro();
         }

@@ -178,19 +178,21 @@ if (strlen($nomina) == 7) {
                                 <div class="flex-fill">
                                     <span class="card-title">Numero de parte</span>
                                     <h4 class="mb-0" id="lblNumeroParte"></h4>
-                                    <input type="text" id="lblNumeroParte">
+                                    <input type="text" id="lblNumeroParte" class="form-control">
                                 </div>
                                 <div class="flex-fill text-right">
                                     <p class="mb-0 small" id="lblCosto"></p>
                                     <p class="text-muted mb-0 small">Pesos</p>
                                 </div>
                             </div>
+                            <hr>
                             <div class="d-flex">
                                 <div class="flex-fill">
                                     <span class="card-title">Cantidad Real</span>
                                     <h4 class="mb-0" id="lblCantidad"> <span id="lblUm"></span></h4>
                                 </div>
                             </div>
+                            <hr>
                             <div class="d-flex" >
                                 <div class="flex-fill">
                                     <span class="card-title">Cantidad Sap</span>
@@ -202,7 +204,7 @@ if (strlen($nomina) == 7) {
                                 <div class="flex-fill">
                                     <span class="card-title">Descripción</span>
                                     <h4 class="mb-0" id="lblDescripcion"></h4>
-                                    <input type="text" id="lblDescripcion">
+                                    <input type="text" id="lblDescripcion" class="form-control">
                                 </div>
                             </div>
                             <hr>
@@ -210,7 +212,7 @@ if (strlen($nomina) == 7) {
                                 <div class="flex-fill">
                                     <span class="card-title">Storage Bin</span>
                                     <h4 class="mb-0" id="lblStorageBin"></h4>
-                                    <input type="text" id="lblStorageBin">
+                                    <input type="text" id="lblStorageBin" class="form-control">
                                 </div>
                             </div>
                             <hr>

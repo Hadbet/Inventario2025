@@ -180,10 +180,6 @@ if (strlen($nomina) == 7) {
                                     <h4 class="mb-0" id="lblNumeroParte"></h4>
                                     <input type="text" id="lblNumeroParte" class="form-control">
                                 </div>
-                                <div class="flex-fill text-right">
-                                    <p class="mb-0 small" id="lblCosto"></p>
-                                    <p class="text-muted mb-0 small">Pesos</p>
-                                </div>
                             </div>
                             <hr>
                             <div class="d-flex">
@@ -204,7 +200,6 @@ if (strlen($nomina) == 7) {
                                 <div class="flex-fill">
                                     <span class="card-title">Descripción</span>
                                     <h4 class="mb-0" id="lblDescripcion"></h4>
-                                    <input type="text" id="lblDescripcion" class="form-control">
                                 </div>
                             </div>
                             <hr>
@@ -221,6 +216,10 @@ if (strlen($nomina) == 7) {
                                     <span class="card-title">Valor monetario conteo</span>
                                     <h4 class="mb-0" id="lblMontoTotal"></h4>
                                 </div>
+                                <div class="flex-fill text-right">
+                                    <p class="mb-0 small" id="lblCosto"></p>
+                                    <p class="text-muted mb-0 small">Pesos</p>
+                                </div>
                             </div>
                             <hr>
                             <div class="row align-items-center">
@@ -234,9 +233,6 @@ if (strlen($nomina) == 7) {
                                     <p class="small text-muted mb-1" id="lblRol">Verificador</p>
                                 </div>
                             </div>
-                            <hr>
-                            <button id="btnFin" class="btn mb-2 btn-success float-right text-white" onclick="enviarDatosPro()">Finalizar Captura<span
-                                        class="fe fe-chevron-right fe-16 ml-2" ></span></button>
                         </div> <!-- .card-body -->
                     </div> <!-- .card -->
                 </div> <!-- /.col -->

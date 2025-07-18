@@ -365,17 +365,24 @@ if (strlen($nomina) == 7) {
                             cantidad = data.data[0].SegundoConteo;
                             auxArea = data.data[0].Area;
                             var usuario = data.data[0].Usuario;
-                            var separado = usuario.split("-"); // Esto dividirá la cadena en dos partes en el lugar donde se encuentra el guión.
-                            var numeroNomina = separado[0]; // Esto te dará la primera parte, que es el número de nómina.
-                            var nombre = separado[1]; // Esto te dará la segunda parte, que es el nombre.
+                            var separado = usuario.split("-");
+                            var numeroNomina = separado[0];
+                            var nombre = separado[1];
                             document.getElementById("reader").style.display = 'none';
                             document.getElementById("lblFolio").innerHTML = marbete;
                             document.getElementById("pasoTres").style.display = 'block';
                             document.getElementById("pasoUno").style.display = 'none';
                             document.getElementById("lblStorageBin").innerText = storageBin;
-                            document.getElementById("lblNumeroParte").innerText = numeroParte;
+                            document.getElementById("txtNumeroParte").innerText = numeroParte;
                             document.getElementById("lblCantidad").innerText = data.data[0].SegundoConteo;
-                            cargaPrimer(numeroParte);
+
+                            if (numeroParte !== ""){
+                                document.getElementById("txtNumeroParte").disabled = true;
+                            }else{
+                                document.getElementById("txtNumeroParte").disabled = false;
+                            }
+
+                            cargaNumeroParte();
 
                         } else {
                             numeroParte = data.data[i].NumeroParte;

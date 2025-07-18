@@ -167,37 +167,7 @@ if (strlen($nomina) == 7) {
         <div class="container-fluid" id="pasoTres" style="display: none">
             <div class="row">
 
-                <div class="col-md-6 col-xl-6 mb-4">
-                    <div class="card shadow">
-                        <div class="card-body">
-                            <p class="mb-3"><strong>Primer Conteo</strong></p>
-                            <label for="basic-url">Cantidad</label>
-                            <div class="input-group mb-3">
-                                <input type="number" id="txtCantidadPrimer" disabled class="form-control" aria-label="Recipient's username" autocomplete="off" aria-describedby="basic-addon2">
-                                <div class="input-group-append">
-                                    <span class="input-group-text" id="txtUnidadMedida" style=""></span>
-                                </div>
-                            </div>
-                        </div> <!-- .card-body -->
-                    </div> <!-- .card -->
-                </div> <!-- .col -->
-
-                <div class="col-md-6 col-xl-6 mb-4">
-                    <div class="card shadow">
-                        <div class="card-body">
-                            <p class="mb-3"><strong>Segundo Conteo</strong></p>
-                            <label for="basic-url">Cantidad</label>
-                            <div class="input-group mb-3">
-                                <input type="number" id="txtCantidadSegundo" disabled class="form-control" aria-label="Recipient's username" autocomplete="off" aria-describedby="basic-addon2">
-                                <div class="input-group-append">
-                                    <span class="input-group-text" id="txtUnidadMedida" style=""></span>
-                                </div>
-                            </div>
-                        </div> <!-- .card-body -->
-                    </div> <!-- .card -->
-                </div> <!-- .col -->
-
-                <div class="col-md-6">
+                <div class="col-md-12">
                     <div class="card shadow">
                         <div class="card-header">
                             <span class="card-title">Marbete : <span id="lblFolio"></span></span>
@@ -208,19 +178,20 @@ if (strlen($nomina) == 7) {
                                 <div class="flex-fill">
                                     <span class="card-title">Numero de parte</span>
                                     <h4 class="mb-0" id="lblNumeroParte"></h4>
+                                    <input type="text" id="lblNumeroParte">
                                 </div>
                                 <div class="flex-fill text-right">
                                     <p class="mb-0 small" id="lblCosto"></p>
                                     <p class="text-muted mb-0 small">Pesos</p>
                                 </div>
                             </div>
-                            <div class="d-flex" style="display: none !important">
+                            <div class="d-flex">
                                 <div class="flex-fill">
                                     <span class="card-title">Cantidad Real</span>
                                     <h4 class="mb-0" id="lblCantidad"> <span id="lblUm"></span></h4>
                                 </div>
                             </div>
-                            <div class="d-flex" style="display: none !important">
+                            <div class="d-flex" >
                                 <div class="flex-fill">
                                     <span class="card-title">Cantidad Sap</span>
                                     <h4 class="mb-0" id="lblCantidadSap"> <span id="lblUm"></span></h4>
@@ -231,6 +202,7 @@ if (strlen($nomina) == 7) {
                                 <div class="flex-fill">
                                     <span class="card-title">Descripción</span>
                                     <h4 class="mb-0" id="lblDescripcion"></h4>
+                                    <input type="text" id="lblDescripcion">
                                 </div>
                             </div>
                             <hr>
@@ -238,6 +210,7 @@ if (strlen($nomina) == 7) {
                                 <div class="flex-fill">
                                     <span class="card-title">Storage Bin</span>
                                     <h4 class="mb-0" id="lblStorageBin"></h4>
+                                    <input type="text" id="lblStorageBin">
                                 </div>
                             </div>
                             <hr>
@@ -265,6 +238,45 @@ if (strlen($nomina) == 7) {
                         </div> <!-- .card-body -->
                     </div> <!-- .card -->
                 </div> <!-- /.col -->
+
+
+                <div class="col-md-6 col-xl-6 mb-4">
+                    <div class="card shadow">
+                        <div class="card-body">
+                            <p class="mb-3"><strong>Primer Conteo</strong></p>
+                            <label for="basic-url">Cantidad</label>
+                            <div class="input-group mb-3">
+                                <input type="number" id="txtCantidadPrimer" disabled class="form-control" aria-label="Recipient's username" autocomplete="off" aria-describedby="basic-addon2">
+                                <div class="input-group-append">
+                                    <span class="input-group-text" id="txtUnidadMedida" style=""></span>
+                                </div>
+                            </div>
+                            <hr>
+                            <button id="btnFin" class="btn mb-2 btn-success float-right text-white" onclick="actualizarConteo(1)">Finalizar Captura<span
+                                        class="fe fe-chevron-right fe-16 ml-2" ></span></button>
+                        </div> <!-- .card-body -->
+                    </div> <!-- .card -->
+                </div> <!-- .col -->
+
+                <div class="col-md-6 col-xl-6 mb-4">
+                    <div class="card shadow">
+                        <div class="card-body">
+                            <p class="mb-3"><strong>Segundo Conteo</strong></p>
+                            <label for="basic-url">Cantidad</label>
+                            <div class="input-group mb-3">
+                                <input type="number" id="txtCantidadSegundo" disabled class="form-control" aria-label="Recipient's username" autocomplete="off" aria-describedby="basic-addon2">
+                                <div class="input-group-append">
+                                    <span class="input-group-text" id="txtUnidadMedida" style=""></span>
+                                </div>
+                            </div>
+                            <hr>
+                            <button id="btnFin" class="btn mb-2 btn-success float-right text-white" onclick="actualizarConteo(2)">Finalizar Captura<span
+                                        class="fe fe-chevron-right fe-16 ml-2" ></span></button>
+                        </div> <!-- .card-body -->
+                    </div> <!-- .card -->
+                </div> <!-- .col -->
+
+
             </div> <!-- .row -->
         </div> <!-- .container-fluid -->
 

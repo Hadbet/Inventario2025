@@ -166,42 +166,26 @@ if (strlen($nomina) == 7) {
 
         <div class="container-fluid" id="pasoTres" style="display: none">
             <div class="row">
-                <div class="col-md-6">
-                    <div class="card shadow mb-4">
+
+                <div class="col-md-6 col-xl-6 mb-4">
+                    <div class="card shadow">
                         <div class="card-body">
-                            <span class="card-title">Marbete : <span id="lblFolio"></span></span>
                             <p class="mb-3"><strong>Primer Conteo</strong></p>
-
-                            <label for="basic-url">Número de parte</label>
-                            <div class="input-group mb-3">
-                                <input type="text" id="txtNumeroParte" class="form-control" autocomplete="off"  aria-label="Recipient's username" aria-describedby="button-addon2">
-                            </div>
-
                             <label for="basic-url">Cantidad</label>
                             <div class="input-group mb-3">
-                                <input type="number" id="txtCantidad" disabled class="form-control" aria-label="Recipient's username" autocomplete="off" aria-describedby="basic-addon2">
+                                <input type="number" id="txtCantidadPrimer" disabled class="form-control" aria-label="Recipient's username" autocomplete="off" aria-describedby="basic-addon2">
                                 <div class="input-group-append">
                                     <span class="input-group-text" id="txtUnidadMedida" style=""></span>
                                 </div>
                             </div>
-
-                            <label for="basic-url">Storage Bin</label>
-                            <div class="input-group mb-3">
-                                <input type="text" id="txtStorageBin" disabled class="form-control" aria-label="Recipient's username" autocomplete="off" aria-describedby="basic-addon2">
-                            </div>
-
-                        </div>
-                    </div>
-                </div> <!-- /.col -->
+                        </div> <!-- .card-body -->
+                    </div> <!-- .card -->
+                </div> <!-- .col -->
 
                 <div class="col-md-6 col-xl-6 mb-4">
                     <div class="card shadow">
-                        <div class="card-header">
-                            <a class="float-right small text-muted" href="#!"><i class="fe fe-more-vertical fe-12"></i></a>
-                        </div>
                         <div class="card-body">
                             <p class="mb-3"><strong>Segundo Conteo</strong></p>
-
                             <label for="basic-url">Cantidad</label>
                             <div class="input-group mb-3">
                                 <input type="number" id="txtCantidadSegundo" disabled class="form-control" aria-label="Recipient's username" autocomplete="off" aria-describedby="basic-addon2">
@@ -209,11 +193,78 @@ if (strlen($nomina) == 7) {
                                     <span class="input-group-text" id="txtUnidadMedida" style=""></span>
                                 </div>
                             </div>
-
                         </div> <!-- .card-body -->
                     </div> <!-- .card -->
                 </div> <!-- .col -->
 
+                <div class="col-md-6">
+                    <div class="card shadow">
+                        <div class="card-header">
+                            <span class="card-title">Marbete : <span id="lblFolio"></span></span>
+                            <a class="float-right small text-muted" href="#!"><i class="fe fe-more-vertical fe-12"></i></a>
+                        </div>
+                        <div class="card-body my-n2">
+                            <div class="d-flex">
+                                <div class="flex-fill">
+                                    <span class="card-title">Numero de parte</span>
+                                    <h4 class="mb-0" id="lblNumeroParte"></h4>
+                                </div>
+                                <div class="flex-fill text-right">
+                                    <p class="mb-0 small" id="lblCosto"></p>
+                                    <p class="text-muted mb-0 small">Pesos</p>
+                                </div>
+                            </div>
+                            <div class="d-flex" style="display: none !important">
+                                <div class="flex-fill">
+                                    <span class="card-title">Cantidad Real</span>
+                                    <h4 class="mb-0" id="lblCantidad"> <span id="lblUm"></span></h4>
+                                </div>
+                            </div>
+                            <div class="d-flex" style="display: none !important">
+                                <div class="flex-fill">
+                                    <span class="card-title">Cantidad Sap</span>
+                                    <h4 class="mb-0" id="lblCantidadSap"> <span id="lblUm"></span></h4>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="d-flex">
+                                <div class="flex-fill">
+                                    <span class="card-title">Descripción</span>
+                                    <h4 class="mb-0" id="lblDescripcion"></h4>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="d-flex">
+                                <div class="flex-fill">
+                                    <span class="card-title">Storage Bin</span>
+                                    <h4 class="mb-0" id="lblStorageBin"></h4>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="d-flex">
+                                <div class="flex-fill">
+                                    <span class="card-title">Valor monetario conteo</span>
+                                    <h4 class="mb-0" id="lblMontoTotal"></h4>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row align-items-center">
+                                <div class="col-auto">
+                                    <a href="profile-posts.html" class="avatar avatar-md">
+                                        <img src="https://grammermx.com/Fotos/<?php echo $nomina?>.png" alt="..." class="avatar-img rounded-circle">
+                                    </a>
+                                </div>
+                                <div class="col ml-n2">
+                                    <strong class="mb-1" id="lblNombre"><?php echo $nombre?></strong><span class="dot dot-lg bg-success ml-1"></span>
+                                    <p class="small text-muted mb-1" id="lblRol">Verificador</p>
+                                </div>
+                            </div>
+                            <hr>
+                            <button id="btnFin" class="btn mb-2 btn-success float-right text-white" onclick="enviarDatosPro()">Finalizar Captura<span
+                                        class="fe fe-chevron-right fe-16 ml-2" ></span></button>
+                        </div> <!-- .card-body -->
+                    </div> <!-- .card -->
+                </div> <!-- /.col -->
             </div> <!-- .row -->
         </div> <!-- .container-fluid -->
 

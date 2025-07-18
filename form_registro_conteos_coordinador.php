@@ -230,7 +230,7 @@ if (strlen($nomina) == 7) {
                                 </div>
                                 <div class="col ml-n2">
                                     <strong class="mb-1" id="lblNombre"><?php echo $nombre?></strong><span class="dot dot-lg bg-success ml-1"></span>
-                                    <p class="small text-muted mb-1" id="lblRol">Verificador</p>
+                                    <p class="small text-muted mb-1" id="lblRol">Super Usuario</p>
                                 </div>
                             </div>
                         </div> <!-- .card-body -->
@@ -244,13 +244,13 @@ if (strlen($nomina) == 7) {
                             <p class="mb-3"><strong>Primer Conteo</strong></p>
                             <label for="basic-url">Cantidad</label>
                             <div class="input-group mb-3">
-                                <input type="number" id="txtCantidadPrimer" disabled class="form-control" aria-label="Recipient's username" autocomplete="off" aria-describedby="basic-addon2">
+                                <input type="number" id="txtCantidadPrimer" class="form-control" aria-label="Recipient's username" autocomplete="off" aria-describedby="basic-addon2">
                                 <div class="input-group-append">
                                     <span class="input-group-text" id="txtUnidadMedida" style=""></span>
                                 </div>
                             </div>
                             <hr>
-                            <button id="btnFin" class="btn mb-2 btn-success float-right text-white" onclick="actualizarConteo(1)">Finalizar Captura<span
+                            <button id="btnFin" class="btn mb-2 btn-success float-right text-white" onclick="actualizarConteo(1)">Capturar<span
                                         class="fe fe-chevron-right fe-16 ml-2" ></span></button>
                         </div> <!-- .card-body -->
                     </div> <!-- .card -->
@@ -262,13 +262,13 @@ if (strlen($nomina) == 7) {
                             <p class="mb-3"><strong>Segundo Conteo</strong></p>
                             <label for="basic-url">Cantidad</label>
                             <div class="input-group mb-3">
-                                <input type="number" id="txtCantidadSegundo" disabled class="form-control" aria-label="Recipient's username" autocomplete="off" aria-describedby="basic-addon2">
+                                <input type="number" id="txtCantidadSegundo" class="form-control" aria-label="Recipient's username" autocomplete="off" aria-describedby="basic-addon2">
                                 <div class="input-group-append">
                                     <span class="input-group-text" id="txtUnidadMedida" style=""></span>
                                 </div>
                             </div>
                             <hr>
-                            <button id="btnFin" class="btn mb-2 btn-success float-right text-white" onclick="actualizarConteo(2)">Finalizar Captura<span
+                            <button id="btnFin" class="btn mb-2 btn-success float-right text-white" onclick="actualizarConteo(2)">Capturar<span
                                         class="fe fe-chevron-right fe-16 ml-2" ></span></button>
                         </div> <!-- .card-body -->
                     </div> <!-- .card -->

@@ -459,7 +459,7 @@ if (strlen($nomina) == 7) {
 
     function cargaNumeroParte() {
 
-        $.getJSON('https://grammermx.com/Logistica/Inventario2025/dao/consultaParte.php?parte=' + document.getElementById("txtNumeroParte").value+'&area='+auxArea, function (data) {
+        $.getJSON('https://grammermx.com/Logistica/Inventario2025/dao/consultaParteSuper.php?parte=' + document.getElementById("txtNumeroParte").value+'&area='+auxArea, function (data) {
             for (var i = 0; i < data.data.length; i++) {
                 if (data.data[i].GrammerNo) {
                     document.getElementById('lblDescripcion').innerText = data.data[i].Descripcion;

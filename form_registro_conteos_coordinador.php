@@ -178,7 +178,7 @@ if (strlen($nomina) == 7) {
                                 <div class="flex-fill">
                                     <span class="card-title">Numero de parte</span>
                                     <h4 class="mb-0" id="lblNumeroParte"></h4>
-                                    <input type="text" id="lblNumeroParte" class="form-control">
+                                    <input type="text" id="txtNumeroParte" class="form-control" onchange="cargaNumeroParte()">
                                 </div>
                             </div>
                             <hr>
@@ -207,7 +207,6 @@ if (strlen($nomina) == 7) {
                                 <div class="flex-fill">
                                     <span class="card-title">Storage Bin</span>
                                     <h4 class="mb-0" id="lblStorageBin"></h4>
-                                    <input type="text" id="lblStorageBin" class="form-control">
                                 </div>
                             </div>
                             <hr>
@@ -342,6 +341,7 @@ if (strlen($nomina) == 7) {
 
     var auxConteo = "3";
     var totalUnit = 0.0;
+    var auxArea = 0;
 
     function manualMarbete() {
 
@@ -363,6 +363,7 @@ if (strlen($nomina) == 7) {
                             numeroParte = data.data[0].NumeroParte;
                             storageBin = data.data[0].StorageBin;
                             cantidad = data.data[0].SegundoConteo;
+                            auxArea = data.data[0].Area;
                             var usuario = data.data[0].Usuario;
                             var separado = usuario.split("-"); // Esto dividirá la cadena en dos partes en el lugar donde se encuentra el guión.
                             var numeroNomina = separado[0]; // Esto te dará la primera parte, que es el número de nómina.
@@ -443,6 +444,31 @@ if (strlen($nomina) == 7) {
                     var resultado = costoUnitario * cantidad;
                     document.getElementById('lblMontoTotal').innerText = resultado.toFixed(2);
                     document.getElementById('txtCantidad').focus();
+                    bandera = 1;
+                } else {
+                    bandera = 0;
+                    Swal.fire({
+                        title: "El numero de parte no existe",
+                        text: "Verificalo con la mesa de control",
+                        icon: "error"
+                    });
+                }
+            }
+        });
+    }
+
+    function cargaNumeroParte() {
+
+        $.getJSON('https://grammermx.com/Logistica/Inventario2025/dao/consultaParte.php?parte=' + document.getElementById("txtNumeroParte").value+'&area='+auxArea, function (data) {
+            for (var i = 0; i < data.data.length; i++) {
+                if (data.data[i].GrammerNo) {
+                    document.getElementById('lblDescripcion').innerText = data.data[i].Descripcion;
+                    document.getElementById('txtUnidadMedida').innerText = data.data[i].UM;
+                    costoUnitario = data.data[i].Costo / data.data[i].Por;
+                    document.getElementById('lblCosto').innerText = costoUnitario;
+                    var resultado = costoUnitario * cantidad;
+                    document.getElementById('lblMontoTotal').innerText = resultado.toFixed(2);
+                    document.getElementById('lblCantidadSap').innerText = data.data[i].Cantidad;
                     bandera = 1;
                 } else {
                     bandera = 0;

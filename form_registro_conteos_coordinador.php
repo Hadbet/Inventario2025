@@ -167,7 +167,7 @@ if (strlen($nomina) == 7) {
         <div class="container-fluid" id="pasoTres" style="display: none">
             <div class="row">
 
-                <div class="col-md-12">
+                <div class="col-md-12 mb-4">
                     <div class="card shadow">
                         <div class="card-header">
                             <span class="card-title">Marbete : <span id="lblFolio"></span></span>

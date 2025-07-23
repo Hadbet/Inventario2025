@@ -381,7 +381,6 @@ if (strlen($nomina) == 7) {
                             }else{
                                 document.getElementById("txtNumeroParte").disabled = false;
                             }
-
                             cargaNumeroParte();
 
                         } else {
@@ -1062,11 +1061,18 @@ if (strlen($nomina) == 7) {
         }
     });
 
+    /*
     document.getElementById('txtCantidad').addEventListener('keyup', function (event) {
         if (event.key === 'Enter' || event.keyCode === 13) {
             enviarDatosPro();
         }
-    });
+    });*/
+
+
+
+    //**********************PRODUCCION*************************
+
+
 </script>
 </body>
 </html>

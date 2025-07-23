@@ -472,6 +472,7 @@ if (strlen($nomina) == 7) {
                     if (data.data[i].GrammerNo) {
                         document.getElementById('lblDescripcion').innerText = data.data[i].Descripcion;
                         document.getElementById('txtUnidadMedida').innerText = data.data[i].UM;
+                        document.getElementById('txtUnidadMedidaDos').innerText = data.data[i].UM;
                         costoUnitario = data.data[i].Costo / data.data[i].Por;
                         document.getElementById('lblCosto').innerText = costoUnitario;
                         var resultado = costoUnitario * cantidad;

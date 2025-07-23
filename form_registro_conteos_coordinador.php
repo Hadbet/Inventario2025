@@ -263,7 +263,7 @@ if (strlen($nomina) == 7) {
                             <div class="input-group mb-3">
                                 <input type="number" id="txtCantidadSegundo" class="form-control" aria-label="Recipient's username" autocomplete="off" aria-describedby="basic-addon2">
                                 <div class="input-group-append">
-                                    <span class="input-group-text" id="txtUnidadMedida" style=""></span>
+                                    <span class="input-group-text" id="txtUnidadMedidaDos" style=""></span>
                                 </div>
                             </div>
                             <hr>
@@ -445,6 +445,7 @@ if (strlen($nomina) == 7) {
                 if (data.data[i].GrammerNo) {
                     document.getElementById('lblDescripcion').innerText = data.data[i].Descripcion;
                     document.getElementById('txtUnidadMedida').innerText = data.data[i].UM;
+                    document.getElementById('txtUnidadMedidaDos').innerText = data.data[i].UM;
                     costoUnitario = data.data[i].Costo / data.data[i].Por;
                     document.getElementById('lblCosto').innerText = costoUnitario;
                     var resultado = costoUnitario * cantidad;

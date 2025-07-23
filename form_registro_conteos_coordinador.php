@@ -378,9 +378,9 @@ if (strlen($nomina) == 7) {
 
                             if (numeroParte !== ""){
                                 document.getElementById("txtNumeroParte").disabled = true;
+                                cargaNumeroParte();
                             }else{
                                 document.getElementById("txtNumeroParte").disabled = false;
-                                cargaNumeroParte();
                             }
 
                         } else {

@@ -466,25 +466,34 @@ if (strlen($nomina) == 7) {
     function cargaNumeroParte() {
 
         $.getJSON('https://grammermx.com/Logistica/Inventario2025/dao/consultaParteSuper.php?parte=' + document.getElementById("txtNumeroParte").value+'&area='+auxArea, function (data) {
-            for (var i = 0; i < data.data.length; i++) {
-                if (data.data[i].GrammerNo) {
-                    document.getElementById('lblDescripcion').innerText = data.data[i].Descripcion;
-                    document.getElementById('txtUnidadMedida').innerText = data.data[i].UM;
-                    costoUnitario = data.data[i].Costo / data.data[i].Por;
-                    document.getElementById('lblCosto').innerText = costoUnitario;
-                    var resultado = costoUnitario * cantidad;
-                    document.getElementById('lblMontoTotal').innerText = resultado.toFixed(2);
-                    document.getElementById('lblCantidadSap').innerText = data.data[i].Cantidad;
-                    bandera = 1;
-                } else {
-                    bandera = 0;
-                    Swal.fire({
-                        title: "El numero de parte no existe",
-                        text: "Verificalo con la mesa de control",
-                        icon: "error"
-                    });
+            if (data.data.length > 0) {
+                for (var i = 0; i < data.data.length; i++) {
+                    if (data.data[i].GrammerNo) {
+                        document.getElementById('lblDescripcion').innerText = data.data[i].Descripcion;
+                        document.getElementById('txtUnidadMedida').innerText = data.data[i].UM;
+                        costoUnitario = data.data[i].Costo / data.data[i].Por;
+                        document.getElementById('lblCosto').innerText = costoUnitario;
+                        var resultado = costoUnitario * cantidad;
+                        document.getElementById('lblMontoTotal').innerText = resultado.toFixed(2);
+                        document.getElementById('lblCantidadSap').innerText = data.data[i].Cantidad;
+                        bandera = 1;
+                    } else {
+                        bandera = 0;
+                        Swal.fire({
+                            title: "El numero de parte no existe",
+                            text: "Verificalo con la mesa de control",
+                            icon: "error"
+                        });
+                    }
                 }
+            }else{
+                Swal.fire({
+                    title: "El numero de parte no existe o no pertenece al bin",
+                    text: "Verificalo con la mesa de control",
+                    icon: "error"
+                });
             }
+
         });
     }
 

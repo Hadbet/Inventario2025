@@ -380,8 +380,8 @@ if (strlen($nomina) == 7) {
                                 document.getElementById("txtNumeroParte").disabled = true;
                             }else{
                                 document.getElementById("txtNumeroParte").disabled = false;
+                                cargaNumeroParte();
                             }
-                            cargaNumeroParte();
 
                         } else {
                             numeroParte = data.data[i].NumeroParte;

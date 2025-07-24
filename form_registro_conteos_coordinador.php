@@ -1098,7 +1098,7 @@ if (strlen($nomina) == 7) {
         formData.append('cantidad', cantidad);
         formData.append('folioMarbete', folioMarbete);
 
-        fetch('https://grammermx.com/Logistica/Inventario2025/dao/actualizarMarbeteProduccionSuper.php', {
+        fetch('https://grammermx.com/Logistica/Inventario2025/dao/actualizarMarbeteProduccionaSuper.php', {
             method: 'POST',
             body: formData
         })

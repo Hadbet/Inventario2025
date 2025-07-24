@@ -376,7 +376,6 @@ if (strlen($nomina) == 7) {
                             document.getElementById("pasoTres").style.display = 'block';
                             document.getElementById("pasoUno").style.display = 'none';
                             document.getElementById("lblStorageBin").innerText = storageBin;
-                            document.getElementById("txtNumeroParte").innerText = numeroParte;
 
                             if (cantidadPrimero !== "" || cantidadPrimero!=="0"){
                                 document.getElementById("txtCantidadPrimer").value = cantidadPrimero;
@@ -391,6 +390,7 @@ if (strlen($nomina) == 7) {
 
                             if (numeroParte !== ""){
                                 document.getElementById("txtNumeroParte").disabled = true;
+                                document.getElementById("txtNumeroParte").value = numeroParte;
                                 cargaNumeroParte(numeroParte);
                             }else{
                                 document.getElementById("txtNumeroParte").disabled = false;

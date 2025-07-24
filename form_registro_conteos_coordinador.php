@@ -466,7 +466,7 @@ if (strlen($nomina) == 7) {
 
     function cargaNumeroParte(numeroParteAux) {
 
-        if (numeroParteAux){
+        if (!numeroParteAux){
             numeroParteAux = document.getElementById("txtNumeroParte").value;
         }
 

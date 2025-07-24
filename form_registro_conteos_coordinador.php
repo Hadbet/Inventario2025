@@ -378,12 +378,12 @@ if (strlen($nomina) == 7) {
                             document.getElementById("lblStorageBin").innerText = storageBin;
                             document.getElementById("txtNumeroParte").innerText = numeroParte;
 
-                            if (!cantidadPrimero === "" || !cantidadPrimero==="0"){
+                            if (cantidadPrimero !== "" || cantidadPrimero!=="0"){
                                 document.getElementById("txtCantidadPrimer").value = cantidadPrimero;
                                 document.getElementById("lblCantidad").innerText = cantidadPrimero;
                                 cantidadFinal = cantidadPrimero;
                             }
-                            if (!cantidadSegundo === "" || !cantidadSegundo==="0"){
+                            if (cantidadSegundo !== "" || cantidadSegundo!=="0"){
                                 document.getElementById("txtCantidadSegundo").value = cantidadSegundo;
                                 document.getElementById("lblCantidad").innerText = cantidadSegundo;
                                 cantidadFinal = cantidadSegundo;

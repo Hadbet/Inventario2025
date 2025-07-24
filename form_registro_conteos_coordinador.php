@@ -336,7 +336,8 @@ if (strlen($nomina) == 7) {
     var storageBin;
 
     var numeroParteUnit;
-    var cantidad;
+    var cantidadPrimero;
+    var cantidadSegundo;
     var addedStorageUnits = {};
 
     var auxConteo = "3";
@@ -362,7 +363,8 @@ if (strlen($nomina) == 7) {
 
                             numeroParte = data.data[0].NumeroParte;
                             storageBin = data.data[0].StorageBin;
-                            cantidad = data.data[0].SegundoConteo;
+                            cantidadPrimero = data.data[0].PrimerConteo;
+                            cantidadSegundo = data.data[0].SegundoConteo;
                             auxArea = data.data[0].Area;
                             var usuario = data.data[0].Usuario;
                             var separado = usuario.split("-");
@@ -375,6 +377,13 @@ if (strlen($nomina) == 7) {
                             document.getElementById("lblStorageBin").innerText = storageBin;
                             document.getElementById("txtNumeroParte").innerText = numeroParte;
                             document.getElementById("lblCantidad").innerText = data.data[0].SegundoConteo;
+
+                            if (!cantidadPrimero === "" || !cantidadPrimero==="0"){
+                                document.getElementById("txtCantidadPrimer").value = cantidadPrimero;
+                            }
+                            if (!cantidadSegundo === "" || !cantidadSegundo==="0"){
+                                document.getElementById("txtCantidadSegundo").value = cantidadPrimero;
+                            }
 
                             if (numeroParte !== ""){
                                 document.getElementById("txtNumeroParte").disabled = true;

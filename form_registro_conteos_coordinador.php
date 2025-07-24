@@ -229,7 +229,6 @@ if (strlen($nomina) == 7) {
                     </div> <!-- .card -->
                 </div> <!-- /.col -->
 
-
                 <div class="col-md-6 col-xl-6 mb-4">
                     <div class="card shadow">
                         <div class="card-body">
@@ -265,8 +264,6 @@ if (strlen($nomina) == 7) {
                         </div> <!-- .card-body -->
                     </div> <!-- .card -->
                 </div> <!-- .col -->
-
-
             </div> <!-- .row -->
         </div> <!-- .container-fluid -->
 

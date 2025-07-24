@@ -1094,7 +1094,7 @@ if (strlen($nomina) == 7) {
         var formData = new FormData();
         formData.append('nombre', '<?php echo $nombre?>');
         formData.append('numeroParte', numeroParte);
-        formData.append('storageBin', '<?php echo $nombre?>');
+        formData.append('storageBin', '<?php echo $bin?>');
         formData.append('cantidad', cantidad);
         formData.append('folioMarbete', folioMarbete);
 

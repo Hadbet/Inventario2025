@@ -29,7 +29,7 @@ try {
 
     }
     if ($conteo == 2){
-        $stmt->bind_param("ss", $nombre,$cantidad, $marbete);
+        $stmt->bind_param("sss", $nombre,$cantidad, $marbete);
 
     }
     if ($conteo == 3){

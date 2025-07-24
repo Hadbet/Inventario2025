@@ -182,13 +182,6 @@ if (strlen($nomina) == 7) {
                                 </div>
                             </div>
                             <hr>
-                            <div class="d-flex">
-                                <div class="flex-fill">
-                                    <span class="card-title">Cantidad Real</span>
-                                    <h4 class="mb-0" id="lblCantidad"> <span id="lblUm"></span></h4>
-                                </div>
-                            </div>
-                            <hr>
                             <div class="d-flex" >
                                 <div class="flex-fill">
                                     <span class="card-title">Cantidad Sap</span>
@@ -379,12 +372,10 @@ if (strlen($nomina) == 7) {
 
                             if (cantidadPrimero !== "" || cantidadPrimero!=="0"){
                                 document.getElementById("txtCantidadPrimer").value = cantidadPrimero;
-                                document.getElementById("lblCantidad").innerText = cantidadPrimero;
                                 cantidadFinal = cantidadPrimero;
                             }
                             if (cantidadSegundo !== "" || cantidadSegundo!=="0"){
                                 document.getElementById("txtCantidadSegundo").value = cantidadSegundo;
-                                document.getElementById("lblCantidad").innerText = cantidadSegundo;
                                 cantidadFinal = cantidadSegundo;
                             }
 
@@ -529,7 +520,6 @@ if (strlen($nomina) == 7) {
         cell1.innerHTML = "";
         cell2.innerHTML = "";
         cell3.innerHTML = "";
-
     }
 
     function lecturaCorrecta(decodedText, decodedResult) {
@@ -727,13 +717,12 @@ if (strlen($nomina) == 7) {
                             cantidad = data.data[i].Cantidad;
                             console.log(`Code matched = ${decodedText}`, decodedResult);
                             document.getElementById("txtStorageUnit").value = decodedText;
-                            //document.getElementById("readerDos").style.display = 'none';
 
                             var table = document.getElementById("data-table");
-                            var row = table.insertRow(-1); // Crea una nueva fila al final de la tabla
-                            var cell1 = row.insertCell(0); // Crea una nueva celda en la fila
-                            var cell2 = row.insertCell(1); // Crea otra nueva celda en la fila
-                            var cell3 = row.insertCell(2); // Crea otra nueva celda en la fila
+                            var row = table.insertRow(-1);
+                            var cell1 = row.insertCell(0);
+                            var cell2 = row.insertCell(1);
+                            var cell3 = row.insertCell(2);
                             cell1.innerHTML = data.data[i].Id_StorageUnit;
                             cell2.innerHTML = numeroParteUnit;
                             cell3.innerHTML = cantidad;
@@ -784,7 +773,7 @@ if (strlen($nomina) == 7) {
         var rows = table.getElementsByTagName("tr");
         var addedStorageUnits = {};
 
-        for (var i = 1; i < rows.length; i++) { // Empezamos en 1 para saltar el encabezado de la tabla
+        for (var i = 1; i < rows.length; i++) {
             var cells = rows[i].getElementsByTagName("td");
             var storageUnit = cells[0].innerText;
             var numeroParte = cells[1].innerText;
@@ -795,7 +784,6 @@ if (strlen($nomina) == 7) {
                 cantidad: cantidad
             };
         }
-
 
         var storageUnits = addedStorageUnits;
 
@@ -942,16 +930,6 @@ if (strlen($nomina) == 7) {
         document.getElementById("txtStorageUnit").value = '';
     }
 
-    async function enviarDatosPro() {
-        var marbete = document.getElementById("scanner_input").value;
-        var nombre = document.getElementById("lblNombre").innerText;
-        var cantidad = document.getElementById("txtCantidad").value;
-        var cantidadAnterior = document.getElementById("lblCantidad").innerText;
-
-        if (cantidad === cantidadAnterior || await confirmarCambio()) {
-            enviarSolicitud('<?php echo $nomina;?>-' + nombre, marbete, cantidad, auxConteo);
-        }
-    }
 
     function confirmarCambio() {
         return new Promise(resolve => {
@@ -970,27 +948,6 @@ if (strlen($nomina) == 7) {
                 }
             });
         });
-    }
-
-    function enviarSolicitud(nombre, marbete, cantidad, conteo) {
-        var formData = new FormData();
-        formData.append('nombre', nombre);
-        formData.append('folioMarbete', marbete);
-        formData.append('cantidad', cantidad);
-
-        fetch('https://grammermx.com/Logistica/Inventario2025/dao/actualizarMarbeteProduccion.php', {
-            method: 'POST',
-            body: formData
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    mostrarExito();
-                } else {
-                    console.log("Hubo un error en la operación");
-                    console.log("Las unidades de almacenamiento que fallaron son: ", data.message);
-                }
-            });
     }
 
     function mostrarExito() {

@@ -378,7 +378,7 @@ if (strlen($nomina) == 7) {
 
                             if (numeroParte !== ""){
                                 document.getElementById("txtNumeroParte").disabled = true;
-                                cargaPrimer(numeroParte);
+                                cargaNumeroParte(numeroParte);
                             }else{
                                 document.getElementById("txtNumeroParte").disabled = false;
                             }
@@ -464,9 +464,13 @@ if (strlen($nomina) == 7) {
         });
     }
 
-    function cargaNumeroParte() {
+    function cargaNumeroParte(numeroParteAux) {
 
-        $.getJSON('https://grammermx.com/Logistica/Inventario2025/dao/consultaParteSuper.php?parte=' + document.getElementById("txtNumeroParte").value+'&area='+auxArea, function (data) {
+        if (numeroParteAux){
+            numeroParteAux = document.getElementById("txtNumeroParte").value;
+        }
+
+        $.getJSON('https://grammermx.com/Logistica/Inventario2025/dao/consultaParteSuper.php?parte=' + numeroParteAux+'&area='+auxArea, function (data) {
             if (data.data.length > 0) {
                 for (var i = 0; i < data.data.length; i++) {
                     if (data.data[i].GrammerNo) {

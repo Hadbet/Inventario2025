@@ -338,6 +338,7 @@ if (strlen($nomina) == 7) {
     var numeroParteUnit;
     var cantidadPrimero;
     var cantidadSegundo;
+    var cantidadFinal;
     var addedStorageUnits = {};
 
     var auxConteo = "3";
@@ -380,10 +381,12 @@ if (strlen($nomina) == 7) {
                             if (!cantidadPrimero === "" || !cantidadPrimero==="0"){
                                 document.getElementById("txtCantidadPrimer").value = cantidadPrimero;
                                 document.getElementById("lblCantidad").innerText = cantidadPrimero;
+                                cantidadFinal = cantidadPrimero;
                             }
                             if (!cantidadSegundo === "" || !cantidadSegundo==="0"){
                                 document.getElementById("txtCantidadSegundo").value = cantidadSegundo;
                                 document.getElementById("lblCantidad").innerText = cantidadSegundo;
+                                cantidadFinal = cantidadSegundo;
                             }
 
                             if (numeroParte !== ""){
@@ -489,7 +492,7 @@ if (strlen($nomina) == 7) {
                         document.getElementById('txtUnidadMedidaDos').innerText = data.data[i].UM;
                         costoUnitario = data.data[i].Costo / data.data[i].Por;
                         document.getElementById('lblCosto').innerText = costoUnitario;
-                        var resultado = costoUnitario * cantidad;
+                        var resultado = costoUnitario * cantidadFinal;
                         document.getElementById('lblMontoTotal').innerText = resultado.toFixed(2);
                         document.getElementById('lblCantidadSap').innerText = data.data[i].Cantidad;
                         bandera = 1;

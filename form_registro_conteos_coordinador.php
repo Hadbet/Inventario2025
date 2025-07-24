@@ -376,13 +376,14 @@ if (strlen($nomina) == 7) {
                             document.getElementById("pasoUno").style.display = 'none';
                             document.getElementById("lblStorageBin").innerText = storageBin;
                             document.getElementById("txtNumeroParte").innerText = numeroParte;
-                            document.getElementById("lblCantidad").innerText = data.data[0].SegundoConteo;
 
                             if (!cantidadPrimero === "" || !cantidadPrimero==="0"){
                                 document.getElementById("txtCantidadPrimer").value = cantidadPrimero;
+                                document.getElementById("lblCantidad").innerText = cantidadPrimero;
                             }
                             if (!cantidadSegundo === "" || !cantidadSegundo==="0"){
-                                document.getElementById("txtCantidadSegundo").value = cantidadPrimero;
+                                document.getElementById("txtCantidadSegundo").value = cantidadSegundo;
+                                document.getElementById("lblCantidad").innerText = cantidadSegundo;
                             }
 
                             if (numeroParte !== ""){

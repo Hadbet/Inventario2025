@@ -1092,11 +1092,12 @@ if (strlen($nomina) == 7) {
         if(tipo === 1){cantidad = document.getElementById("txtCantidadPrimer").value;}else{cantidad = document.getElementById("txtCantidadSegundo").value;}
 
         var formData = new FormData();
-        formData.append('nombre', '<?php echo $nombre?>');
+        formData.append('nombre', '<?php echo $nomina?>-<?php echo $nombre?>');
         formData.append('numeroParte', numeroParte);
         formData.append('storageBin', storageBin);
         formData.append('cantidad', cantidad);
         formData.append('folioMarbete', folioMarbete);
+        formData.append('conteo', tipo);
 
         fetch('https://grammermx.com/Logistica/Inventario2025/dao/actualizarMarbeteProduccionaSuper.php', {
             method: 'POST',

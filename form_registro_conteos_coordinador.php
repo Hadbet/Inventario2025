@@ -249,7 +249,7 @@ if (strlen($nomina) == 7) {
                                 </div>
                             </div>
                             <hr>
-                            <button id="btnFin" class="btn mb-2 btn-success float-right text-white" onclick="actualizarConteo(1)">Capturar<span
+                            <button id="btnFin" class="btn mb-2 btn-success float-right text-white" onclick="actualizarMarbeteSuper(1)">Capturar<span
                                         class="fe fe-chevron-right fe-16 ml-2" ></span></button>
                         </div> <!-- .card-body -->
                     </div> <!-- .card -->
@@ -267,7 +267,7 @@ if (strlen($nomina) == 7) {
                                 </div>
                             </div>
                             <hr>
-                            <button id="btnFin" class="btn mb-2 btn-success float-right text-white" onclick="actualizarConteo(2)">Capturar<span
+                            <button id="btnFin" class="btn mb-2 btn-success float-right text-white" onclick="actualizarMarbeteSuper(2)">Capturar<span
                                         class="fe fe-chevron-right fe-16 ml-2" ></span></button>
                         </div> <!-- .card-body -->
                     </div> <!-- .card -->
@@ -1083,6 +1083,35 @@ if (strlen($nomina) == 7) {
 
     //**********************PRODUCCION*************************
 
+    function actualizarMarbeteSuper(tipo) {
+
+        var numeroParte = document.getElementById("txtNumeroParte").value;
+        var folioMarbete = document.getElementById("scanner_input").value;
+        var cantidad;
+
+        if(tipo === 1){cantidad = document.getElementById("txtCantidadPrimer").value;}else{cantidad = document.getElementById("txtCantidadSegundo").value;}
+
+        var formData = new FormData();
+        formData.append('nombre', '<?php echo $nombre?>');
+        formData.append('numeroParte', numeroParte);
+        formData.append('storageBin', '<?php echo $nombre?>');
+        formData.append('cantidad', cantidad);
+        formData.append('folioMarbete', folioMarbete);
+
+        fetch('https://grammermx.com/Logistica/Inventario2025/dao/actualizarMarbeteProduccionSuper.php', {
+            method: 'POST',
+            body: formData
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    mostrarExito();
+                } else {
+                    console.log("Hubo un error en la operación");
+                    console.log("Las unidades de almacenamiento que fallaron son: ", data.message);
+                }
+            });
+    }
 
 </script>
 </body>

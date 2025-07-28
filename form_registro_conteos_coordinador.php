@@ -1050,8 +1050,6 @@ if (strlen($nomina) == 7) {
         }
     });*/
 
-
-
     //**********************PRODUCCION*************************
 
     function actualizarMarbeteSuper(tipo) {

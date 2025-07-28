@@ -167,6 +167,8 @@ if (strlen($nomina) == 7) {
 
                             <strong class="card-title h4">Storage Unit Faltantes</strong><br><br>
 
+                            <label for="" class="card-title h4">Total contado faltante : <strong id="lblTotalContadoFaltante"
+                                                                                        class="card-title h4"></strong></label>
                             <table id="data-table-faltantes" class="table table-hover">
                                 <thead>
                                 <tr>
@@ -313,7 +315,7 @@ if (strlen($nomina) == 7) {
     var cantidad;
     var ultimoSum = 0;
     var totalContado = 0;
-
+    var costoUnitario = 0;
     var auxConteo = 0;
     estatusConteo();
 
@@ -349,7 +351,7 @@ if (strlen($nomina) == 7) {
                     document.getElementById("txtNumeroParteAgregar").value = numeroParteF;
                     document.getElementById("pasoDos").style.display = 'block';
                     document.getElementById("pasoUno").style.display = 'none';
-
+                    costoUnitario = data.data[i].Costo / data.data[i].Por;
                     document.getElementById('txtStorageUnit').focus();
 
                     limpiarEscan();
@@ -364,6 +366,24 @@ if (strlen($nomina) == 7) {
                 }
             }
         });
+    }
+
+    function sumarCantidades() {
+        const tabla = document.getElementById('data-table-faltantes');
+        const filas = tabla.querySelectorAll('tbody tr');
+        let sumaTotal = 0;
+
+        filas.forEach(fila => {
+            const celdaCantidad = fila.cells[2]; // La columna Cantidad es el índice 2 (tercera columna)
+            const valor = parseFloat(celdaCantidad.textContent);
+
+            if (!isNaN(valor)) {
+                sumaTotal += valor;
+            }
+        });
+
+        console.log("Costo total : "+costoUnitario*sumaTotal);
+        return sumaTotal.toFixed(2);
     }
 
     function manualMarbete() {
@@ -445,8 +465,8 @@ if (strlen($nomina) == 7) {
                             icon: "error"
                         });
                     }
-
                 }
+                sumarCantidades();
             } else {
                 Swal.fire({
                     title: "El marbete no esta cargado",
@@ -1072,8 +1092,6 @@ if (strlen($nomina) == 7) {
 
 
     function manualMarbeteFaltantes() {
-
-
 
         var marbete = parseInt(document.getElementById("scanner_input").value.split('.')[0], 10);
         var conteoM = document.getElementById("scanner_input").value.split('.')[1];

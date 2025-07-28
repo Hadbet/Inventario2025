@@ -466,7 +466,6 @@ if (strlen($nomina) == 7) {
                         });
                     }
                 }
-                sumarCantidades();
             } else {
                 Swal.fire({
                     title: "El marbete no esta cargado",
@@ -698,6 +697,8 @@ if (strlen($nomina) == 7) {
                         }
                     }
                 }
+
+                sumarCantidades();
             });
         } else {
             Swal.fire({

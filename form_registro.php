@@ -374,15 +374,24 @@ if (strlen($nomina) == 7) {
         let sumaTotal = 0;
 
         filas.forEach(fila => {
-            const celdaCantidad = fila.cells[2]; // La columna Cantidad es el índice 2 (tercera columna)
-            const valor = parseFloat(celdaCantidad.textContent);
+            // Asegúrate de que las celdas existen
+            if (fila.cells.length > 2) {
+                const celdaCantidad = fila.cells[2]; // La columna Cantidad es el índice 2
+                const texto = celdaCantidad.textContent.trim();
+                const valor = parseFloat(texto);
 
-            if (!isNaN(valor)) {
-                sumaTotal += valor;
+                if (!isNaN(valor)) {
+                    sumaTotal += valor;
+                } else {
+                    console.warn(`Valor no numérico encontrado: "${texto}"`);
+                }
             }
         });
 
-        console.log("Costo total : "+costoUnitario*sumaTotal);
+        console.log("Suma total de cantidades:", sumaTotal.toFixed(2));
+        // Si tienes una variable costoUnitario definida en otro lugar:
+        // console.log("Costo total:", (costoUnitario * sumaTotal).toFixed(2));
+
         return sumaTotal.toFixed(2);
     }
 

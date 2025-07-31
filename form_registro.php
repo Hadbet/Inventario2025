@@ -397,7 +397,7 @@ if (strlen($nomina) == 7) {
                 }
             });
 
-            console.log("Suma total de cantidades:", sumaTotal+costoUnitario);
+            console.log("Suma total de cantidades:", sumaTotal*costoUnitario);
             return sumaTotal.toFixed(2);
         } catch (error) {
             console.error('Error en sumarCantidades:', error);

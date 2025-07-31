@@ -369,30 +369,60 @@ if (strlen($nomina) == 7) {
     }
 
     function sumarCantidades() {
-        const tabla = document.getElementById('data-table-faltantes');
-        const filas = tabla.querySelectorAll('tbody tr');
-        let sumaTotal = 0;
-
-        filas.forEach(fila => {
-            // Asegúrate de que las celdas existen
-            if (fila.cells.length > 2) {
-                const celdaCantidad = fila.cells[2]; // La columna Cantidad es el índice 2
-                const texto = celdaCantidad.textContent.trim();
-                const valor = parseFloat(texto);
-
-                if (!isNaN(valor)) {
-                    sumaTotal += valor;
-                } else {
-                    console.warn(`Valor no numérico encontrado: "${texto}"`);
-                }
+        try {
+            // 1. Validar que la tabla existe
+            const tabla = document.getElementById('data-table-faltantes');
+            if (!tabla) {
+                throw new Error('No se encontró la tabla con ID "data-table-faltantes"');
             }
-        });
 
-        console.log("Suma total de cantidades:", sumaTotal.toFixed(2));
-        // Si tienes una variable costoUnitario definida en otro lugar:
-        // console.log("Costo total:", (costoUnitario * sumaTotal).toFixed(2));
+            // 2. Obtener filas con validación
+            const tbody = tabla.querySelector('tbody');
+            if (!tbody) {
+                console.warn('La tabla no contiene un tbody');
+                return '0.00';
+            }
 
-        return sumaTotal.toFixed(2);
+            const filas = tbody.querySelectorAll('tr');
+            if (filas.length === 0) {
+                console.warn('La tabla no contiene filas de datos');
+                return '0.00';
+            }
+
+            // 3. Procesar cada fila
+            let sumaTotal = 0;
+            filas.forEach((fila, index) => {
+                try {
+                    // Validar estructura de la fila
+                    if (!fila.cells || fila.cells.length < 3) {
+                        console.warn(`Fila ${index + 1}: No tiene suficientes celdas (se esperaban al menos 3)`);
+                        return;
+                    }
+
+                    // Obtener y limpiar el valor
+                    const texto = fila.cells[2].textContent.trim();
+                    const valor = parseFloat(texto.replace(',', '.')); // Soporte para decimales con coma
+
+                    // Validar y sumar
+                    if (!isNaN(valor)) {
+                        sumaTotal += valor;
+                    } else {
+                        console.warn(`Fila ${index + 1}: Valor no numérico ("${texto}")`);
+                    }
+                } catch (error) {
+                    console.error(`Error procesando fila ${index + 1}:`, error);
+                }
+            });
+
+            // 4. Retornar resultado formateado
+            const resultado = sumaTotal.toFixed(2);
+            console.log("Suma total de cantidades:", resultado);
+
+            return resultado;
+        } catch (error) {
+            console.error('Error en sumarCantidades:', error);
+            return '0.00'; // Retorno seguro en caso de error
+        }
     }
 
     function manualMarbete() {

@@ -169,6 +169,7 @@ if (strlen($nomina) == 7) {
 
                             <label for="" class="card-title h4">Total contado faltante : <strong id="lblTotalContadoFaltante"
                                                                                         class="card-title h4"></strong></label>
+                            <br>
                             <label for="" class="card-title h4">Total dinero faltante : <strong id="lblTotalDineroFaltante"
                                                                                                  class="card-title h4"></strong></label>
                             <table id="data-table-faltantes" class="table table-hover">

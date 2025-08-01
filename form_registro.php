@@ -151,7 +151,7 @@ if (strlen($nomina) == 7) {
                             </div>
 
                             <strong class="card-title h4">Storage Unit Escaneados</strong><br><br>
-                            <label for="" class="card-title h4">Total contado : <strong id="lblTotalContado"
+                            <label for="" class="card-title h5">Total contado : <strong id="lblTotalContado"
                                                                                         class="card-title h4"></strong></label>
                             <table id="data-table" class="table table-hover">
                                 <thead>
@@ -167,10 +167,10 @@ if (strlen($nomina) == 7) {
 
                             <strong class="card-title h4">Storage Unit Faltantes</strong><br><br>
 
-                            <label for="" class="card-title h4">Total contado faltante : <strong id="lblTotalContadoFaltante"
+                            <label for="" class="card-title h5">Total contado faltante : <strong id="lblTotalContadoFaltante"
                                                                                         class="card-title h4"></strong></label>
                             <br>
-                            <label for="" class="card-title h4">Total dinero faltante : <strong id="lblTotalDineroFaltante"
+                            <label for="" class="card-title h5">Total dinero faltante : <strong id="lblTotalDineroFaltante"
                                                                                                  class="card-title h4"></strong></label>
                             <table id="data-table-faltantes" class="table table-hover">
                                 <thead>
@@ -399,7 +399,15 @@ if (strlen($nomina) == 7) {
             });
 
             document.getElementById("lblTotalContadoFaltante").innerText = sumaTotal;
-            document.getElementById("lblTotalDineroFaltante").innerText = sumaTotal*costoUnitario;
+
+            const total = sumaTotal * costoUnitario;
+            document.getElementById("lblTotalDineroFaltante").innerText = total.toLocaleString('es-MX', {
+                style: 'currency',
+                currency: 'MXN', // Cambia a tu moneda (USD, EUR, etc.)
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+
             console.log("Suma total de cantidades:", sumaTotal*costoUnitario);
             return sumaTotal.toFixed(2);
         } catch (error) {

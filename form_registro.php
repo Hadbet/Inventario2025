@@ -169,6 +169,8 @@ if (strlen($nomina) == 7) {
 
                             <label for="" class="card-title h4">Total contado faltante : <strong id="lblTotalContadoFaltante"
                                                                                         class="card-title h4"></strong></label>
+                            <label for="" class="card-title h4">Total dinero faltante : <strong id="lblTotalDineroFaltante"
+                                                                                                 class="card-title h4"></strong></label>
                             <table id="data-table-faltantes" class="table table-hover">
                                 <thead>
                                 <tr>
@@ -376,12 +378,10 @@ if (strlen($nomina) == 7) {
                 return '0.00';
             }
 
-            // Buscar filas en TODA la tabla (no solo en tbody)
             const filas = tabla.querySelectorAll('tr');
             let sumaTotal = 0;
 
             filas.forEach((fila, index) => {
-                // Saltar la fila de encabezado (th)
                 if (index === 0) return;
 
                 if (fila.cells && fila.cells.length >= 3) {
@@ -397,6 +397,8 @@ if (strlen($nomina) == 7) {
                 }
             });
 
+            document.getElementById("lblTotalContadoFaltante").innerText = sumaTotal;
+            document.getElementById("lblTotalDineroFaltante").innerText = sumaTotal*costoUnitario;
             console.log("Suma total de cantidades:", sumaTotal*costoUnitario);
             return sumaTotal.toFixed(2);
         } catch (error) {

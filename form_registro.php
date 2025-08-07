@@ -729,6 +729,7 @@ if (strlen($nomina) == 7) {
                 }
 
                 sumarCantidades();
+
                 console.log(document.getElementById("lblTotalDineroFaltante").innerText);
                 console.log(document.getElementById("lblTotalContadoFaltante").innerText);
             });

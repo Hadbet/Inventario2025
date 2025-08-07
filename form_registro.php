@@ -320,6 +320,7 @@ if (strlen($nomina) == 7) {
     var totalContado = 0;
     var costoUnitario = 0;
     var auxConteo = 0;
+    var total=0;
     estatusConteo();
 
     function estatusConteo() {
@@ -400,7 +401,7 @@ if (strlen($nomina) == 7) {
 
             document.getElementById("lblTotalContadoFaltante").innerText = sumaTotal;
 
-            const total = sumaTotal * costoUnitario;
+            total = sumaTotal * costoUnitario;
             document.getElementById("lblTotalDineroFaltante").innerText = total.toLocaleString('es-MX', {
                 style: 'currency',
                 currency: 'MXN', // Cambia a tu moneda (USD, EUR, etc.)

@@ -321,6 +321,7 @@ if (strlen($nomina) == 7) {
     var costoUnitario = 0;
     var auxConteo = 0;
     var total=0;
+    let sumaTotal = 0;
     estatusConteo();
 
     function estatusConteo() {
@@ -381,7 +382,6 @@ if (strlen($nomina) == 7) {
             }
 
             const filas = tabla.querySelectorAll('tr');
-            let sumaTotal = 0;
 
             filas.forEach((fila, index) => {
                 if (index === 0) return;
@@ -732,7 +732,7 @@ if (strlen($nomina) == 7) {
                 sumarCantidades();
 
                 console.log(total);
-                console.log(document.getElementById("lblTotalContadoFaltante").innerText);
+                console.log(sumaTotal);
             });
         } else {
             Swal.fire({

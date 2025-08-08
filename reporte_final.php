@@ -380,94 +380,116 @@ if (strlen($nomina) == 7) {
     gtag('js', new Date());
     gtag('config', 'UA-56159088-1');
 
+    // 1. Simplificamos fetchData. $.getJSON ya devuelve un objeto "thenable" (similar a una Promesa)
+    // que funciona perfectamente con async/await. No es necesario el constructor new Promise().
     async function fetchData(url) {
-        return new Promise((resolve, reject) => {
-            $.getJSON(url, function (data) {
-                resolve(data);
-            }).fail(function (jqxhr, textStatus, error) {
-                reject(error);
-            });
+        return $.getJSON(url).fail((jqxhr, textStatus, error) => {
+            // Añadimos un mejor log de errores para la depuración
+            console.error(`Error fetching ${url}: ${textStatus}, ${error}`);
+            // Rechazamos la promesa para que Promise.all falle si una petición falla
+            return Promise.reject(error);
         });
     }
 
-    async function processAndAppendData(data, type) {
-        let formattedData = [];
-        for (let i = 0; i < data.data.length; i++) {
-            let item = data.data[i];
-            let formattedItem = {
-                P: type === 'uno' ? '*' : '',
-                L: type === 'dos' ? '*' : '',
-                M: type === 'tres' ? '*' : '',
-                GrammerNo: item.GrammerNo,
-                Descripcion: item.Descripcion,
-                UM: item.UM,
-                Costo_Unitario: item.Costo_Unitario,
-                StLocation: '',
-                StBin: type === 'uno' ? '' : item.STBin || item.StorageBin,
-                Folio: type === 'tres' ? item.FolioMarbete : '',
-                Sap: type === 'tres' ? '' : item.Total_InventarioSap,
-                Conteo: type === 'tres' ? item.Total_Conteo : item.Total_Bitacora_Inventario,
-                Dif: type === 'tres' ? '' : item.Diferencia,
-                Costo: parseFloat(item.Costo_Unitario)*parseFloat(item.Diferencia),
-                Comentario: type === 'tres' ? item.Comentario : ''
-            };
-            formattedData.push(formattedItem);
+    // 2. Renombramos la función y eliminamos "async", ya que no hace nada asíncrono.
+    // Usamos .map() en lugar de un bucle 'for', es más conciso y moderno para transformar arrays.
+    function processData(response, type) {
+        // Si la respuesta no tiene la estructura esperada, devolvemos un array vacío
+        if (!response || !Array.isArray(response.data)) {
+            console.warn(`Respuesta inesperada para el tipo '${type}':`, response);
+            return [];
         }
-        return formattedData;
+
+        return response.data.map(item => ({
+            P: type === 'uno' ? '*' : '',
+            L: type === 'dos' ? '*' : '',
+            M: type === 'tres' ? '*' : '',
+            GrammerNo: item.GrammerNo,
+            Descripcion: item.Descripcion,
+            UM: item.UM,
+            Costo_Unitario: item.Costo_Unitario,
+            StLocation: '',
+            StBin: type === 'uno' ? '' : item.STBin || item.StorageBin,
+            Folio: type === 'tres' ? item.FolioMarbete : '',
+            Sap: type === 'tres' ? '' : item.Total_InventarioSap,
+            Conteo: type === 'tres' ? item.Total_Conteo : item.Total_Bitacora_Inventario,
+            Dif: type === 'tres' ? '' : item.Diferencia,
+            Costo: parseFloat(item.Costo_Unitario || 0) * parseFloat(item.Diferencia || 0),
+            Comentario: type === 'tres' ? item.Comentario : ''
+        }));
     }
 
     async function loadData() {
         try {
-            const dataUno = await fetchData('https://grammermx.com/Logistica/Inventario2025/dao/consultaReporteFinalUno.php');
-            const dataDos = await fetchData('https://grammermx.com/Logistica/Inventario2025/dao/consultaReporteFinalDos.php');
-            const dataTres = await fetchData('https://grammermx.com/Logistica/Inventario2025/dao/consultaReporteFinalTres.php');
+            console.time("Tiempo total de carga"); // Medimos el tiempo
 
-            let formattedData = [];
-            formattedData = formattedData.concat(await processAndAppendData(dataUno, 'uno'));
-            formattedData = formattedData.concat(await processAndAppendData(dataDos, 'dos'));
-            formattedData = formattedData.concat(await processAndAppendData(dataTres, 'tres'));
+            const urls = {
+                uno: 'https://grammermx.com/Logistica/Inventario2025/dao/consultaReporteFinalUno.php',
+                dos: 'https://grammermx.com/Logistica/Inventario2025/dao/consultaReporteFinalDos.php',
+                tres: 'https://grammermx.com/Logistica/Inventario2025/dao/consultaReporteFinalTres.php'
+            };
 
-            // Ordenar datos por GrammerNo
-            formattedData.sort(function(a, b) {
-                var grammerNoCompare = a.GrammerNo.localeCompare(b.GrammerNo);
-                if (grammerNoCompare != 0) {
-                    // Si GrammerNo no es igual, ordena por GrammerNo
+            // 3. Peticiones en paralelo. Promise.all ejecuta todas las peticiones a la vez
+            // y espera a que todas terminen. Esto es mucho más rápido.
+            const results = await Promise.all([
+                fetchData(urls.uno),
+                fetchData(urls.dos),
+                fetchData(urls.tres)
+            ]);
+
+            // 4. Procesamos los datos y los unimos en un solo array de forma más limpia.
+            let allData = [
+                ...processData(results[0], 'uno'),
+                ...processData(results[1], 'dos'),
+                ...processData(results[2], 'tres')
+            ];
+
+            // La lógica de ordenamiento es correcta y se mantiene igual.
+            allData.sort((a, b) => {
+                const grammerNoCompare = a.GrammerNo.localeCompare(b.GrammerNo);
+                if (grammerNoCompare !== 0) {
                     return grammerNoCompare;
-                } else {
-                    // Si GrammerNo es igual, ordena por StBin
-                    return a.StBin.localeCompare(b.StBin);
                 }
+                return a.StBin.localeCompare(b.StBin);
             });
 
-            for (let i = 0; i < formattedData.length; i++) {
-                let item = formattedData[i];
-                $('#data-table tbody').append(
-                    '<tr>' +
-                    '<td>' + (item.P || '') + '</td>' +
-                    '<td>' + (item.L || '') + '</td>' +
-                    '<td>' + (item.M || '') + '</td>' +
-                    '<td>' + (item.GrammerNo || '') + '</td>' +
-                    '<td>' + (item.Descripcion || '') + '</td>' +
-                    '<td>' + (item.UM || '') + '</td>' +
-                    '<td>' + (parseFloat(item.Costo_Unitario || 0).toFixed(4)) + '</td>' +
-                    '<td>' + (item.StLocation || '') + '</td>' +
-                    '<td>' + (item.StBin || '') + '</td>' +
-                    '<td>' + (item.Folio || '') + '</td>' +
-                    '<td>' + (parseFloat(item.Sap || 0).toFixed(2)) + '</td>' +
-                    '<td>' + (parseFloat(item.Conteo || 0).toFixed(2)) + '</td>' +
-                    '<td>' + (parseFloat(item.Dif || 0).toFixed(2)) + '</td>' +
-                    '<td>' + (parseFloat(item.Costo || 0).toFixed(4)) + '</td>' +
-                    '<td>' + (item.Comentario || '') + '</td>' +
-                    '</tr>'
-                );
-            }
+            // 5. La mejora más importante: creamos el HTML para todas las filas
+            // y lo insertamos en el DOM una sola vez.
+            const tableBody = $('#data-table tbody');
+            const rowsHtml = allData.map(item => `
+            <tr>
+                <td>${item.P || ''}</td>
+                <td>${item.L || ''}</td>
+                <td>${item.M || ''}</td>
+                <td>${item.GrammerNo || ''}</td>
+                <td>${item.Descripcion || ''}</td>
+                <td>${item.UM || ''}</td>
+                <td>${(parseFloat(item.Costo_Unitario || 0)).toFixed(4)}</td>
+                <td>${item.StLocation || ''}</td>
+                <td>${item.StBin || ''}</td>
+                <td>${item.Folio || ''}</td>
+                <td>${(parseFloat(item.Sap || 0)).toFixed(2)}</td>
+                <td>${(parseFloat(item.Conteo || 0)).toFixed(2)}</td>
+                <td>${(parseFloat(item.Dif || 0)).toFixed(2)}</td>
+                <td>${(parseFloat(item.Costo || 0)).toFixed(4)}</td>
+                <td>${item.Comentario || ''}</td>
+            </tr>
+        `).join(''); // Unimos todos los strings <tr> en uno solo.
+
+            // Vaciamos el cuerpo de la tabla y añadimos todo el contenido nuevo.
+            tableBody.html(rowsHtml);
+
+            console.timeEnd("Tiempo total de carga"); // Fin de la medición de tiempo
+
         } catch (error) {
-            console.error("Error loading data: ", error);
+            console.error("Error al cargar los datos:", error);
+            // Opcional: mostrar un mensaje de error al usuario en la página.
+            $('#data-table tbody').html('<tr><td colspan="15">Error al cargar los datos. Por favor, intente de nuevo.</td></tr>');
         }
     }
 
+    // Iniciar la carga de datos
     loadData();
-
 </script>
 </body>
 </html>

@@ -289,7 +289,7 @@ if (strlen($nomina) == 7) {
             $(this).text(text.toString());
         }
     });
-
+/*
     $('#copy-button').click(function() {
         var range = document.createRange();
         range.selectNode(document.getElementById('data-table'));
@@ -323,7 +323,7 @@ if (strlen($nomina) == 7) {
             }
         });
     });
-
+*/
     function inicioTabla() {
         $.getJSON('https://grammermx.com/Logistica/Inventario2025/dao/consultaReporteFinal.php', function (data) {
             var table = document.getElementById("data-table");
@@ -379,6 +379,8 @@ if (strlen($nomina) == 7) {
 
     gtag('js', new Date());
     gtag('config', 'UA-56159088-1');
+
+    let allData = [];
 
     // 1. Simplificamos fetchData. $.getJSON ya devuelve un objeto "thenable" (similar a una Promesa)
     // que funciona perfectamente con async/await. No es necesario el constructor new Promise().
@@ -438,7 +440,7 @@ if (strlen($nomina) == 7) {
             ]);
 
             // 4. Procesamos los datos y los unimos en un solo array de forma más limpia.
-            let allData = [
+            allData = [
                 ...processData(results[0], 'uno'),
                 ...processData(results[1], 'dos'),
                 ...processData(results[2], 'tres')
@@ -490,6 +492,70 @@ if (strlen($nomina) == 7) {
 
     // Iniciar la carga de datos
     loadData();
+
+    $('#export-button').click(function() {
+        // Verificamos que 'allData' exista y tenga datos.
+        if (typeof allData === 'undefined' || allData.length === 0) {
+            alert("No hay datos para exportar.");
+            return;
+        }
+
+        console.time("Tiempo de exportación"); // Medimos el rendimiento
+
+        // 1. Crear una "hoja de trabajo" a partir de nuestro array de objetos JSON.
+        // Para que la columna 'GrammerNo' se trate como texto, nos aseguramos de que sea un string.
+        // Esto es similar a tu regla 'onMsoNumberFormat'.
+        const dataConFormato = allData.map(item => ({
+            ...item,
+            GrammerNo: String(item.GrammerNo) // Forzamos GrammerNo a ser texto
+        }));
+        const worksheet = XLSX.utils.json_to_sheet(dataConFormato);
+
+        // 2. Crear un nuevo "libro de trabajo".
+        const workbook = XLSX.utils.book_new();
+
+        // 3. Añadir la hoja de trabajo al libro, dándole un nombre.
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Reporte Final");
+
+        // 4. Generar el archivo XLSX y disparar la descarga.
+        XLSX.writeFile(workbook, "reporte_final_inventario.xlsx");
+
+        console.timeEnd("Tiempo de exportación"); // Verás en la consola que es rapidísimo.
+    });
+
+    $('#copy-button').click(function() {
+        // Verificamos que 'allData' exista y tenga datos.
+        // 'allData' es la variable que creamos en la función loadData()
+        if (typeof allData === 'undefined' || allData.length === 0) {
+            alert("No hay datos para copiar.");
+            return;
+        }
+
+        // Convertimos el array de objetos a un string en formato CSV.
+        const headers = Object.keys(allData[0]);
+        const csvContent = [
+            headers.join(','), // La fila de encabezados
+            ...allData.map(row => headers.map(header => {
+                // Limpiamos el valor para evitar problemas con comas dentro del texto
+                let value = row[header];
+                if (typeof value === 'string' && value.includes(',')) {
+                    return `"${value}"`; // Encerrar entre comillas si contiene una coma
+                }
+                return value;
+            }).join(','))
+        ].join('\n'); // Unimos todas las filas con un salto de línea.
+
+        // Usamos la API moderna para copiar al portapapeles.
+        navigator.clipboard.writeText(csvContent).then(() => {
+            // Damos feedback al usuario
+            const originalText = $(this).text();
+            $(this).text("¡Copiado!");
+            setTimeout(() => $(this).text(originalText), 2000); // Volver al texto original después de 2 segundos
+        }).catch(err => {
+            console.error('Error al copiar:', err);
+            alert('No se pudo copiar al portapapeles.');
+        });
+    });
 </script>
 </body>
 </html>

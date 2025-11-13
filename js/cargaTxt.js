@@ -765,6 +765,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // FUNCIONES PARA SUN
 
     // Función para procesar y exportar archivos SUN
+    // Función para procesar y exportar archivos SUN
     async function procesarYExportarSun(formato) {
         const files = Array.from(filesSun.values());
 
@@ -789,7 +790,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
         try {
             resultadosProcesados = [];
-            materialesFaltantes = [];
 
             for (const file of files) {
                 // Procesar el archivo
@@ -806,12 +806,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         nombreArchivo: file.name,
                         contenido: contenidoActualizado.contenido,
                     });
-
-                    // Actualizar materiales faltantes o encontrados en otra ubicación
-                    const materialesEspeciales = await obtenerMaterialesEspecialesSun(datosArchivo);
-                    if (materialesEspeciales.length > 0) {
-                        materialesFaltantes = materialesFaltantes.concat(materialesEspeciales);
-                    }
                 }
             }
 
@@ -834,23 +828,21 @@ document.addEventListener('DOMContentLoaded', function() {
                     break;
             }
 
-            // Mostrar mensaje si hay materiales especiales (faltantes o encontrados en otra ubicación)
-            if (materialesFaltantes.length > 0) {
-                setTimeout(() => {
-                    Swal.fire({
-                        icon: 'info',
-                        title: 'Materiales especiales',
-                        text: `Se encontraron ${materialesFaltantes.length} materiales que requieren atención.`,
-                        confirmButtonText: 'Exportar Excel',
-                        showCancelButton: true,
-                        cancelButtonText: 'Cerrar'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            exportarMaterialesEspecialesSun(materialesFaltantes);
-                        }
-                    });
-                }, 1000);
-            }
+            // Siempre ofrecer generar el Excel de Storage Units
+            setTimeout(() => {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Storage Units',
+                    text: `¿Desea generar el reporte Excel de Storage Units encontrados en la base de datos?`,
+                    confirmButtonText: 'Generar Excel',
+                    showCancelButton: true,
+                    cancelButtonText: 'Cerrar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        exportarMaterialesEspecialesSun();
+                    }
+                });
+            }, 1000);
         } catch (error) {
             console.error('Error al procesar los archivos:', error);
             Swal.fire({
@@ -1139,74 +1131,175 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Función para exportar materiales especiales SUN como Excel
-    function exportarMaterialesEspecialesSun(materiales) {
-        if (!materiales || materiales.length === 0) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'No hay materiales especiales',
-                text: 'No hay materiales especiales para exportar.'
-            });
-            return;
-        }
-
-        // Crear un libro de Excel
-        const wb = XLSX.utils.book_new();
-
-        // Configurar propiedades del libro
-        wb.Props = {
-            Title: 'Materiales Especiales SUN',
-            Author: 'Sistema de Inventario',
-            CreatedDate: new Date()
-        };
-
-        // Crear la hoja de trabajo
-        wb.SheetNames.push('Materiales Especiales');
-
-        // Datos para la hoja de trabajo - Orden solicitado
-        const data = [
-            ['Libro', 'Hoja', 'Storage Type', 'Storage Bin', 'Storage Unit', 'Material No', 'Cantidad', 'Estado']
-        ];
-
-        // Agregar cada material especial a los datos
-        for (const item of materiales) {
-            data.push([
-                item.inventoryNo || '',
-                item.page || '',
-                item.storageType || '',
-                item.storBin || '',
-                item.storageUnit || '',
-                item.materialNo || '',
-                item.conteoFinal || '0',
-                item.estado || ''
-            ]);
-        }
-
-        // Crear la hoja de trabajo
-        const ws = XLSX.utils.aoa_to_sheet(data);
-        wb.Sheets['Materiales Especiales'] = ws;
-
-        // Generar el archivo Excel
-        const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'binary' });
-
-        // Función auxiliar para convertir la cadena binaria en un objeto Blob
-        function s2ab(s) {
-            const buf = new ArrayBuffer(s.length);
-            const view = new Uint8Array(buf);
-            for (let i = 0; i < s.length; i++) {
-                view[i] = s.charCodeAt(i) & 0xFF;
+    // Función para exportar materiales especiales SUN como Excel
+    async function exportarMaterialesEspecialesSun(materiales) {
+        try {
+            // Primero, consultar los Storage Units en la base de datos
+            const storageUnits = [];
+            for (const item of resultadosProcesados) {
+                const lineas = item.contenido.split('\n');
+                for (const linea of lineas) {
+                    if (/^0001\s+\w+/.test(linea) && linea.includes("Storage Unit")) {
+                        const partes = linea.split(/\s+/);
+                        let storageUnit = '';
+                        for (let i = 0; i < partes.length; i++) {
+                            if (partes[i].match(/^\d{10}$/)) {
+                                storageUnit = partes[i];
+                                break;
+                            }
+                        }
+                        if (storageUnit) {
+                            storageUnits.push(storageUnit);
+                        }
+                    }
+                }
             }
-            return buf;
+
+            if (storageUnits.length === 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'No hay Storage Units',
+                    text: 'No se encontraron Storage Units en los archivos procesados.'
+                });
+                return;
+            }
+
+            // Consultar los datos reales de estos Storage Units
+            const response = await fetch('https://grammermx.com/Logistica/Inventario2025/daoAdmin/daoConsultarStorageUnits.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ storageUnits })
+            });
+
+            if (!response.ok) {
+                throw new Error(`Error al consultar datos: ${response.status}`);
+            }
+
+            const datosStorageUnits = await response.json();
+
+            if (!datosStorageUnits || datosStorageUnits.length === 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Sin datos',
+                    text: 'No se encontraron datos para los Storage Units consultados.'
+                });
+                return;
+            }
+
+            // Crear un libro de Excel
+            const wb = XLSX.utils.book_new();
+
+            // Configurar propiedades del libro
+            wb.Props = {
+                Title: 'Storage Units Encontrados',
+                Author: 'Sistema de Inventario',
+                CreatedDate: new Date()
+            };
+
+            // Crear la hoja de trabajo
+            wb.SheetNames.push('Storage Units');
+
+            // Datos para la hoja de trabajo - Orden solicitado
+            const data = [
+                ['Libro', 'Hoja', 'Storage Type', 'Storage Bin', 'Storage Unit', 'Material No', 'Cantidad', 'Estado']
+            ];
+
+            // Extraer información de los archivos procesados (libro, hoja)
+            const infoArchivos = new Map();
+            for (const resultado of resultadosProcesados) {
+                const lineas = resultado.contenido.split('\n');
+                let inventoryNo = '';
+                let page = '';
+
+                for (const linea of lineas) {
+                    if (linea.includes('Inventory lst.no. :')) {
+                        const match = linea.match(/Inventory lst\.no\.\s*:\s*(\d+)/);
+                        if (match && match[1]) {
+                            inventoryNo = match[1].trim();
+                        }
+                    }
+                    if (linea.includes('Page')) {
+                        const match = linea.match(/Page\.+:\s*([^\s]+)/);
+                        if (match && match[1]) {
+                            page = match[1].trim();
+                        }
+                    }
+
+                    // Si encontramos ambos valores, podemos salir del bucle
+                    if (inventoryNo && page) {
+                        break;
+                    }
+                }
+
+                if (inventoryNo && page) {
+                    infoArchivos.set(resultado.nombreArchivo, { libro: inventoryNo, hoja: page });
+                }
+            }
+
+            // Agregar cada Storage Unit a los datos
+            for (const item of datosStorageUnits) {
+                // Buscar información de libro y hoja
+                let libro = '';
+                let hoja = '';
+
+                // Usar la información del primer archivo procesado si está disponible
+                if (resultadosProcesados.length > 0) {
+                    const info = infoArchivos.get(resultadosProcesados[0].nombreArchivo);
+                    if (info) {
+                        libro = info.libro;
+                        hoja = info.hoja;
+                    }
+                }
+
+                data.push([
+                    libro,
+                    hoja,
+                    item.storageType,
+                    item.storBin,
+                    item.storageUnit,
+                    item.materialNo,
+                    item.conteoFinal,
+                    item.estado || 'Ubicación encontrada en base de datos'
+                ]);
+            }
+
+            // Crear la hoja de trabajo
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            wb.Sheets['Storage Units'] = ws;
+
+            // Generar el archivo Excel
+            const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'binary' });
+
+            // Función auxiliar para convertir la cadena binaria en un objeto Blob
+            function s2ab(s) {
+                const buf = new ArrayBuffer(s.length);
+                const view = new Uint8Array(buf);
+                for (let i = 0; i < s.length; i++) {
+                    view[i] = s.charCodeAt(i) & 0xFF;
+                }
+                return buf;
+            }
+
+            // Descargar el archivo Excel
+            const blob = new Blob([s2ab(wbout)], { type: 'application/octet-stream' });
+            const url = URL.createObjectURL(blob);
+
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'storage_units_encontrados.xlsx';
+            link.click();
+
+            URL.revokeObjectURL(url);
+
+        } catch (error) {
+            console.error('Error al exportar materiales especiales:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Ocurrió un error al exportar los materiales especiales.'
+            });
         }
-
-        // Descargar el archivo Excel
-        const blob = new Blob([s2ab(wbout)], { type: 'application/octet-stream' });
-        const url = URL.createObjectURL(blob);
-
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = 'materiales_especiales_sun.xlsx';
-        link.click();
-
-        URL.revokeObjectURL(url);
     }
 });

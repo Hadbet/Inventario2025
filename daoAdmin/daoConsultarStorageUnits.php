@@ -27,20 +27,15 @@ $storageUnits = array_map(function($item) use ($conexion) {
 }, $data['storageUnits']);
 
 // Consultar los datos de los Storage Units
+// Obtener la cantidad directamente de la tabla Storage_Unit
 $consulta = "
     SELECT 
         su.Id_StorageUnit as storageUnit,
         su.Numero_Parte as materialNo,
         su.Storage_Bin as storBin,
         su.Storage_Type as storageType,
-        CASE
-            WHEN bi.TercerConteo IS NOT NULL AND bi.TercerConteo > 0 THEN bi.TercerConteo
-            WHEN bi.SegundoConteo IS NOT NULL AND bi.SegundoConteo > 0 THEN bi.SegundoConteo
-            WHEN bi.PrimerConteo IS NOT NULL AND bi.PrimerConteo > 0 THEN bi.PrimerConteo
-            ELSE su.Cantidad
-        END AS conteoFinal
+        su.Cantidad as conteoFinal  -- Obtener cantidad directamente de Storage_Unit
     FROM Storage_Unit su
-    LEFT JOIN Bitacora_Inventario bi ON su.FolioMarbete = bi.FolioMarbete
     WHERE su.Id_StorageUnit IN (" . implode(',', $storageUnits) . ")
     AND su.Estatus = 1
 ";

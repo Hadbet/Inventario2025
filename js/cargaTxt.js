@@ -344,7 +344,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Función para enviar datos al backend para SUN
     async function enviarDatosAlBackendSun(datos) {
         try {
-            const response = await fetch('https://grammermx.com/Logistica/Inventario2025/daoAdmin/daoAdmin/daoProcesarSun.php', {
+            const response = await fetch('https://grammermx.com/Logistica/Inventario2025/daoAdmin/daoProcesarSun.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

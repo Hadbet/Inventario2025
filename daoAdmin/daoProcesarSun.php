@@ -22,6 +22,7 @@ if (!$conexion) {
 }
 
 $resultados = [];
+$materialesEspeciales = []; // Para almacenar materiales en ubicaciones diferentes
 
 foreach ($data as $item) {
     $tipoLinea = isset($item['tipoLinea']) ? $item['tipoLinea'] : '';
@@ -33,6 +34,8 @@ foreach ($data as $item) {
         $materialNo = isset($item['materialNo']) ? mysqli_real_escape_string($conexion, $item['materialNo']) : '';
         $storageType = isset($item['storageType']) ? mysqli_real_escape_string($conexion, $item['storageType']) : '';
         $uom = isset($item['uom']) ? mysqli_real_escape_string($conexion, $item['uom']) : 'PC';
+        $inventoryNo = isset($item['inventoryNo']) ? $item['inventoryNo'] : '';
+        $page = isset($item['page']) ? $item['page'] : '';
 
         // Consultar primero en Storage_Unit
         $consulta = "
@@ -62,19 +65,51 @@ foreach ($data as $item) {
         if ($resultado && mysqli_num_rows($resultado) > 0) {
             $fila = mysqli_fetch_assoc($resultado);
 
-            $resultados[] = [
-                'storageUnit' => $storageUnit,
-                'storBin' => $storBin,
-                'materialNo' => $fila['Numero_Parte'],
-                'conteoFinal' => $fila['ConteoFinal'],
-                'storageType' => $fila['Storage_Type'],
-                'inventoryNo' => $item['inventoryNo'] ?? '',
-                'page' => $item['page'] ?? '',
-                'uom' => $uom,
-                'estado' => ($fila['Storage_Bin'] === $storBin && $fila['Storage_Type'] === $storageType)
-                    ? 'Encontrado'
-                    : 'Ubicación diferente'
-            ];
+            // Verificar si Storage_Bin y Storage_Type coinciden
+            $mismaUbicacion = ($fila['Storage_Bin'] === $storBin && $fila['Storage_Type'] === $storageType);
+
+            if ($mismaUbicacion) {
+                // Si coincide, usar el conteo
+                $resultados[] = [
+                    'storageUnit' => $storageUnit,
+                    'storBin' => $storBin,
+                    'materialNo' => $fila['Numero_Parte'],
+                    'conteoFinal' => $fila['ConteoFinal'],
+                    'storageType' => $fila['Storage_Type'],
+                    'inventoryNo' => $inventoryNo,
+                    'page' => $page,
+                    'uom' => $uom,
+                    'estado' => 'Encontrado'
+                ];
+            } else {
+                // Si está en otra ubicación, poner 0 en el TXT y agregarlo a materiales especiales
+                $resultados[] = [
+                    'storageUnit' => $storageUnit,
+                    'storBin' => $storBin,
+                    'materialNo' => $materialNo,
+                    'conteoFinal' => '0', // Poner 0 en el archivo
+                    'storageType' => $storageType,
+                    'inventoryNo' => $inventoryNo,
+                    'page' => $page,
+                    'uom' => $uom,
+                    'estado' => 'Ubicación incorrecta'
+                ];
+
+                // Guardar para el reporte de ubicación real
+                $materialesEspeciales[] = [
+                    'storageUnit' => $storageUnit,
+                    'storBin_actual' => $fila['Storage_Bin'],
+                    'storBin_txt' => $storBin,
+                    'materialNo' => $fila['Numero_Parte'],
+                    'conteoFinal' => $fila['ConteoFinal'],
+                    'storageType_actual' => $fila['Storage_Type'],
+                    'storageType_txt' => $storageType,
+                    'inventoryNo' => $inventoryNo,
+                    'page' => $page,
+                    'uom' => $uom,
+                    'estado' => 'Encontrado en otra ubicación'
+                ];
+            }
         } else {
             // Si no se encuentra por Storage Unit, intentar por Storage Bin y Material No
             if (!empty($materialNo)) {
@@ -112,10 +147,24 @@ foreach ($data as $item) {
                         'materialNo' => $materialNo,
                         'conteoFinal' => $fila['ConteoFinal'],
                         'storageType' => $fila['Storage_Type'],
-                        'inventoryNo' => $item['inventoryNo'] ?? '',
-                        'page' => $item['page'] ?? '',
+                        'inventoryNo' => $inventoryNo,
+                        'page' => $page,
                         'uom' => $uom,
                         'estado' => 'Encontrado pero Storage Unit diferente'
+                    ];
+
+                    // Guardar para el reporte
+                    $materialesEspeciales[] = [
+                        'storageUnit_actual' => $fila['Id_StorageUnit'],
+                        'storageUnit_txt' => $storageUnit,
+                        'storBin' => $storBin,
+                        'materialNo' => $materialNo,
+                        'conteoFinal' => $fila['ConteoFinal'],
+                        'storageType' => $fila['Storage_Type'],
+                        'inventoryNo' => $inventoryNo,
+                        'page' => $page,
+                        'uom' => $uom,
+                        'estado' => 'Storage Unit diferente'
                     ];
                 } else {
                     // Si no se encuentra, devolver con conteo 0
@@ -125,8 +174,8 @@ foreach ($data as $item) {
                         'materialNo' => $materialNo,
                         'conteoFinal' => '0',
                         'storageType' => $storageType,
-                        'inventoryNo' => $item['inventoryNo'] ?? '',
-                        'page' => $item['page'] ?? '',
+                        'inventoryNo' => $inventoryNo,
+                        'page' => $page,
                         'uom' => $uom,
                         'estado' => 'No encontrado'
                     ];
@@ -139,8 +188,8 @@ foreach ($data as $item) {
                     'materialNo' => '',
                     'conteoFinal' => '0',
                     'storageType' => $storageType,
-                    'inventoryNo' => $item['inventoryNo'] ?? '',
-                    'page' => $item['page'] ?? '',
+                    'inventoryNo' => $inventoryNo,
+                    'page' => $page,
                     'uom' => $uom,
                     'estado' => 'No encontrado'
                 ];
@@ -150,6 +199,8 @@ foreach ($data as $item) {
         // Caso 2: Línea sin Storage Unit
         $storBin = mysqli_real_escape_string($conexion, $item['storBin']);
         $storageType = isset($item['storageType']) ? mysqli_real_escape_string($conexion, $item['storageType']) : '';
+        $inventoryNo = isset($item['inventoryNo']) ? $item['inventoryNo'] : '';
+        $page = isset($item['page']) ? $item['page'] : '';
 
         // Consultar en Storage_Unit por Storage Bin
         $consulta = "
@@ -186,8 +237,8 @@ foreach ($data as $item) {
                 'materialNo' => $fila['Numero_Parte'],
                 'conteoFinal' => $fila['ConteoFinal'],
                 'storageType' => $storageType,
-                'inventoryNo' => $item['inventoryNo'] ?? '',
-                'page' => $item['page'] ?? '',
+                'inventoryNo' => $inventoryNo,
+                'page' => $page,
                 'uom' => $item['uom'] ?? 'PC',
                 'estado' => 'Encontrado por Storage Bin'
             ];
@@ -199,13 +250,20 @@ foreach ($data as $item) {
                 'materialNo' => '',
                 'conteoFinal' => '0',
                 'storageType' => $storageType,
-                'inventoryNo' => $item['inventoryNo'] ?? '',
-                'page' => $item['page'] ?? '',
+                'inventoryNo' => $inventoryNo,
+                'page' => $page,
                 'uom' => $item['uom'] ?? 'PC',
                 'estado' => 'No encontrado'
             ];
         }
     }
+}
+
+// Guardar materiales especiales en una tabla temporal o en un archivo para su posterior uso
+if (!empty($materialesEspeciales)) {
+    // Puedes crear una tabla temporal, un archivo JSON o usar sesiones para guardar esta información
+    // Por ahora, simplemente la incluimos en la respuesta
+    $resultados['materialesEspeciales'] = $materialesEspeciales;
 }
 
 // Cerrar la conexión

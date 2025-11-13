@@ -1003,6 +1003,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Función para actualizar el contenido del archivo SUN
+    // Función para actualizar el contenido del archivo SUN
     async function actualizarContenidoArchivoSun(file, datosBackend) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -1033,28 +1034,36 @@ document.addEventListener('DOMContentLoaded', function() {
 
                                 // Determinar la unidad de medida
                                 let uom = 'PC';
-                                if (linea.includes('M')) {
+                                if (linea.includes(' M')) {
                                     uom = 'M';
+                                } else if (linea.includes(' KG')) {
+                                    uom = 'KG';
                                 }
 
                                 // Buscar el material en los datos del backend
                                 const materialEncontrado = datosBackend.find(
-                                    (item) => (item.storageUnit === storageUnit) ||
-                                        (item.storBin === storBin && item.materialNo === materialNo)
+                                    (item) => (item.storageUnit === storageUnit)
                                 );
 
                                 if (materialEncontrado) {
-                                    // Determinar el valor final del conteo
-                                    let conteoFinal = '0';
-                                    if (materialEncontrado.conteoFinal && materialEncontrado.conteoFinal !== '0') {
-                                        conteoFinal = materialEncontrado.conteoFinal;
-                                    }
+                                    // Verificar el estado para determinar si usar conteo o 0
+                                    if (materialEncontrado.estado === 'Encontrado' ||
+                                        materialEncontrado.estado === 'Encontrado por Storage Bin') {
+                                        // Usar el conteo encontrado
+                                        let conteoFinal = '0';
+                                        if (materialEncontrado.conteoFinal && materialEncontrado.conteoFinal !== '0') {
+                                            conteoFinal = materialEncontrado.conteoFinal;
+                                        }
 
-                                    // Reemplazar los guiones bajos por la cantidad
-                                    return linea.replace(/____________ (PC|M)/, `${conteoFinal} ${uom}`);
+                                        // Reemplazar los guiones bajos por la cantidad
+                                        return linea.replace(/____________ (PC|M|KG)/, `${conteoFinal} ${uom}`);
+                                    } else {
+                                        // Si está en otra ubicación o tiene otro problema, poner 0
+                                        return linea.replace(/____________ (PC|M|KG)/, `0 ${uom}`);
+                                    }
                                 } else {
                                     // Si el material no se encuentra, poner 0
-                                    return linea.replace(/____________ (PC|M)/, `0 ${uom}`);
+                                    return linea.replace(/____________ (PC|M|KG)/, `0 ${uom}`);
                                 }
                             }
                         }
@@ -1070,7 +1079,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                     (item) => item.storBin === storBin
                                 );
 
-                                if (materialEncontrado) {
+                                if (materialEncontrado && materialEncontrado.estado === 'Encontrado por Storage Bin') {
                                     // Determinar el valor final del conteo
                                     let conteoFinal = '0';
                                     if (materialEncontrado.conteoFinal && materialEncontrado.conteoFinal !== '0') {
@@ -1080,7 +1089,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                     // Reemplazar los guiones bajos por la cantidad
                                     return linea.replace(/____________/, `${conteoFinal}`);
                                 } else {
-                                    // Si el material no se encuentra, poner 0
+                                    // Si el material no se encuentra o tiene otro estado, poner 0
                                     return linea.replace(/____________/, '0');
                                 }
                             }

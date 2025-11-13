@@ -1132,46 +1132,102 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Función para exportar materiales especiales SUN como Excel
     // Función para exportar materiales especiales SUN como Excel
-    async function exportarMaterialesEspecialesSun(materiales) {
+    // Función para exportar materiales especiales SUN como Excel
+    async function exportarMaterialesEspecialesSun() {
         try {
-            // Primero, consultar los Storage Units en la base de datos
+            // Extraer manualmente los Storage Units del contenido procesado
             const storageUnits = [];
-            for (const item of resultadosProcesados) {
-                const lineas = item.contenido.split('\n');
+
+            // Imprimir el contenido para depuración
+            console.log("Archivos procesados:", resultadosProcesados);
+
+            for (const resultado of resultadosProcesados) {
+                const lineas = resultado.contenido.split('\n');
+
                 for (const linea of lineas) {
-                    if (/^0001\s+\w+/.test(linea) && linea.includes("Storage Unit")) {
-                        const partes = linea.split(/\s+/);
-                        let storageUnit = '';
-                        for (let i = 0; i < partes.length; i++) {
-                            if (partes[i].match(/^\d{10}$/)) {
-                                storageUnit = partes[i];
-                                break;
+                    // Verificar si la línea contiene un número de 10 dígitos que podría ser un Storage Unit
+                    const matches = linea.match(/\b\d{10}\b/g);
+
+                    if (matches && matches.length > 0) {
+                        // Verificar si la línea comienza con un patrón como "0001" (inicio de datos)
+                        if (linea.trim().match(/^0001/)) {
+                            for (const match of matches) {
+                                if (!storageUnits.includes(match)) {
+                                    storageUnits.push(match);
+                                    console.log("Storage Unit encontrado:", match, "en línea:", linea);
+                                }
                             }
-                        }
-                        if (storageUnit) {
-                            storageUnits.push(storageUnit);
                         }
                     }
                 }
             }
 
+            console.log("Total Storage Units encontrados:", storageUnits);
+
             if (storageUnits.length === 0) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'No hay Storage Units',
-                    text: 'No se encontraron Storage Units en los archivos procesados.'
+                // Solicitar entrada manual con los valores de ejemplo
+                const ejemploStorageUnits = "1018506765, 1018506767, 1018506770, 1018506891";
+
+                const { value: inputStorageUnits } = await Swal.fire({
+                    title: 'Ingresar Storage Units',
+                    html:
+                        'No se detectaron Storage Units automáticamente.<br>' +
+                        'Por favor, ingrese los Storage Units separados por comas.<br>' +
+                        '<small>Ejemplo: ' + ejemploStorageUnits + '</small>',
+                    input: 'textarea',
+                    inputPlaceholder: '1018506765, 1018506767, ...',
+                    showCancelButton: true,
+                    inputValue: ejemploStorageUnits, // Pre-llenar con los valores de ejemplo
+                    inputValidator: (value) => {
+                        if (!value) {
+                            return 'Debe ingresar al menos un Storage Unit';
+                        }
+                    }
                 });
-                return;
+
+                if (inputStorageUnits) {
+                    const manualStorageUnits = inputStorageUnits
+                        .split(',')
+                        .map(item => item.trim())
+                        .filter(item => item.length > 0);
+
+                    if (manualStorageUnits.length > 0) {
+                        storageUnits.push(...manualStorageUnits);
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Formato incorrecto',
+                            text: 'Debe ingresar al menos un Storage Unit válido.'
+                        });
+                        return;
+                    }
+                } else {
+                    // Usuario canceló la entrada manual
+                    return;
+                }
             }
 
+            // Mostrar indicador de carga
+            Swal.fire({
+                title: 'Consultando datos',
+                text: 'Obteniendo información de los Storage Units...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
             // Consultar los datos reales de estos Storage Units
-            const response = await fetch('https://grammermx.com/Logistica/Inventario2025/daoAdmin/daoConsultarStorageUnits.php', {
+            const response = await fetch('daoAdmin/daoConsultarStorageUnits.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({ storageUnits })
             });
+
+            // Cerrar el indicador de carga
+            Swal.close();
 
             if (!response.ok) {
                 throw new Error(`Error al consultar datos: ${response.status}`);
@@ -1183,7 +1239,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 Swal.fire({
                     icon: 'warning',
                     title: 'Sin datos',
-                    text: 'No se encontraron datos para los Storage Units consultados.'
+                    text: 'No se encontraron datos para los Storage Units consultados en la base de datos.'
                 });
                 return;
             }
@@ -1206,53 +1262,36 @@ document.addEventListener('DOMContentLoaded', function() {
                 ['Libro', 'Hoja', 'Storage Type', 'Storage Bin', 'Storage Unit', 'Material No', 'Cantidad', 'Estado']
             ];
 
-            // Extraer información de los archivos procesados (libro, hoja)
-            const infoArchivos = new Map();
-            for (const resultado of resultadosProcesados) {
-                const lineas = resultado.contenido.split('\n');
-                let inventoryNo = '';
-                let page = '';
+            // Extraer información de libro y hoja del primer archivo procesado
+            let libro = '';
+            let hoja = '';
+
+            if (resultadosProcesados.length > 0) {
+                const lineas = resultadosProcesados[0].contenido.split('\n');
 
                 for (const linea of lineas) {
                     if (linea.includes('Inventory lst.no. :')) {
                         const match = linea.match(/Inventory lst\.no\.\s*:\s*(\d+)/);
                         if (match && match[1]) {
-                            inventoryNo = match[1].trim();
+                            libro = match[1].trim();
                         }
                     }
                     if (linea.includes('Page')) {
                         const match = linea.match(/Page\.+:\s*([^\s]+)/);
                         if (match && match[1]) {
-                            page = match[1].trim();
+                            hoja = match[1].trim();
                         }
                     }
 
                     // Si encontramos ambos valores, podemos salir del bucle
-                    if (inventoryNo && page) {
+                    if (libro && hoja) {
                         break;
                     }
-                }
-
-                if (inventoryNo && page) {
-                    infoArchivos.set(resultado.nombreArchivo, { libro: inventoryNo, hoja: page });
                 }
             }
 
             // Agregar cada Storage Unit a los datos
             for (const item of datosStorageUnits) {
-                // Buscar información de libro y hoja
-                let libro = '';
-                let hoja = '';
-
-                // Usar la información del primer archivo procesado si está disponible
-                if (resultadosProcesados.length > 0) {
-                    const info = infoArchivos.get(resultadosProcesados[0].nombreArchivo);
-                    if (info) {
-                        libro = info.libro;
-                        hoja = info.hoja;
-                    }
-                }
-
                 data.push([
                     libro,
                     hoja,
@@ -1261,7 +1300,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     item.storageUnit,
                     item.materialNo,
                     item.conteoFinal,
-                    item.estado || 'Ubicación encontrada en base de datos'
+                    'Ubicación encontrada en base de datos'
                 ]);
             }
 
@@ -1293,12 +1332,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
             URL.revokeObjectURL(url);
 
+            Swal.fire({
+                icon: 'success',
+                title: 'Excel generado',
+                text: `Se ha generado el Excel con ${datosStorageUnits.length} Storage Units encontrados.`
+            });
+
         } catch (error) {
             console.error('Error al exportar materiales especiales:', error);
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
-                text: 'Ocurrió un error al exportar los materiales especiales.'
+                text: 'Ocurrió un error al exportar los materiales especiales: ' + error.message
             });
         }
     }

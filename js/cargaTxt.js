@@ -1133,36 +1133,63 @@ document.addEventListener('DOMContentLoaded', function() {
     // Función para exportar materiales especiales SUN como Excel
     // Función para exportar materiales especiales SUN como Excel
     // Función para exportar materiales especiales SUN como Excel
+    // Función para exportar materiales especiales SUN como Excel
     async function exportarMaterialesEspecialesSun() {
         try {
-            // Extraer manualmente los Storage Units del contenido procesado
+            // Mapeo para rastrear qué Storage Unit está en qué página
+            const storageUnitPages = new Map();
             const storageUnits = [];
 
-            // Imprimir el contenido para depuración
             console.log("Archivos procesados:", resultadosProcesados);
 
+            // Primera pasada: identificar las páginas para cada Storage Unit
             for (const resultado of resultadosProcesados) {
                 const lineas = resultado.contenido.split('\n');
+                let currentPage = '';
+                let inventoryNo = '';
 
-                for (const linea of lineas) {
-                    // Verificar si la línea contiene un número de 10 dígitos que podría ser un Storage Unit
-                    const matches = linea.match(/\b\d{10}\b/g);
+                for (let i = 0; i < lineas.length; i++) {
+                    const linea = lineas[i];
 
-                    if (matches && matches.length > 0) {
-                        // Verificar si la línea comienza con un patrón como "0001" (inicio de datos)
-                        if (linea.trim().match(/^0001/)) {
+                    // Buscar información de página
+                    if (linea.includes('Page')) {
+                        const match = linea.match(/Page\.+:\s*([^\s]+)/);
+                        if (match && match[1]) {
+                            currentPage = match[1].trim();
+                        }
+                    }
+
+                    // Buscar número de inventario
+                    if (linea.includes('Inventory lst.no. :')) {
+                        const match = linea.match(/Inventory lst\.no\.\s*:\s*(\d+)/);
+                        if (match && match[1]) {
+                            inventoryNo = match[1].trim();
+                        }
+                    }
+
+                    // Buscar Storage Units en la línea actual
+                    if (linea.trim().match(/^0001/) && currentPage) {
+                        const matches = linea.match(/\b\d{10}\b/g);
+                        if (matches && matches.length > 0) {
                             for (const match of matches) {
+                                storageUnitPages.set(match, {
+                                    page: currentPage,
+                                    libro: inventoryNo
+                                });
+
                                 if (!storageUnits.includes(match)) {
                                     storageUnits.push(match);
-                                    console.log("Storage Unit encontrado:", match, "en línea:", linea);
                                 }
+
+                                console.log(`Storage Unit ${match} encontrado en la página ${currentPage} del libro ${inventoryNo}`);
                             }
                         }
                     }
                 }
             }
 
-            console.log("Total Storage Units encontrados:", storageUnits);
+            console.log("Storage Units y páginas:", storageUnitPages);
+            console.log("Total Storage Units encontrados:", storageUnits.length);
 
             if (storageUnits.length === 0) {
                 // Solicitar entrada manual con los valores de ejemplo
@@ -1193,6 +1220,28 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     if (manualStorageUnits.length > 0) {
                         storageUnits.push(...manualStorageUnits);
+
+                        // También pedir la página y el libro
+                        const { value: pageInfo } = await Swal.fire({
+                            title: 'Ingresar información de página',
+                            html: 'Ingrese el número de página y libro separados por coma (ejemplo: 3/117, 1557)',
+                            input: 'text',
+                            inputPlaceholder: '3/117, 1557',
+                            showCancelButton: true,
+                            inputValidator: (value) => {
+                                if (!value) {
+                                    return 'Debe ingresar la información de página';
+                                }
+                            }
+                        });
+
+                        if (pageInfo) {
+                            const [page, libro] = pageInfo.split(',').map(item => item.trim());
+                            // Asignar la misma página y libro a todos los Storage Units ingresados manualmente
+                            for (const unit of manualStorageUnits) {
+                                storageUnitPages.set(unit, { page, libro });
+                            }
+                        }
                     } else {
                         Swal.fire({
                             icon: 'error',
@@ -1262,39 +1311,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 ['Libro', 'Hoja', 'Storage Type', 'Storage Bin', 'Storage Unit', 'Material No', 'Cantidad', 'Estado']
             ];
 
-            // Extraer información de libro y hoja del primer archivo procesado
-            let libro = '';
-            let hoja = '';
-
-            if (resultadosProcesados.length > 0) {
-                const lineas = resultadosProcesados[0].contenido.split('\n');
-
-                for (const linea of lineas) {
-                    if (linea.includes('Inventory lst.no. :')) {
-                        const match = linea.match(/Inventory lst\.no\.\s*:\s*(\d+)/);
-                        if (match && match[1]) {
-                            libro = match[1].trim();
-                        }
-                    }
-                    if (linea.includes('Page')) {
-                        const match = linea.match(/Page\.+:\s*([^\s]+)/);
-                        if (match && match[1]) {
-                            hoja = match[1].trim();
-                        }
-                    }
-
-                    // Si encontramos ambos valores, podemos salir del bucle
-                    if (libro && hoja) {
-                        break;
-                    }
-                }
-            }
-
-            // Agregar cada Storage Unit a los datos
+            // Agregar cada Storage Unit a los datos con su página específica
             for (const item of datosStorageUnits) {
+                const pageInfo = storageUnitPages.get(item.storageUnit) || { page: '', libro: '' };
+
                 data.push([
-                    libro,
-                    hoja,
+                    pageInfo.libro,
+                    pageInfo.page,
                     item.storageType,
                     item.storBin,
                     item.storageUnit,

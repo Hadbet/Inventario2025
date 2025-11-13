@@ -648,18 +648,80 @@ document.addEventListener('DOMContentLoaded', function() {
         // Crear la hoja de trabajo
         wb.SheetNames.push('Materiales Faltantes');
 
-        // Datos para la hoja de trabajo
+        // Datos para la hoja de trabajo - Nuevo orden de columnas
         const data = [
-            ['Storage Bin', 'Material No', 'Cantidad', 'Storage Type', 'Estado']
+            ['Libro', 'Hoja', 'Storage Type', 'Storage Bin', 'Material No', 'Cantidad', 'Estado']
         ];
 
-        // Agregar cada material faltante a los datos
+        // Crear un mapa para guardar la información de libro y hoja por storage bin
+        const infoLibroHoja = new Map();
+
+        // Buscar información de libro y hoja en los archivos procesados
+        for (const resultado of resultadosProcesados) {
+            const lineas = resultado.contenido.split('\n');
+            let inventoryNo = '';
+            let page = '';
+            let currentStorageBin = '';
+            let currentStorageType = '';
+
+            // Recorrer cada línea para extraer la información
+            for (let i = 0; i < lineas.length; i++) {
+                const linea = lineas[i];
+
+                // Buscar el número de libro (Inventory lst.no)
+                if (linea.includes('Inventory lst.no. :')) {
+                    const match = linea.match(/Inventory lst\.no\.\s*:\s*(\d+)/);
+                    if (match && match[1]) {
+                        inventoryNo = match[1].trim();
+                    }
+                }
+
+                // Buscar el número de página (Page)
+                if (linea.includes('Page')) {
+                    const match = linea.match(/Page\.+:\s*([^\s]+)/);
+                    if (match && match[1]) {
+                        page = match[1].trim();
+                    }
+                }
+
+                // Buscar el tipo de almacenamiento (Storage type)
+                if (linea.includes('Storage type :')) {
+                    const match = linea.match(/Storage type\s*:\s*(\d+)/);
+                    if (match && match[1]) {
+                        currentStorageType = match[1].trim();
+                    }
+                }
+
+                // Buscar las líneas de material para obtener el storage bin
+                if (/^0001\s+\w+/.test(linea)) {
+                    const partes = linea.split(/\s+/);
+
+                    if (partes.length >= 2) {
+                        currentStorageBin = partes[1];
+
+                        // Guardar la información para este storage bin
+                        infoLibroHoja.set(currentStorageBin, {
+                            libro: inventoryNo,
+                            hoja: page,
+                            storageType: currentStorageType
+                        });
+                    }
+                }
+            }
+        }
+
+        // Agregar cada material faltante a los datos con la información de libro y hoja
         for (const item of materiales) {
+            const storBin = item.storBin || '';
+            const info = infoLibroHoja.get(storBin) || { libro: '', hoja: '', storageType: '' };
+
             data.push([
-                item.storBin || '',
+                info.libro || '',
+                info.hoja || '',
+                item.storageType || info.storageType || '',
+                storBin,
                 item.materialNo || '',
                 item.conteoFinal || '0',
-                item.storageType || '',
                 item.estado || 'No incluido en el reporte'
             ]);
         }
@@ -687,7 +749,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const link = document.createElement('a');
         link.href = url;
-        link.download = 'materiales_faltantes.xlsx';
+        link.download = 'materiales_encontrados_fuera.xlsx';
         link.click();
 
         URL.revokeObjectURL(url);

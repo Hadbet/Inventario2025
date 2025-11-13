@@ -341,6 +341,28 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // Función para enviar datos al backend para SUN
+    async function enviarDatosAlBackendSun(datos) {
+        try {
+            const response = await fetch('https://grammermx.com/Logistica/Inventario2025/daoAdmin/daoAdmin/daoProcesarSun.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(datos)
+            });
+
+            if (!response.ok) {
+                throw new Error(`Error del servidor: ${response.status}`);
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error('Error al enviar datos al backend:', error);
+            throw error;
+        }
+    }
+
     // Función para parsear archivo SUN
     async function parsearArchivoSun(file) {
         return new Promise((resolve, reject) => {

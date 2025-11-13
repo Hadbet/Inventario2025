@@ -110,7 +110,7 @@ if (strlen($nomina) == 7) {
                     <!-- Sección para cargar TXT PVB -->
                     <div class="card mb-4">
                         <div class="card-header section-header">
-                            <h5 class="mb-0">Cargar TXT PVB</h5>
+                            <h5 class="mb-0 text-white">Cargar TXT PVB</h5>
                         </div>
                         <div class="card-body section-body">
                             <div class="drop-zone" id="dropZonePvb">
@@ -147,7 +147,7 @@ if (strlen($nomina) == 7) {
                     <!-- Sección para cargar TXT SUN -->
                     <div class="card">
                         <div class="card-header section-header">
-                            <h5 class="mb-0">Cargar TXT SUN</h5>
+                            <h5 class="mb-0 text-white">Cargar TXT SUN</h5>
                         </div>
                         <div class="card-body section-body">
                             <div class="drop-zone" id="dropZoneSun">

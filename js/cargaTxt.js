@@ -245,12 +245,419 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Función placeholder para procesar archivos SUN
-    function procesarYExportarSun(formato) {
+    async function procesarYExportarSun(formato) {
+        const files = Array.from(filesSun.values());
+
+        if (files.length === 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'No hay archivos',
+                text: 'Por favor, selecciona al menos un archivo TXT para procesar.'
+            });
+            return;
+        }
+
+        // Mostrar indicador de carga
         Swal.fire({
-            icon: 'info',
-            title: 'En desarrollo',
-            text: 'La funcionalidad para procesar archivos SUN está en desarrollo.'
+            title: 'Procesando archivos',
+            text: 'Espere mientras se procesan los archivos...',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
         });
+
+        try {
+            resultadosProcesados = [];
+            materialesFaltantes = [];
+
+            for (const file of files) {
+                // Procesar el archivo
+                const datosArchivo = await parsearArchivoSun(file);
+
+                if (datosArchivo.length > 0) {
+                    // Enviar datos al backend
+                    const datosBackend = await enviarDatosAlBackendSun(datosArchivo);
+
+                    // Actualizar el contenido del archivo
+                    const contenidoActualizado = await actualizarContenidoArchivoSun(file, datosBackend);
+
+                    resultadosProcesados.push({
+                        nombreArchivo: file.name,
+                        contenido: contenidoActualizado.contenido,
+                    });
+
+                    // Actualizar materiales faltantes o encontrados en otra ubicación
+                    const materialesEspeciales = await obtenerMaterialesEspecialesSun(datosArchivo);
+                    if (materialesEspeciales.length > 0) {
+                        materialesFaltantes = materialesFaltantes.concat(materialesEspeciales);
+                    }
+                }
+            }
+
+            // Cerrar el indicador de carga
+            Swal.close();
+
+            // Exportar según el formato seleccionado
+            switch (formato) {
+                case 'txt':
+                    exportarComoTxt(resultadosProcesados);
+                    break;
+                case 'pdf':
+                    exportarComoPdf(resultadosProcesados);
+                    break;
+                case 'csv':
+                    exportarComoCsv(resultadosProcesados);
+                    break;
+                case 'print':
+                    imprimirArchivos(resultadosProcesados);
+                    break;
+            }
+
+            // Mostrar mensaje si hay materiales especiales (faltantes o encontrados en otra ubicación)
+            if (materialesFaltantes.length > 0) {
+                setTimeout(() => {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Materiales especiales',
+                        text: `Se encontraron ${materialesFaltantes.length} materiales que requieren atención.`,
+                        confirmButtonText: 'Exportar Excel',
+                        showCancelButton: true,
+                        cancelButtonText: 'Cerrar'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            exportarMaterialesEspecialesSun(materialesFaltantes);
+                        }
+                    });
+                }, 1000);
+            }
+        } catch (error) {
+            console.error('Error al procesar los archivos:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Ocurrió un error al procesar los archivos.'
+            });
+        }
+    }
+
+    // Función para parsear archivo SUN
+    async function parsearArchivoSun(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+
+            reader.onload = (event) => {
+                try {
+                    const contenido = event.target.result;
+                    const lineas = contenido.split(/\r?\n/);
+
+                    // Extraer información del encabezado
+                    let storageType = '';
+                    let inventoryNo = '';
+                    let page = '';
+
+                    for (const linea of lineas) {
+                        if (linea.includes('Storage type :')) {
+                            const match = linea.match(/Storage type\s*:\s*(\d+)/);
+                            if (match && match[1]) {
+                                storageType = match[1].trim();
+                            }
+                        }
+                        if (linea.includes('Inventory lst.no. :')) {
+                            const match = linea.match(/Inventory lst\.no\.\s*:\s*(\d+)/);
+                            if (match && match[1]) {
+                                inventoryNo = match[1].trim();
+                            }
+                        }
+                        if (linea.includes('Page')) {
+                            const match = linea.match(/Page\.+:\s*([^\s]+)/);
+                            if (match && match[1]) {
+                                page = match[1].trim();
+                            }
+                        }
+                    }
+
+                    // Extraer datos de los materiales
+                    const datos = [];
+
+                    for (const linea of lineas) {
+                        // Verificar si hay línea con datos de materiales
+                        // Caso 1: Línea con Storage Unit
+                        if (/^0001\s+\w+/.test(linea) && linea.includes("Storage Unit")) {
+                            const partes = linea.split(/\s+/);
+
+                            if (partes.length >= 10) {
+                                const storBin = partes[1];
+                                const quantNo = partes[2];
+                                const plnt = partes[3];
+                                const sLoc = partes[4];
+                                const materialNo = partes[5];
+
+                                // Buscar el Storage Unit (estará hacia el final de la línea)
+                                let storageUnit = '';
+                                for (let i = 6; i < partes.length; i++) {
+                                    if (partes[i].match(/^\d{10}$/)) { // Un Storage Unit típico tiene 10 dígitos
+                                        storageUnit = partes[i];
+                                        break;
+                                    }
+                                }
+
+                                // Determinar la unidad de medida
+                                let uom = 'PC';
+                                if (linea.includes('M')) {
+                                    uom = 'M';
+                                }
+
+                                datos.push({
+                                    storBin: storBin,
+                                    quantNo: quantNo || '',
+                                    plnt: plnt || '',
+                                    sLoc: sLoc || '',
+                                    materialNo: materialNo || '',
+                                    storageUnit: storageUnit,
+                                    storageType: storageType,
+                                    inventoryNo: inventoryNo,
+                                    page: page,
+                                    uom: uom,
+                                    tipoLinea: 'conStorageUnit'
+                                });
+                            }
+                        }
+                        // Caso 2: Línea sin Storage Unit (solo Storage Bin)
+                        else if (/^00\d{2}\s+\w+/.test(linea)) {
+                            const partes = linea.split(/\s+/);
+
+                            if (partes.length >= 2) {
+                                const itemNo = partes[0];
+                                const storBin = partes[1];
+
+                                datos.push({
+                                    itemNo: itemNo,
+                                    storBin: storBin,
+                                    storageType: storageType,
+                                    inventoryNo: inventoryNo,
+                                    page: page,
+                                    uom: 'PC',
+                                    tipoLinea: 'sinStorageUnit'
+                                });
+                            }
+                        }
+                    }
+
+                    resolve(datos);
+                } catch (error) {
+                    console.error('Error al parsear el archivo:', error);
+                    reject(error);
+                }
+            };
+
+            reader.onerror = (error) => {
+                console.error('Error al leer el archivo:', error);
+                reject(error);
+            };
+
+            reader.readAsText(file);
+        });
+    }
+
+    // Función para actualizar el contenido del archivo SUN
+    async function actualizarContenidoArchivoSun(file, datosBackend) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+
+            reader.onload = (event) => {
+                try {
+                    const contenidoOriginal = event.target.result;
+                    const lineasOriginales = contenidoOriginal.split(/\r?\n/);
+
+                    // Actualizar las líneas con los datos recibidos del backend
+                    const lineasActualizadas = lineasOriginales.map((linea) => {
+                        // Caso 1: Línea con Storage Unit
+                        if (/^0001\s+\w+/.test(linea) && linea.includes("Storage Unit")) {
+                            const partes = linea.split(/\s+/);
+
+                            if (partes.length >= 10) {
+                                const storBin = partes[1];
+                                const materialNo = partes[5];
+
+                                // Buscar el Storage Unit
+                                let storageUnit = '';
+                                for (let i = 6; i < partes.length; i++) {
+                                    if (partes[i].match(/^\d{10}$/)) { // Storage Unit típico con 10 dígitos
+                                        storageUnit = partes[i];
+                                        break;
+                                    }
+                                }
+
+                                // Determinar la unidad de medida
+                                let uom = 'PC';
+                                if (linea.includes('M')) {
+                                    uom = 'M';
+                                }
+
+                                // Buscar el material en los datos del backend
+                                const materialEncontrado = datosBackend.find(
+                                    (item) => (item.storageUnit === storageUnit) ||
+                                        (item.storBin === storBin && item.materialNo === materialNo)
+                                );
+
+                                if (materialEncontrado) {
+                                    // Determinar el valor final del conteo
+                                    let conteoFinal = '0';
+                                    if (materialEncontrado.conteoFinal && materialEncontrado.conteoFinal !== '0') {
+                                        conteoFinal = materialEncontrado.conteoFinal;
+                                    }
+
+                                    // Reemplazar los guiones bajos por la cantidad
+                                    return linea.replace(/____________ (PC|M)/, `${conteoFinal} ${uom}`);
+                                } else {
+                                    // Si el material no se encuentra, poner 0
+                                    return linea.replace(/____________ (PC|M)/, `0 ${uom}`);
+                                }
+                            }
+                        }
+                        // Caso 2: Línea sin Storage Unit
+                        else if (/^00\d{2}\s+\w+/.test(linea)) {
+                            const partes = linea.split(/\s+/);
+
+                            if (partes.length >= 2) {
+                                const storBin = partes[1];
+
+                                // Buscar el storage bin en los datos del backend
+                                const materialEncontrado = datosBackend.find(
+                                    (item) => item.storBin === storBin
+                                );
+
+                                if (materialEncontrado) {
+                                    // Determinar el valor final del conteo
+                                    let conteoFinal = '0';
+                                    if (materialEncontrado.conteoFinal && materialEncontrado.conteoFinal !== '0') {
+                                        conteoFinal = materialEncontrado.conteoFinal;
+                                    }
+
+                                    // Reemplazar los guiones bajos por la cantidad
+                                    return linea.replace(/____________/, `${conteoFinal}`);
+                                } else {
+                                    // Si el material no se encuentra, poner 0
+                                    return linea.replace(/____________/, '0');
+                                }
+                            }
+                        }
+
+                        return linea;
+                    });
+
+                    resolve({
+                        contenido: lineasActualizadas.join('\n')
+                    });
+                } catch (error) {
+                    console.error('Error al actualizar el contenido del archivo:', error);
+                    reject(error);
+                }
+            };
+
+            reader.onerror = (error) => {
+                console.error('Error al leer el archivo:', error);
+                reject(error);
+            };
+
+            reader.readAsText(file);
+        });
+    }
+
+// Función para obtener materiales especiales (faltantes o en otra ubicación)
+    async function obtenerMaterialesEspecialesSun(datos) {
+        try {
+            const response = await fetch('https://grammermx.com/Logistica/Inventario2025/daoAdmin/daoMaterialesEspecialesSun.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(datos)
+            });
+
+            if (!response.ok) {
+                throw new Error(`Error del servidor: ${response.status}`);
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error('Error al obtener materiales especiales:', error);
+            return [];
+        }
+    }
+
+    // Función para exportar materiales especiales SUN como Excel
+    function exportarMaterialesEspecialesSun(materiales) {
+        if (!materiales || materiales.length === 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'No hay materiales especiales',
+                text: 'No hay materiales especiales para exportar.'
+            });
+            return;
+        }
+
+        // Crear un libro de Excel
+        const wb = XLSX.utils.book_new();
+
+        // Configurar propiedades del libro
+        wb.Props = {
+            Title: 'Materiales Especiales SUN',
+            Author: 'Sistema de Inventario',
+            CreatedDate: new Date()
+        };
+
+        // Crear la hoja de trabajo
+        wb.SheetNames.push('Materiales Especiales');
+
+        // Datos para la hoja de trabajo - Nuevo orden de columnas
+        const data = [
+            ['Libro', 'Hoja', 'Storage Type', 'Storage Bin', 'Material No', 'Storage Unit', 'Cantidad', 'UoM', 'Estado']
+        ];
+
+        // Agregar cada material especial a los datos
+        for (const item of materiales) {
+            data.push([
+                item.inventoryNo || '',
+                item.page || '',
+                item.storageType || '',
+                item.storBin || '',
+                item.materialNo || '',
+                item.storageUnit || '',
+                item.conteoFinal || '0',
+                item.uom || 'PC',
+                item.estado || ''
+            ]);
+        }
+
+        // Crear la hoja de trabajo
+        const ws = XLSX.utils.aoa_to_sheet(data);
+        wb.Sheets['Materiales Especiales'] = ws;
+
+        // Generar el archivo Excel
+        const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'binary' });
+
+        // Función auxiliar para convertir la cadena binaria en un objeto Blob
+        function s2ab(s) {
+            const buf = new ArrayBuffer(s.length);
+            const view = new Uint8Array(buf);
+            for (let i = 0; i < s.length; i++) {
+                view[i] = s.charCodeAt(i) & 0xFF;
+            }
+            return buf;
+        }
+
+        // Descargar el archivo Excel
+        const blob = new Blob([s2ab(wbout)], { type: 'application/octet-stream' });
+        const url = URL.createObjectURL(blob);
+
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'materiales_especiales_sun.xlsx';
+        link.click();
+
+        URL.revokeObjectURL(url);
     }
 
     // Función para parsear archivo PVB

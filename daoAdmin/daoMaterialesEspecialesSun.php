@@ -25,6 +25,7 @@ if (!$conexion) {
 $storageUnits = [];
 $storBins = [];
 $storageTypes = [];
+$materialNos = [];
 
 foreach ($data as $item) {
     if (!empty($item['storageUnit'])) {
@@ -38,20 +39,23 @@ foreach ($data as $item) {
     if (!empty($item['storageType'])) {
         $storageTypes[] = "'" . mysqli_real_escape_string($conexion, $item['storageType']) . "'";
     }
+
+    if (!empty($item['materialNo'])) {
+        $materialNos[] = "'" . mysqli_real_escape_string($conexion, $item['materialNo']) . "'";
+    }
 }
 
 $materialesEspeciales = [];
 
-// Si hay Storage Units para filtrar
+// PARTE 1: Verificar Storage Units que están en la base pero no coinciden con el Storage Bin y Storage Type
 if (!empty($storageUnits)) {
-    // Consultar materiales que están en la base de datos pero no en el archivo
-    $consulta = "
+    // Buscar Storage Units que existen pero en diferentes ubicaciones
+    $consultaStorageUnitsDiferentes = "
         SELECT 
             su.Id_StorageUnit as storageUnit,
             su.Numero_Parte as materialNo,
             su.Storage_Bin as storBin,
             su.Storage_Type as storageType,
-            su.Cantidad as cantidad,
             CASE
                 WHEN bi.TercerConteo IS NOT NULL AND bi.TercerConteo > 0 THEN bi.TercerConteo
                 WHEN bi.SegundoConteo IS NOT NULL AND bi.SegundoConteo > 0 THEN bi.SegundoConteo
@@ -60,38 +64,52 @@ if (!empty($storageUnits)) {
             END AS conteoFinal
         FROM Storage_Unit su
         LEFT JOIN Bitacora_Inventario bi ON su.FolioMarbete = bi.FolioMarbete
-        WHERE su.Storage_Bin IN (" . implode(',', $storBins) . ")
-        AND su.Storage_Type IN (" . implode(',', $storageTypes) . ")
-        AND su.Id_StorageUnit NOT IN (" . implode(',', $storageUnits) . ")
+        WHERE su.Id_StorageUnit IN (" . implode(',', $storageUnits) . ")
+        AND (su.Storage_Bin NOT IN (" . implode(',', $storBins) . ") 
+             OR su.Storage_Type NOT IN (" . implode(',', $storageTypes) . "))
         AND su.Estatus = 1
     ";
 
-    $resultado = mysqli_query($conexion, $consulta);
+    $resultadoDiferentes = mysqli_query($conexion, $consultaStorageUnitsDiferentes);
 
-    if ($resultado) {
-        while ($fila = mysqli_fetch_assoc($resultado)) {
+    if ($resultadoDiferentes && mysqli_num_rows($resultadoDiferentes) > 0) {
+        while ($fila = mysqli_fetch_assoc($resultadoDiferentes)) {
+            // Encontrar el item original del archivo
+            $itemOriginal = null;
+            foreach ($data as $item) {
+                if (isset($item['storageUnit']) && $item['storageUnit'] === $fila['storageUnit']) {
+                    $itemOriginal = $item;
+                    break;
+                }
+            }
+
             $materialesEspeciales[] = [
                 'storageUnit' => $fila['storageUnit'],
                 'materialNo' => $fila['materialNo'],
-                'storBin' => $fila['storBin'],
-                'storageType' => $fila['storageType'],
+                'storBin' => $fila['storBin'], // Ubicación real en la base de datos
+                'storageType' => $fila['storageType'], // Tipo real en la base de datos
                 'conteoFinal' => $fila['conteoFinal'],
-                'inventoryNo' => $data[0]['inventoryNo'] ?? '',
-                'page' => $data[0]['page'] ?? '',
-                'uom' => 'PC', // Por defecto, se podría mejorar
-                'estado' => 'No incluido en el reporte'
+                'inventoryNo' => isset($itemOriginal['inventoryNo']) ? $itemOriginal['inventoryNo'] : $data[0]['inventoryNo'] ?? '',
+                'page' => isset($itemOriginal['page']) ? $itemOriginal['page'] : $data[0]['page'] ?? '',
+                'uom' => isset($itemOriginal['uom']) ? $itemOriginal['uom'] : 'PC',
+                'estado' => 'Encontrado en ubicación diferente'
             ];
         }
     }
-} else if (!empty($storBins) && !empty($storageTypes)) {
-    // Si no hay Storage Units, filtrar solo por Storage Bin y Storage Type
+}
+
+// PARTE 2: Buscar materiales adicionales en las ubicaciones del archivo que no están incluidos
+if (!empty($storBins) && !empty($storageTypes)) {
+    $condicionStorageUnits = !empty($storageUnits)
+        ? "AND su.Id_StorageUnit NOT IN (" . implode(',', $storageUnits) . ")"
+        : "";
+
     $consulta = "
         SELECT 
             su.Id_StorageUnit as storageUnit,
             su.Numero_Parte as materialNo,
             su.Storage_Bin as storBin,
             su.Storage_Type as storageType,
-            su.Cantidad as cantidad,
             CASE
                 WHEN bi.TercerConteo IS NOT NULL AND bi.TercerConteo > 0 THEN bi.TercerConteo
                 WHEN bi.SegundoConteo IS NOT NULL AND bi.SegundoConteo > 0 THEN bi.SegundoConteo
@@ -102,23 +120,14 @@ if (!empty($storageUnits)) {
         LEFT JOIN Bitacora_Inventario bi ON su.FolioMarbete = bi.FolioMarbete
         WHERE su.Storage_Bin IN (" . implode(',', $storBins) . ")
         AND su.Storage_Type IN (" . implode(',', $storageTypes) . ")
+        $condicionStorageUnits
         AND su.Estatus = 1
     ";
 
     $resultado = mysqli_query($conexion, $consulta);
 
-    if ($resultado) {
-        // Verificar cuáles están en el archivo y cuáles no
-        $storBinsEnArchivo = [];
-        foreach ($data as $item) {
-            if (!empty($item['storBin'])) {
-                $storBinsEnArchivo[] = $item['storBin'];
-            }
-        }
-
+    if ($resultado && mysqli_num_rows($resultado) > 0) {
         while ($fila = mysqli_fetch_assoc($resultado)) {
-            $enArchivo = in_array($fila['storBin'], $storBinsEnArchivo);
-
             $materialesEspeciales[] = [
                 'storageUnit' => $fila['storageUnit'],
                 'materialNo' => $fila['materialNo'],
@@ -128,8 +137,52 @@ if (!empty($storageUnits)) {
                 'inventoryNo' => $data[0]['inventoryNo'] ?? '',
                 'page' => $data[0]['page'] ?? '',
                 'uom' => 'PC',
-                'estado' => $enArchivo ? 'Encontrado sin Storage Unit' : 'No incluido en el reporte'
+                'estado' => 'No incluido en el reporte'
             ];
+        }
+    }
+}
+
+// PARTE 3: Verificar todos los Storage Units de la base para encontrar duplicados
+if (!empty($storageUnits)) {
+    // Consultar si hay Storage Units duplicados en la base de datos
+    $consultaDuplicados = "
+        SELECT 
+            su.Id_StorageUnit as storageUnit,
+            su.Numero_Parte as materialNo,
+            su.Storage_Bin as storBin,
+            su.Storage_Type as storageType,
+            COUNT(*) as cantidad_registros,
+            CASE
+                WHEN bi.TercerConteo IS NOT NULL AND bi.TercerConteo > 0 THEN bi.TercerConteo
+                WHEN bi.SegundoConteo IS NOT NULL AND bi.SegundoConteo > 0 THEN bi.SegundoConteo
+                WHEN bi.PrimerConteo IS NOT NULL AND bi.PrimerConteo > 0 THEN bi.PrimerConteo
+                ELSE 0
+            END AS conteoFinal
+        FROM Storage_Unit su
+        LEFT JOIN Bitacora_Inventario bi ON su.FolioMarbete = bi.FolioMarbete
+        WHERE su.Estatus = 1
+        GROUP BY su.Id_StorageUnit
+        HAVING COUNT(*) > 1
+    ";
+
+    $resultadoDuplicados = mysqli_query($conexion, $consultaDuplicados);
+
+    if ($resultadoDuplicados && mysqli_num_rows($resultadoDuplicados) > 0) {
+        while ($fila = mysqli_fetch_assoc($resultadoDuplicados)) {
+            if (in_array("'" . $fila['storageUnit'] . "'", $storageUnits)) {
+                $materialesEspeciales[] = [
+                    'storageUnit' => $fila['storageUnit'],
+                    'materialNo' => $fila['materialNo'],
+                    'storBin' => $fila['storBin'],
+                    'storageType' => $fila['storageType'],
+                    'conteoFinal' => $fila['conteoFinal'],
+                    'inventoryNo' => $data[0]['inventoryNo'] ?? '',
+                    'page' => $data[0]['page'] ?? '',
+                    'uom' => 'PC',
+                    'estado' => 'Storage Unit duplicado en base de datos'
+                ];
+            }
         }
     }
 }

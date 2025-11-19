@@ -657,7 +657,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Datos para la hoja de trabajo - Nuevo orden de columnas
         const data = [
-            ['Libro', 'Hoja', 'Storage Type', 'Storage Bin', 'Material No', 'Cantidad', 'Estado']
+            ['Libro', 'Hoja', 'De', 'Storage Type', 'Storage Bin', 'Material No', 'Cantidad', 'Estado']
         ];
 
         // Crear un mapa para guardar la información de libro y hoja por storage bin
@@ -722,9 +722,23 @@ document.addEventListener('DOMContentLoaded', function() {
             const storBin = item.storBin || '';
             const info = infoLibroHoja.get(storBin) || { libro: '', hoja: '', storageType: '' };
 
+            // Dividir la página si viene en formato "3/117"
+            let hojaValor = '';
+            let deValor = '';
+
+            if (info.hoja && info.hoja.includes('/')) {
+                const partes = info.hoja.split('/');
+                hojaValor = partes[0].trim();  // El número antes del "/" (ej: 3)
+                deValor = partes[1].trim();    // El número después del "/" (ej: 117)
+            } else {
+                // Si no tiene el formato esperado, poner todo en la primera columna
+                hojaValor = info.hoja || '';
+            }
+
             data.push([
                 info.libro || '',
-                info.hoja || '',
+                hojaValor,
+                deValor,
                 item.storageType || info.storageType || '',
                 storBin,
                 item.materialNo || '',

@@ -1307,17 +1307,32 @@ document.addEventListener('DOMContentLoaded', function() {
             wb.SheetNames.push('Storage Units');
 
             // Datos para la hoja de trabajo - Orden solicitado
+            // Datos para la hoja de trabajo - Orden con Hoja dividida en 2 columnas
             const data = [
-                ['Libro', 'Hoja', 'Storage Type', 'Storage Bin', 'Storage Unit', 'Material No', 'Cantidad', 'Estado']
+                ['Libro', 'Hoja', 'De', 'Storage Type', 'Storage Bin', 'Storage Unit', 'Material No', 'Cantidad', 'Estado']
             ];
 
             // Agregar cada Storage Unit a los datos con su página específica
             for (const item of datosStorageUnits) {
                 const pageInfo = storageUnitPages.get(item.storageUnit) || { page: '', libro: '' };
 
+                // Dividir la página si viene en formato "3/117"
+                let hojaValor = '';
+                let deValor = '';
+
+                if (pageInfo.page && pageInfo.page.includes('/')) {
+                    const partes = pageInfo.page.split('/');
+                    hojaValor = partes[0].trim();  // El número antes del "/" (ej: 3)
+                    deValor = partes[1].trim();    // El número después del "/" (ej: 117)
+                } else {
+                    // Si no tiene el formato esperado, poner todo en la primera columna
+                    hojaValor = pageInfo.page;
+                }
+
                 data.push([
                     pageInfo.libro,
-                    pageInfo.page,
+                    hojaValor,
+                    deValor,
                     item.storageType,
                     item.storBin,
                     item.storageUnit,

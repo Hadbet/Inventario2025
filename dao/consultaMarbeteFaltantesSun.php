@@ -37,7 +37,7 @@ FROM
 LEFT JOIN 
     Storage_Unit S 
 ON 
-    B.FolioMarbete = S.FolioMarbete
+    (B.StorageBin = S.Storage_Bin and B.StorageType = S.Storage_Type and B.NumeroParte = S.Numero_Parte)
 WHERE 
     B.FolioMarbete = '$marbete' 
     and B.Estatus in(0,1);");

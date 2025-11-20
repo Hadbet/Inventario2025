@@ -706,7 +706,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (partes.length >= 2) {
                         currentStorageBin = partes[1];
 
-                        // Guardar la información para este storage bin
                         infoLibroHoja.set(currentStorageBin, {
                             libro: inventoryNo,
                             hoja: page,
@@ -717,21 +716,18 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // Agregar cada material faltante a los datos con la información de libro y hoja
         for (const item of materiales) {
             const storBin = item.storBin || '';
             const info = infoLibroHoja.get(storBin) || { libro: '', hoja: '', storageType: '' };
 
-            // Dividir la página si viene en formato "3/117"
             let hojaValor = '';
             let deValor = '';
 
             if (info.hoja && info.hoja.includes('/')) {
                 const partes = info.hoja.split('/');
-                hojaValor = partes[0].trim();  // El número antes del "/" (ej: 3)
-                deValor = partes[1].trim();    // El número después del "/" (ej: 117)
+                hojaValor = partes[0].trim();
+                deValor = partes[1].trim();
             } else {
-                // Si no tiene el formato esperado, poner todo en la primera columna
                 hojaValor = info.hoja || '';
             }
 

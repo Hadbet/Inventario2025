@@ -1,14 +1,4 @@
 <?php
-session_start();
-/*
-if ($_SESSION["nominaCurso"] == "" && $_SESSION["nominaCurso"]== null && $_SESSION["rol"]== "" && $_SESSION["rol"]== null) {
-    echo "<META HTTP-EQUIV='REFRESH' CONTENT='1; URL=login.html'>";
-    session_destroy();
-}else{
-    session_start();
-    $rol =$_SESSION['rol'];
-    $area =$_SESSION['area'];
-}*/
 
 session_start();
 $rol = $_SESSION['rol'];
@@ -168,10 +158,10 @@ if (strlen($nomina) == 7) {
                             <strong class="card-title h4">Storage Unit Faltantes</strong><br><br>
 
                             <label for="" class="card-title h5">Total contado faltante : <strong id="lblTotalContadoFaltante"
-                                                                                        class="card-title h4"></strong></label>
+                                                                                                 class="card-title h4"></strong></label>
                             <br>
                             <label for="" class="card-title h5">Total dinero faltante : <strong id="lblTotalDineroFaltante"
-                                                                                                 class="card-title h4"></strong></label>
+                                                                                                class="card-title h4"></strong></label>
                             <table id="data-table-faltantes" class="table table-hover">
                                 <thead>
                                 <tr>
@@ -306,9 +296,12 @@ if (strlen($nomina) == 7) {
 
 <script>
 
-    let html5QrcodeScanner;
-    let html5QrcodeScannerUnit;
-    let html5QrcodeScannerUnitA;
+    // ==========================================
+    // VARIABLES GLOBALES
+    // ==========================================
+    let html5QrcodeScanner = null;
+    let html5QrcodeScannerUnit = null;
+    let html5QrcodeScannerUnitA = null;
 
     var numeroParte;
     var storageBin;
@@ -320,12 +313,31 @@ if (strlen($nomina) == 7) {
     var totalContado = 0;
     var costoUnitario = 0;
     var auxConteo = 0;
-    var total=0;
+    var total = 0;
     let sumaTotal = 0;
-    estatusConteo();
 
+    // ✅ OPTIMIZACIÓN: Variables de caché
+    var datosConteo = null;
+    var ultimoSumCache = null;
+    var addedStorageUnits = {};
+
+    // ==========================================
+    // INICIALIZACIÓN
+    // ==========================================
+    estatusConteo();
+    sum();
+
+    // ==========================================
+    // ✅ OPTIMIZACIÓN: CACHÉ DE DATOS DE CONTEO
+    // ==========================================
     function estatusConteo() {
+        if (datosConteo) {
+            // Ya tenemos los datos en caché, no hacer otra consulta
+            return;
+        }
+
         $.getJSON('https://grammermx.com/Logistica/Inventario2025/dao/consultaAreaDetalle.php?area=<?php echo $area;?>', function (data) {
+            datosConteo = data; // ✅ Guardar en caché
             for (var i = 0; i < data.data.length; i++) {
                 auxConteo = data.data[i].Conteo;
                 if (auxConteo === "2") {
@@ -335,16 +347,26 @@ if (strlen($nomina) == 7) {
         });
     }
 
-    sum();
-
+    // ==========================================
+    // ✅ OPTIMIZACIÓN: CACHÉ DE ÚLTIMO SUM
+    // ==========================================
     function sum() {
+        if (ultimoSumCache) {
+            ultimoSum = ultimoSumCache;
+            return;
+        }
+
         $.getJSON('https://grammermx.com/Logistica/Inventario2025/dao/consultaUltimoSum.php', function (data) {
             for (var i = 0; i < data.data.length; i++) {
                 ultimoSum = data.data[i].Id_StorageUnit;
+                ultimoSumCache = ultimoSum; // ✅ Guardar en caché
             }
         });
     }
 
+    // ==========================================
+    // CARGAR NÚMERO DE PARTE
+    // ==========================================
     function cargarNumeroParte(numeroParteF, storageBinF) {
         $.getJSON('https://grammermx.com/Logistica/Inventario2025/dao/consultaParte.php?parte=' + numeroParteF, function (data) {
             for (var i = 0; i < data.data.length; i++) {
@@ -359,10 +381,13 @@ if (strlen($nomina) == 7) {
                     costoUnitario = data.data[i].Costo / data.data[i].Por;
                     document.getElementById('txtStorageUnit').focus();
 
+                    // ✅ OPTIMIZACIÓN: Cargar faltantes una sola vez aquí
+                    var marbete = parseInt(document.getElementById("scanner_input").value.split('.')[0], 10);
+                    cargarFaltantes(marbete);
+
                     limpiarEscan();
 
                 } else {
-                    bandera = 0;
                     Swal.fire({
                         title: "El numero de parte no existe",
                         text: "Verificalo con la mesa de control",
@@ -373,19 +398,58 @@ if (strlen($nomina) == 7) {
         });
     }
 
+    // ==========================================
+    // ✅ OPTIMIZACIÓN: FUNCIÓN SEPARADA PARA CARGAR FALTANTES
+    // ==========================================
+    function cargarFaltantes(marbete) {
+        $.getJSON('https://grammermx.com/Logistica/Inventario2025/dao/consultaMarbeteFaltantesSun.php?marbete=' + marbete, function (data) {
+            const tableFaltantes = document.getElementById("data-table-faltantes").getElementsByTagName('tbody')[0];
+
+            // ✅ Limpiar tabla antes de agregar
+            tableFaltantes.innerHTML = '';
+
+            for (var i = 0; i < data.data.length; i++) {
+                if (data.data[i].FolioMarbete) {
+                    if (data.data[i].StorageUnit !== 'NA' && data.data[i].EstatusStorage != 1) {
+                        var rowFaltantes = tableFaltantes.insertRow(-1);
+                        var storageUnit = data.data[i].StorageUnit;
+                        var visible = storageUnit.slice(-4);
+                        var hidden = storageUnit.slice(0, -4);
+
+                        var cell1F = rowFaltantes.insertCell(0);
+                        var cell2F = rowFaltantes.insertCell(1);
+                        var cell3F = rowFaltantes.insertCell(2);
+
+                        cell1F.innerHTML = '<span class="blurred">' + hidden + '</span>' + visible;
+                        cell2F.innerHTML = data.data[i].NumeroParte;
+                        cell3F.innerHTML = data.data[i].CantidadStorage;
+                    }
+                }
+            }
+
+            // ✅ Calcular totales después de cargar
+            sumarCantidades();
+        });
+    }
+
+    // ==========================================
+    // ✅ OPTIMIZACIÓN: SUMA DE CANTIDADES CORREGIDA
+    // ==========================================
     function sumarCantidades() {
         try {
+            // ✅ CRÍTICO: Resetear antes de sumar
+            sumaTotal = 0;
+
             const tabla = document.getElementById('data-table-faltantes');
             if (!tabla) {
                 console.error('Tabla no encontrada');
                 return '0.00';
             }
 
-            const filas = tabla.querySelectorAll('tr');
+            // ✅ Solo recorrer tbody, no thead
+            const filas = tabla.querySelectorAll('tbody tr');
 
-            filas.forEach((fila, index) => {
-                if (index === 0) return;
-
+            filas.forEach((fila) => {
                 if (fila.cells && fila.cells.length >= 3) {
                     const celdaCantidad = fila.cells[2];
                     const texto = celdaCantidad.textContent.trim();
@@ -394,7 +458,7 @@ if (strlen($nomina) == 7) {
                     if (!isNaN(valor)) {
                         sumaTotal += valor;
                     } else {
-                        console.warn(`Fila ${index}: Valor no numérico ("${texto}")`);
+                        console.warn('Valor no numérico: "' + texto + '"');
                     }
                 }
             });
@@ -404,12 +468,13 @@ if (strlen($nomina) == 7) {
             total = sumaTotal * costoUnitario;
             document.getElementById("lblTotalDineroFaltante").innerText = total.toLocaleString('es-MX', {
                 style: 'currency',
-                currency: 'MXN', // Cambia a tu moneda (USD, EUR, etc.)
+                currency: 'MXN',
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2
             });
 
-            console.log("Suma total de cantidades:", sumaTotal*costoUnitario);
+            console.log("Suma total de cantidades:", sumaTotal);
+            console.log("Total dinero:", total);
             return sumaTotal.toFixed(2);
         } catch (error) {
             console.error('Error en sumarCantidades:', error);
@@ -417,9 +482,12 @@ if (strlen($nomina) == 7) {
         }
     }
 
+    // ==========================================
+    // MANUAL MARBETE
+    // ==========================================
     function manualMarbete() {
 
-        var marbete = parseInt(document.getElementById("scanner_input").value.split('.')[0], 10)
+        var marbete = parseInt(document.getElementById("scanner_input").value.split('.')[0], 10);
         var conteoM = document.getElementById("scanner_input").value.split('.')[1];
 
         $.getJSON('https://grammermx.com/Logistica/Inventario2025/dao/consultaMarbete.php?marbete=' + marbete, function (data) {
@@ -429,7 +497,6 @@ if (strlen($nomina) == 7) {
                         if (data.data[i].FolioMarbete) {
                             if (data.data[i].Estatus === '0') {
                                 if (data.data[i].Area === '<?php echo $area;?>') {
-                                    manualMarbeteFaltantes();
                                     numeroParte = data.data[i].NumeroParte;
                                     storageBin = data.data[i].StorageBin;
                                     storageType = data.data[i].StorageType;
@@ -459,7 +526,6 @@ if (strlen($nomina) == 7) {
                         if (data.data[i].FolioMarbete) {
                             if (data.data[i].SegFolio === '2') {
                                 if (data.data[i].Area === '<?php echo $area;?>') {
-                                    manualMarbeteFaltantes();
                                     numeroParte = data.data[i].NumeroParte;
                                     storageBin = data.data[i].StorageBin;
                                     document.getElementById("reader").style.display = 'none';
@@ -467,6 +533,10 @@ if (strlen($nomina) == 7) {
                                     document.getElementById("pasoDos").style.display = 'block';
                                     document.getElementById("pasoUno").style.display = 'none';
                                     document.getElementById('txtStorageUnit').focus();
+
+                                    // ✅ Cargar faltantes
+                                    cargarFaltantes(marbete);
+
                                     limpiarEscan();
                                 } else {
                                     Swal.fire({
@@ -508,6 +578,9 @@ if (strlen($nomina) == 7) {
         });
     }
 
+    // ==========================================
+    // LECTURA CORRECTA (QR MARBETE)
+    // ==========================================
     function lecturaCorrecta(decodedText, decodedResult) {
 
         var conteoM = decodedText.split('.')[1];
@@ -522,7 +595,7 @@ if (strlen($nomina) == 7) {
                                 if (data.data[i].Area === '<?php echo $area;?>') {
                                     numeroParte = data.data[i].NumeroParte;
                                     storageBin = data.data[i].StorageBin;
-                                    console.log(`Code matched = ${decodedText}`, decodedResult);
+                                    console.log('Code matched = ' + decodedText, decodedResult);
                                     document.getElementById("scanner_input").value = decodedText;
                                     cargarNumeroParte(numeroParte, storageBin);
                                 } else {
@@ -552,13 +625,17 @@ if (strlen($nomina) == 7) {
                                 if (data.data[i].Area === '<?php echo $area;?>') {
                                     numeroParte = data.data[i].NumeroParte;
                                     storageBin = data.data[i].StorageBin;
-                                    console.log(`Code matched = ${decodedText}`, decodedResult);
+                                    console.log('Code matched = ' + decodedText, decodedResult);
                                     document.getElementById("scanner_input").value = decodedText;
                                     document.getElementById("reader").style.display = 'none';
                                     document.getElementById("Ubicacion").innerHTML = "Ubicación : " + storageBin;
                                     document.getElementById("pasoDos").style.display = 'block';
                                     document.getElementById("pasoUno").style.display = 'none';
                                     document.getElementById('txtStorageUnit').focus();
+
+                                    // ✅ Cargar faltantes
+                                    cargarFaltantes(marbete);
+
                                     limpiarEscan();
                                 } else {
                                     Swal.fire({
@@ -602,7 +679,7 @@ if (strlen($nomina) == 7) {
     }
 
     function errorLectura(error) {
-        console.warn(`Code scan error = ${error}`);
+        console.warn('Code scan error = ' + error);
     }
 
     function escaneo() {
@@ -615,16 +692,39 @@ if (strlen($nomina) == 7) {
         html5QrcodeScanner.render(lecturaCorrecta, errorLectura);
     }
 
-    var addedStorageUnits = {};
+    // ==========================================
+    // ✅ OPTIMIZACIÓN: ELIMINAR DE FALTANTES AL AGREGAR
+    // ==========================================
+    function eliminarDeFaltantes(storageUnit) {
+        var tableFaltantes = document.getElementById("data-table-faltantes");
+        var tbody = tableFaltantes.getElementsByTagName('tbody')[0];
 
+        for (var j = tbody.rows.length - 1; j >= 0; j--) {
+            var cellValue = tbody.rows[j].cells[0].innerText.replace(/\s+/g, ''); // Quitar espacios
+            var storageUnitLimpio = storageUnit.replace(/\s+/g, '');
+
+            // Comparar solo los últimos 4 caracteres (parte visible)
+            if (cellValue.slice(-4) === storageUnitLimpio.slice(-4)) {
+                tbody.deleteRow(j);
+                break;
+            }
+        }
+
+        // ✅ Recalcular después de eliminar
+        sumarCantidades();
+    }
+
+    // ==========================================
+    // STORAGE UNIT MANUAL
+    // ==========================================
     function storageUnitManual() {
         var txtStorageUnitValue = document.getElementById("txtStorageUnit").value;
 
         if (txtStorageUnitValue.length === 10 && parseInt(txtStorageUnitValue) < ultimoSum) {
-            $.getJSON('https://grammermx.com/Logistica/Inventario2025/dao/consultaStorageUnit.php?storageUnit=' + document.getElementById("txtStorageUnit").value + '&bin=' + storageBin + '&conteo=' + auxConteo, function (data) {
+            $.getJSON('https://grammermx.com/Logistica/Inventario2025/dao/consultaStorageUnit.php?storageUnit=' + txtStorageUnitValue + '&bin=' + storageBin + '&conteo=' + auxConteo, function (data) {
                 if (data.Estatus) {
                     if (data.Estatus == 'No existe el storage unit') {
-                        document.getElementById("txtStorageUnitAgregar").value = document.getElementById("txtStorageUnit").value;
+                        document.getElementById("txtStorageUnitAgregar").value = txtStorageUnitValue;
                         document.getElementById("btnAgregarStorage").click();
                         limpiarEscan();
                     } else {
@@ -650,14 +750,8 @@ if (strlen($nomina) == 7) {
                                     return;
                                 }
 
-                                var tableFaltantes = document.getElementById("data-table-faltantes");
-                                for (var j = 1; j < tableFaltantes.rows.length; j++) {
-                                    var cellValue = tableFaltantes.rows[j].cells[0].innerText;
-                                    if (cellValue === data.data[i].Id_StorageUnit) {
-                                        tableFaltantes.deleteRow(j);
-                                        break;
-                                    }
-                                }
+                                // ✅ Eliminar de faltantes
+                                eliminarDeFaltantes(data.data[i].Id_StorageUnit);
 
                                 addedStorageUnits[data.data[i].Id_StorageUnit] = {
                                     numeroParte: data.data[i].Numero_Parte,
@@ -665,7 +759,7 @@ if (strlen($nomina) == 7) {
                                 };
 
                                 cantidad = data.data[i].Cantidad;
-                                var table = document.getElementById("data-table");
+                                var table = document.getElementById("data-table").getElementsByTagName('tbody')[0];
                                 var row = table.insertRow(-1);
                                 var cell1 = row.insertCell(0);
                                 var cell2 = row.insertCell(1);
@@ -676,12 +770,6 @@ if (strlen($nomina) == 7) {
 
                                 totalContado += parseFloat(cantidad);
                                 document.getElementById("lblTotalContado").innerText = totalContado;
-
-                                Swal.fire({
-                                    title: "Storage unit escaneado",
-                                    text: "Unit : " + data.data[i].Id_StorageUnit,
-                                    icon: "success"
-                                });
 
                                 let timerInterval;
                                 Swal.fire({
@@ -694,14 +782,13 @@ if (strlen($nomina) == 7) {
                                         Swal.showLoading();
                                         const timer = Swal.getPopup().querySelector("b");
                                         timerInterval = setInterval(() => {
-                                            timer.textContent = `${Swal.getTimerLeft()}`;
+                                            timer.textContent = Swal.getTimerLeft();
                                         }, 100);
                                     },
                                     willClose: () => {
                                         clearInterval(timerInterval);
                                     }
                                 }).then((result) => {
-                                    /* Read more about handling dismissals below */
                                     if (result.dismiss === Swal.DismissReason.timer) {
                                         limpiarEscan();
                                         document.getElementById("txtStorageUnit").value = '';
@@ -729,10 +816,6 @@ if (strlen($nomina) == 7) {
                     }
                 }
 
-                sumarCantidades();
-
-                console.log(total);
-                console.log(sumaTotal);
             });
         } else {
             Swal.fire({
@@ -744,11 +827,12 @@ if (strlen($nomina) == 7) {
 
     }
 
-
+    // ==========================================
+    // LECTURA CORRECTA UNIT (QR STORAGE)
+    // ==========================================
     function lecturaCorrectaUnit(decodedText, decodedResult) {
 
         if (decodedText.length === 10 && parseInt(decodedText) < ultimoSum) {
-            console.log('https://grammermx.com/Logistica/Inventario2025/dao/consultaStorageUnit.php?storageUnit=' + document.getElementById("txtStorageUnit").value + '&bin=' + storageBin + '&conteo=' + auxConteo);
             $.getJSON('https://grammermx.com/Logistica/Inventario2025/dao/consultaStorageUnit.php?storageUnit=' + decodedText + '&bin=' + storageBin + '&conteo=' + auxConteo, function (data) {
                 if (data.Estatus) {
                     if (data.Estatus == 'No existe el storage unit') {
@@ -775,21 +859,25 @@ if (strlen($nomina) == 7) {
                                     });
                                     return;
                                 }
+
                                 limpiarEscan();
+
+                                // ✅ Eliminar de faltantes
+                                eliminarDeFaltantes(data.data[i].Id_StorageUnit);
+
                                 addedStorageUnits[data.data[i].Id_StorageUnit] = {
                                     numeroParte: data.data[i].Numero_Parte,
                                     cantidad: data.data[i].Cantidad
                                 };
 
                                 cantidad = data.data[i].Cantidad;
-                                console.log(`Code matched = ${decodedText}`, decodedResult);
+                                console.log('Code matched = ' + decodedText, decodedResult);
                                 document.getElementById("txtStorageUnit").value = decodedText;
-                                //document.getElementById("readerDos").style.display = 'none';
 
-                                var table = document.getElementById("data-table");
-                                var row = table.insertRow(-1); // Crea una nueva fila al final de la tabla
-                                var cell1 = row.insertCell(0); // Crea una nueva celda en la fila
-                                var cell2 = row.insertCell(1); // Crea otra nueva celda en la fila
+                                var table = document.getElementById("data-table").getElementsByTagName('tbody')[0];
+                                var row = table.insertRow(-1);
+                                var cell1 = row.insertCell(0);
+                                var cell2 = row.insertCell(1);
                                 var cell3 = row.insertCell(2);
                                 cell1.innerHTML = data.data[i].Id_StorageUnit;
                                 cell2.innerHTML = numeroParteUnit;
@@ -810,14 +898,13 @@ if (strlen($nomina) == 7) {
                                         Swal.showLoading();
                                         const timer = Swal.getPopup().querySelector("b");
                                         timerInterval = setInterval(() => {
-                                            timer.textContent = `${Swal.getTimerLeft()}`;
+                                            timer.textContent = Swal.getTimerLeft();
                                         }, 100);
                                     },
                                     willClose: () => {
                                         clearInterval(timerInterval);
                                     }
                                 }).then((result) => {
-                                    /* Read more about handling dismissals below */
                                     if (result.dismiss === Swal.DismissReason.timer) {
                                         limpiarEscan();
                                         document.getElementById("txtStorageUnit").value = '';
@@ -846,7 +933,7 @@ if (strlen($nomina) == 7) {
     }
 
     function errorLecturaUnit(error) {
-        console.warn(`Code scan error = ${error}`);
+        console.warn('Code scan error = ' + error);
     }
 
     function escaneoUnit() {
@@ -859,6 +946,9 @@ if (strlen($nomina) == 7) {
         html5QrcodeScannerUnit.render(lecturaCorrectaUnit, errorLecturaUnit);
     }
 
+    // ==========================================
+    // ENVIAR DATOS
+    // ==========================================
     function enviarDatos() {
         var comentarios = document.getElementById("txtComentarios").value;
         var folioMarbete = document.getElementById("scanner_input").value;
@@ -890,14 +980,13 @@ if (strlen($nomina) == 7) {
                             Swal.showLoading();
                             const timer = Swal.getPopup().querySelector("b");
                             timerInterval = setInterval(() => {
-                                timer.textContent = `${Swal.getTimerLeft()}`;
+                                timer.textContent = Swal.getTimerLeft();
                             }, 100);
                         },
                         willClose: () => {
                             clearInterval(timerInterval);
                         }
                     }).then((result) => {
-                        /* Read more about handling dismissals below */
                         if (result.dismiss === Swal.DismissReason.timer) {
                             location.reload();
                         }
@@ -909,7 +998,9 @@ if (strlen($nomina) == 7) {
             });
     }
 
-
+    // ==========================================
+    // INSERT STORAGE
+    // ==========================================
     function insertStorage() {
 
         if (numeroParte === document.getElementById("txtNumeroParteAgregar").value) {
@@ -925,21 +1016,15 @@ if (strlen($nomina) == 7) {
                 return;
             }
 
-            var tableFaltantes = document.getElementById("data-table-faltantes");
-            for (var i = 1; i < tableFaltantes.rows.length; i++) {
-                var cellValue = tableFaltantes.rows[i].cells[0].innerText;
-                if (cellValue === unit) {
-                    tableFaltantes.deleteRow(i);
-                    break;
-                }
-            }
+            // ✅ Eliminar de faltantes
+            eliminarDeFaltantes(unit);
 
             addedStorageUnits[unit] = {
                 numeroParte: numeroParte,
                 cantidad: cantidad
             };
 
-            var table = document.getElementById("data-table");
+            var table = document.getElementById("data-table").getElementsByTagName('tbody')[0];
             var row = table.insertRow(-1);
             var cell1 = row.insertCell(0);
             var cell2 = row.insertCell(1);
@@ -981,14 +1066,13 @@ if (strlen($nomina) == 7) {
                                 Swal.showLoading();
                                 const timer = Swal.getPopup().querySelector("b");
                                 timerInterval = setInterval(() => {
-                                    timer.textContent = `${Swal.getTimerLeft()}`;
+                                    timer.textContent = Swal.getTimerLeft();
                                 }, 100);
                             },
                             willClose: () => {
                                 clearInterval(timerInterval);
                             }
                         }).then((result) => {
-                            /* Read more about handling dismissals below */
                             if (result.dismiss === Swal.DismissReason.timer) {
 
                             }
@@ -1008,7 +1092,9 @@ if (strlen($nomina) == 7) {
 
     }
 
-
+    // ==========================================
+    // LECTURA CORRECTA UNIT ABIERTO
+    // ==========================================
     function lecturaCorrectaUnitAbierto(decodedText, decodedResult) {
         $.getJSON('https://grammermx.com/Inventario/dao/consultaStorageUnit.php?storageUnit=' + decodedText, function (data) {
 
@@ -1025,7 +1111,7 @@ if (strlen($nomina) == 7) {
                         if (numeroParteUnit === numeroParte) {
                             document.getElementById("txtStorageUnitA").value = decodedText;
                             html5QrcodeScannerUnitA.clear();
-                            html5QrcodeScannerUnitA.pause();
+                            html5QrcodeScannerUnitA = null; // ✅ Liberar memoria
                             document.getElementById("readerAbierto").style.display = 'none';
                             Swal.fire({
                                 title: "Storage unit escaneado",
@@ -1052,7 +1138,7 @@ if (strlen($nomina) == 7) {
     }
 
     function errorLecturaAbierto(error) {
-        console.warn(`Code scan error = ${error}`);
+        console.warn('Code scan error = ' + error);
     }
 
     function escaneoUnitAbierto() {
@@ -1067,18 +1153,27 @@ if (strlen($nomina) == 7) {
         html5QrcodeScannerUnitA.render(lecturaCorrectaUnitAbierto, errorLecturaAbierto);
     }
 
+    // ==========================================
+    // ✅ OPTIMIZACIÓN: LIMPIEZA DE ESCÁNER MEJORADA
+    // ==========================================
     function limpiarEscan() {
         if (html5QrcodeScanner) {
             html5QrcodeScanner.clear();
+            html5QrcodeScanner = null; // ✅ Liberar memoria
         }
         if (html5QrcodeScannerUnit) {
             html5QrcodeScannerUnit.clear();
+            html5QrcodeScannerUnit = null; // ✅ Liberar memoria
         }
         if (html5QrcodeScannerUnitA) {
             html5QrcodeScannerUnitA.clear();
+            html5QrcodeScannerUnitA = null; // ✅ Liberar memoria
         }
     }
 
+    // ==========================================
+    // CARGA CAJA ABIERTA
+    // ==========================================
     function cargaCajaAbierta() {
 
         var storageA = document.getElementById("txtStorageUnitA").value;
@@ -1094,12 +1189,15 @@ if (strlen($nomina) == 7) {
             return;
         }
 
+        // ✅ Eliminar de faltantes
+        eliminarDeFaltantes(storageA);
+
         addedStorageUnits[storageA] = {
             numeroParte: numeroParteA,
             cantidad: cantidadA
         };
 
-        var table = document.getElementById("data-table");
+        var table = document.getElementById("data-table").getElementsByTagName('tbody')[0];
         var row = table.insertRow(-1);
         var cell1 = row.insertCell(0);
         var cell2 = row.insertCell(1);
@@ -1125,49 +1223,9 @@ if (strlen($nomina) == 7) {
         document.getElementById("txtStorageUnit").value = '';
     }
 
-
-    function manualMarbeteFaltantes() {
-
-        var marbete = parseInt(document.getElementById("scanner_input").value.split('.')[0], 10);
-        var conteoM = document.getElementById("scanner_input").value.split('.')[1];
-
-        $.getJSON('https://grammermx.com/Logistica/Inventario2025/dao/consultaMarbeteFaltantesSun.php?marbete=' + marbete, function (data) {
-            for (var i = 0; i < data.data.length; i++) {
-                if (data.data[i].FolioMarbete) {
-                    if (data.data[i].StorageUnit === 'NA') {
-                    } else {
-                        if (data.data[i].EstatusStorage == 1) {
-                        } else {
-                            var tableFaltantes = document.getElementById("data-table-faltantes");
-                            var rowFaltantes = tableFaltantes.insertRow(-1);
-
-                            var storageUnit = data.data[i].StorageUnit;
-                            var visible = storageUnit.slice(-4);
-                            var hidden = storageUnit.slice(0, -4);
-
-                            var cell1F = rowFaltantes.insertCell(0);
-                            var cell2F = rowFaltantes.insertCell(1);
-                            var cell3F = rowFaltantes.insertCell(2);
-
-
-                            cell1F.innerHTML = `<span class="blurred">${hidden}</span>${visible}`;
-                            cell2F.innerHTML = data.data[i].NumeroParte;
-                            cell3F.innerHTML = data.data[i].CantidadStorage;
-                        }
-                    }
-                } else {
-                    Swal.fire({
-                        title: "El marbete no esta cargado",
-                        text: "Verificalo con la mesa central",
-                        icon: "error"
-                    });
-                }
-
-            }
-        });
-    }
-
-
+    // ==========================================
+    // EVENT LISTENERS
+    // ==========================================
     document.getElementById('scanner_input').addEventListener('keyup', function (event) {
         if (event.key === 'Enter' || event.keyCode === 13) {
             manualMarbete();

@@ -28,6 +28,7 @@ function ContadorApu()
         WHERE b.Estatus = 1;
     ";
 
+    //para ver el valor real quitar el JOIN
     $queryCantidadNegativa = "
         SELECT ROUND(SUM(i.Cantidad), 2) AS Cantidad_Total_Negativa
         FROM InventarioSap i

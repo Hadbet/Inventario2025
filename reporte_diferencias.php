@@ -256,38 +256,37 @@ if (strlen($nomina) == 7) {
     }
 
     function verificarDiferenciaSap(totalDinero, totalCantidad) {
-
-        var totalDineroSap = 0.0;
-        var totalCantidadSap = 0.0;
-
         $.getJSON('https://grammermx.com/Logistica/Inventario2025/dao/consultaSegundosConteosCostoSapAdminNew.php', function (data) {
             if (data && data.data && data.data.length > 0) {
-                for (var i = 0; i < data.data.length; i++) {
-                    totalDineroSap += parseFloat(data.data[i].Total);
-                    totalCantidadSap += parseFloat(data.data[i].Cantidad);
-                }
-                document.getElementById("lblDineroReal").innerText = (totalDinero).toLocaleString("es-MX", {
-                    style: "currency",
-                    currency: "MXN"
-                });
-                document.getElementById("lblCantidadReal").innerText = (totalCantidad).toFixed(2);
 
-                document.getElementById("lblDineroSap").innerText = (totalDineroSap).toLocaleString("es-MX", {
-                    style: "currency",
-                    currency: "MXN"
-                });
-                document.getElementById("lblCantidadSap").innerText = (totalCantidadSap).toFixed(2);
+                // Esto es más rápido y evita el NaN filtrando valores inválidos
+                const totalDineroSap = data.data.reduce((sum, item) => {
+                    const valor = parseFloat(item.Total);
+                    return sum + (isNaN(valor) ? 0 : valor);
+                }, 0);
 
-                document.getElementById("lblDinero").innerText = (totalDineroSap - totalDinero).toLocaleString("es-MX", {
-                    style: "currency",
-                    currency: "MXN"
+                const totalCantidadSap = data.data.reduce((sum, item) => {
+                    const valor = parseFloat(item.Cantidad);
+                    return sum + (isNaN(valor) ? 0 : valor);
+                }, 0);
+
+                // Actualizar interfaz (más limpio con un objeto de configuración)
+                const formatter = new Intl.NumberFormat('es-MX', {
+                    style: 'currency',
+                    currency: 'MXN'
                 });
+
+                document.getElementById("lblDineroReal").innerText = formatter.format(totalDinero);
+                document.getElementById("lblCantidadReal").innerText = totalCantidad.toFixed(2);
+                document.getElementById("lblDineroSap").innerText = formatter.format(totalDineroSap);
+                document.getElementById("lblCantidadSap").innerText = totalCantidadSap.toFixed(2);
+                document.getElementById("lblDinero").innerText = formatter.format(totalDineroSap - totalDinero);
                 document.getElementById("lblCantidad").innerText = (totalCantidadSap - totalCantidad).toFixed(2);
 
                 crearTabla();
             } else {
                 Swal.fire({
-                    title: "Tu conteo esta bien",
+                    title: "Tu conteo está bien",
                     text: "No necesitas ir a segundos conteos",
                     icon: "success"
                 });

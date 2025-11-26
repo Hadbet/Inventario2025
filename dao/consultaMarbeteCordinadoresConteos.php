@@ -40,7 +40,7 @@ ON
     (B.StorageBin = S.Storage_Bin and B.NumeroParte = S.Numero_Parte)
 WHERE 
     B.StorageBin = S.Storage_Bin and B.NumeroParte = S.Numero_Parte
-    and B.Estatus in(1,0,5);");
+    and B.Estatus in(1,0,5) and B.FolioMarbete = '$marbete';");
 
     $resultado = mysqli_fetch_all($datos, MYSQLI_ASSOC);
     echo json_encode(array("data" => $resultado));

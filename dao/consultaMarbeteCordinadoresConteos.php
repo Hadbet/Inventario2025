@@ -37,9 +37,9 @@ FROM
 LEFT JOIN 
     Storage_Unit S 
 ON 
-    B.FolioMarbete = S.FolioMarbete
+    (B.StorageBin = S.Storage_Bin and B.NumeroParte = S.Numero_Parte)
 WHERE 
-    B.FolioMarbete = '$marbete' 
+    B.StorageBin = S.Storage_Bin and B.NumeroParte = S.Numero_Parte
     and B.Estatus in(1,0,5);");
 
     $resultado = mysqli_fetch_all($datos, MYSQLI_ASSOC);

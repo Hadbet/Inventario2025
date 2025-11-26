@@ -494,33 +494,21 @@ if (strlen($nomina) == 7) {
     loadData();
 
     $('#export-button').click(function() {
-        // Verificamos que 'allData' exista y tenga datos.
         if (typeof allData === 'undefined' || allData.length === 0) {
             alert("No hay datos para exportar.");
             return;
         }
 
-        console.time("Tiempo de exportación"); // Medimos el rendimiento
+        console.time("Tiempo de exportación");
 
-        // 1. Crear una "hoja de trabajo" a partir de nuestro array de objetos JSON.
-        // Para que la columna 'GrammerNo' se trate como texto, nos aseguramos de que sea un string.
-        // Esto es similar a tu regla 'onMsoNumberFormat'.
-        const dataConFormato = allData.map(item => ({
-            ...item,
-            GrammerNo: String(item.GrammerNo) // Forzamos GrammerNo a ser texto
-        }));
-        const worksheet = XLSX.utils.json_to_sheet(dataConFormato);
-
-        // 2. Crear un nuevo "libro de trabajo".
+        // Exportación ultra-rápida sin transformaciones
+        const worksheet = XLSX.utils.json_to_sheet(allData);
         const workbook = XLSX.utils.book_new();
-
-        // 3. Añadir la hoja de trabajo al libro, dándole un nombre.
         XLSX.utils.book_append_sheet(workbook, worksheet, "Reporte Final");
 
-        // 4. Generar el archivo XLSX y disparar la descarga.
-        XLSX.writeFile(workbook, "reporte_final_inventario.xlsx");
+        XLSX.writeFile(workbook, "reporte_final_inventario.xlsx", {compression: true});
 
-        console.timeEnd("Tiempo de exportación"); // Verás en la consola que es rapidísimo.
+        console.timeEnd("Tiempo de exportación");
     });
 
     $('#copy-button').click(function() {

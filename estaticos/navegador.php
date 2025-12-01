@@ -119,11 +119,6 @@ if ($tipoArea==0){
                     <li class="nav-item">
                         <a class="nav-link pl-3" href="inventario_sap.php"><span class="ml-1 item-text">Inventario Sap</span></a>
                     </li>
-                    
-                    <li class="nav-item">
-                        <a class="nav-link pl-3" href="carga_txt.php"><span class="ml-1 item-text">Carga de txt</span></a>
-                    </li>
-                    
                 </ul>
             </li>
             <li class="nav-item dropdown">
@@ -140,6 +135,9 @@ if ($tipoArea==0){
                     </li>
                     <li class="nav-item">
                         <a class="nav-link pl-3" href="reporte_final.php"><span class="ml-1 item-text">Reportes Final</span></a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link pl-3" href="carga_txt.php"><span class="ml-1 item-text">Carga de txt</span></a>
                     </li>
                 </ul>
             </li>

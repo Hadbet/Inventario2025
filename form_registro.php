@@ -1,4 +1,14 @@
 <?php
+session_start();
+/*
+if ($_SESSION["nominaCurso"] == "" && $_SESSION["nominaCurso"]== null && $_SESSION["rol"]== "" && $_SESSION["rol"]== null) {
+    echo "<META HTTP-EQUIV='REFRESH' CONTENT='1; URL=login.html'>";
+    session_destroy();
+}else{
+    session_start();
+    $rol =$_SESSION['rol'];
+    $area =$_SESSION['area'];
+}*/
 
 session_start();
 $rol = $_SESSION['rol'];
@@ -316,28 +326,20 @@ if (strlen($nomina) == 7) {
     var total = 0;
     let sumaTotal = 0;
 
-    // ✅ OPTIMIZACIÓN: Variables de caché
     var datosConteo = null;
     var ultimoSumCache = null;
     var addedStorageUnits = {};
 
-    // ==========================================
-    // INICIALIZACIÓN
-    // ==========================================
     estatusConteo();
     sum();
 
-    // ==========================================
-    // ✅ OPTIMIZACIÓN: CACHÉ DE DATOS DE CONTEO
-    // ==========================================
     function estatusConteo() {
         if (datosConteo) {
-            // Ya tenemos los datos en caché, no hacer otra consulta
             return;
         }
 
         $.getJSON('https://grammermx.com/Logistica/Inventario2025/dao/consultaAreaDetalle.php?area=<?php echo $area;?>', function (data) {
-            datosConteo = data; // ✅ Guardar en caché
+            datosConteo = data;
             for (var i = 0; i < data.data.length; i++) {
                 auxConteo = data.data[i].Conteo;
                 if (auxConteo === "2") {
@@ -347,9 +349,6 @@ if (strlen($nomina) == 7) {
         });
     }
 
-    // ==========================================
-    // ✅ OPTIMIZACIÓN: CACHÉ DE ÚLTIMO SUM
-    // ==========================================
     function sum() {
         if (ultimoSumCache) {
             ultimoSum = ultimoSumCache;
@@ -359,14 +358,11 @@ if (strlen($nomina) == 7) {
         $.getJSON('https://grammermx.com/Logistica/Inventario2025/dao/consultaUltimoSum.php', function (data) {
             for (var i = 0; i < data.data.length; i++) {
                 ultimoSum = data.data[i].Id_StorageUnit;
-                ultimoSumCache = ultimoSum; // ✅ Guardar en caché
+                ultimoSumCache = ultimoSum;
             }
         });
     }
 
-    // ==========================================
-    // CARGAR NÚMERO DE PARTE
-    // ==========================================
     function cargarNumeroParte(numeroParteF, storageBinF) {
         $.getJSON('https://grammermx.com/Logistica/Inventario2025/dao/consultaParte.php?parte=' + numeroParteF, function (data) {
             for (var i = 0; i < data.data.length; i++) {
@@ -381,7 +377,6 @@ if (strlen($nomina) == 7) {
                     costoUnitario = data.data[i].Costo / data.data[i].Por;
                     document.getElementById('txtStorageUnit').focus();
 
-                    // ✅ OPTIMIZACIÓN: Cargar faltantes una sola vez aquí
                     var marbete = parseInt(document.getElementById("scanner_input").value.split('.')[0], 10);
                     cargarFaltantes(marbete);
 
@@ -398,14 +393,10 @@ if (strlen($nomina) == 7) {
         });
     }
 
-    // ==========================================
-    // ✅ OPTIMIZACIÓN: FUNCIÓN SEPARADA PARA CARGAR FALTANTES
-    // ==========================================
     function cargarFaltantes(marbete) {
         $.getJSON('https://grammermx.com/Logistica/Inventario2025/dao/consultaMarbeteFaltantesSun.php?marbete=' + marbete, function (data) {
             const tableFaltantes = document.getElementById("data-table-faltantes").getElementsByTagName('tbody')[0];
 
-            // ✅ Limpiar tabla antes de agregar
             tableFaltantes.innerHTML = '';
 
             for (var i = 0; i < data.data.length; i++) {
@@ -427,17 +418,12 @@ if (strlen($nomina) == 7) {
                 }
             }
 
-            // ✅ Calcular totales después de cargar
             sumarCantidades();
         });
     }
 
-    // ==========================================
-    // ✅ OPTIMIZACIÓN: SUMA DE CANTIDADES CORREGIDA
-    // ==========================================
     function sumarCantidades() {
         try {
-            // ✅ CRÍTICO: Resetear antes de sumar
             sumaTotal = 0;
 
             const tabla = document.getElementById('data-table-faltantes');
@@ -446,7 +432,6 @@ if (strlen($nomina) == 7) {
                 return '0.00';
             }
 
-            // ✅ Solo recorrer tbody, no thead
             const filas = tabla.querySelectorAll('tbody tr');
 
             filas.forEach((fila) => {
@@ -482,9 +467,6 @@ if (strlen($nomina) == 7) {
         }
     }
 
-    // ==========================================
-    // MANUAL MARBETE
-    // ==========================================
     function manualMarbete() {
 
         var marbete = parseInt(document.getElementById("scanner_input").value.split('.')[0], 10);
@@ -534,7 +516,6 @@ if (strlen($nomina) == 7) {
                                     document.getElementById("pasoUno").style.display = 'none';
                                     document.getElementById('txtStorageUnit').focus();
 
-                                    // ✅ Cargar faltantes
                                     cargarFaltantes(marbete);
 
                                     limpiarEscan();
@@ -578,9 +559,6 @@ if (strlen($nomina) == 7) {
         });
     }
 
-    // ==========================================
-    // LECTURA CORRECTA (QR MARBETE)
-    // ==========================================
     function lecturaCorrecta(decodedText, decodedResult) {
 
         var conteoM = decodedText.split('.')[1];
@@ -633,7 +611,6 @@ if (strlen($nomina) == 7) {
                                     document.getElementById("pasoUno").style.display = 'none';
                                     document.getElementById('txtStorageUnit').focus();
 
-                                    // ✅ Cargar faltantes
                                     cargarFaltantes(marbete);
 
                                     limpiarEscan();
@@ -692,9 +669,6 @@ if (strlen($nomina) == 7) {
         html5QrcodeScanner.render(lecturaCorrecta, errorLectura);
     }
 
-    // ==========================================
-    // ✅ OPTIMIZACIÓN: ELIMINAR DE FALTANTES AL AGREGAR
-    // ==========================================
     function eliminarDeFaltantes(storageUnit) {
         var tableFaltantes = document.getElementById("data-table-faltantes");
         var tbody = tableFaltantes.getElementsByTagName('tbody')[0];
@@ -710,13 +684,9 @@ if (strlen($nomina) == 7) {
             }
         }
 
-        // ✅ Recalcular después de eliminar
         sumarCantidades();
     }
 
-    // ==========================================
-    // STORAGE UNIT MANUAL
-    // ==========================================
     function storageUnitManual() {
         var txtStorageUnitValue = document.getElementById("txtStorageUnit").value;
 
@@ -750,7 +720,6 @@ if (strlen($nomina) == 7) {
                                     return;
                                 }
 
-                                // ✅ Eliminar de faltantes
                                 eliminarDeFaltantes(data.data[i].Id_StorageUnit);
 
                                 addedStorageUnits[data.data[i].Id_StorageUnit] = {
@@ -827,9 +796,6 @@ if (strlen($nomina) == 7) {
 
     }
 
-    // ==========================================
-    // LECTURA CORRECTA UNIT (QR STORAGE)
-    // ==========================================
     function lecturaCorrectaUnit(decodedText, decodedResult) {
 
         if (decodedText.length === 10 && parseInt(decodedText) < ultimoSum) {
@@ -862,7 +828,6 @@ if (strlen($nomina) == 7) {
 
                                 limpiarEscan();
 
-                                // ✅ Eliminar de faltantes
                                 eliminarDeFaltantes(data.data[i].Id_StorageUnit);
 
                                 addedStorageUnits[data.data[i].Id_StorageUnit] = {
@@ -946,9 +911,6 @@ if (strlen($nomina) == 7) {
         html5QrcodeScannerUnit.render(lecturaCorrectaUnit, errorLecturaUnit);
     }
 
-    // ==========================================
-    // ENVIAR DATOS
-    // ==========================================
     function enviarDatos() {
         var comentarios = document.getElementById("txtComentarios").value;
         var folioMarbete = document.getElementById("scanner_input").value;
@@ -956,11 +918,19 @@ if (strlen($nomina) == 7) {
         var storageUnits = addedStorageUnits;
         console.log(storageUnits);
 
+        var tableFaltantes = document.getElementById("data-table-faltantes");
+        var filasFaltantes = tableFaltantes.querySelectorAll('tbody tr');
+        var hayFaltantes = filasFaltantes.length > 0 ? 'true' : 'false';
+
+        console.log("Hay faltantes:", hayFaltantes);
+        console.log("Cantidad de faltantes:", filasFaltantes.length);
+
         var formData = new FormData();
         formData.append('nombre', '<?php echo $nomina;?>-<?php echo $nombre;?>');
         formData.append('comentarios', comentarios);
         formData.append('storageUnits', JSON.stringify(storageUnits));
         formData.append('folioMarbete', folioMarbete);
+        formData.append('hayFaltantes', hayFaltantes);
 
         fetch('https://grammermx.com/Logistica/Inventario2025/dao/guardarMarbete.php', {
             method: 'POST',
@@ -970,10 +940,19 @@ if (strlen($nomina) == 7) {
             .then(data => {
                 if (data.success) {
                     let timerInterval;
+
+                    var titulo = hayFaltantes === 'false'
+                        ? "¡Excelente! Conteo completo sin faltantes"
+                        : "¡Gracias! Se finalizó la captura de tu marbete";
+
+                    var mensaje = hayFaltantes === 'false'
+                        ? "No requiere segundo conteo. Te regresaremos a la página <b></b> milliseconds."
+                        : "Requiere segundo conteo. Te regresaremos a la página <b></b> milliseconds.";
+
                     Swal.fire({
-                        title: "¡Gracias!.Se finalizo la captura de tu marbete",
-                        html: "Te regresaremos a la pagina <b></b> milliseconds.",
-                        timer: 1500,
+                        title: titulo,
+                        html: mensaje,
+                        timer: 2000,
                         timerProgressBar: true,
                         icon: "success",
                         didOpen: () => {
@@ -994,13 +973,23 @@ if (strlen($nomina) == 7) {
                 } else {
                     console.log("Hubo un error en la operación");
                     console.log("Las unidades de almacenamiento que fallaron son: ", data.failedUnits);
+                    Swal.fire({
+                        title: "Error",
+                        text: "Hubo un problema al guardar los datos",
+                        icon: "error"
+                    });
                 }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    title: "Error de conexión",
+                    text: "No se pudo conectar con el servidor",
+                    icon: "error"
+                });
             });
     }
 
-    // ==========================================
-    // INSERT STORAGE
-    // ==========================================
     function insertStorage() {
 
         if (numeroParte === document.getElementById("txtNumeroParteAgregar").value) {
@@ -1016,7 +1005,6 @@ if (strlen($nomina) == 7) {
                 return;
             }
 
-            // ✅ Eliminar de faltantes
             eliminarDeFaltantes(unit);
 
             addedStorageUnits[unit] = {
@@ -1092,9 +1080,6 @@ if (strlen($nomina) == 7) {
 
     }
 
-    // ==========================================
-    // LECTURA CORRECTA UNIT ABIERTO
-    // ==========================================
     function lecturaCorrectaUnitAbierto(decodedText, decodedResult) {
         $.getJSON('https://grammermx.com/Inventario/dao/consultaStorageUnit.php?storageUnit=' + decodedText, function (data) {
 
@@ -1111,7 +1096,7 @@ if (strlen($nomina) == 7) {
                         if (numeroParteUnit === numeroParte) {
                             document.getElementById("txtStorageUnitA").value = decodedText;
                             html5QrcodeScannerUnitA.clear();
-                            html5QrcodeScannerUnitA = null; // ✅ Liberar memoria
+                            html5QrcodeScannerUnitA = null;
                             document.getElementById("readerAbierto").style.display = 'none';
                             Swal.fire({
                                 title: "Storage unit escaneado",
@@ -1153,27 +1138,21 @@ if (strlen($nomina) == 7) {
         html5QrcodeScannerUnitA.render(lecturaCorrectaUnitAbierto, errorLecturaAbierto);
     }
 
-    // ==========================================
-    // ✅ OPTIMIZACIÓN: LIMPIEZA DE ESCÁNER MEJORADA
-    // ==========================================
     function limpiarEscan() {
         if (html5QrcodeScanner) {
             html5QrcodeScanner.clear();
-            html5QrcodeScanner = null; // ✅ Liberar memoria
+            html5QrcodeScanner = null;
         }
         if (html5QrcodeScannerUnit) {
             html5QrcodeScannerUnit.clear();
-            html5QrcodeScannerUnit = null; // ✅ Liberar memoria
+            html5QrcodeScannerUnit = null;
         }
         if (html5QrcodeScannerUnitA) {
             html5QrcodeScannerUnitA.clear();
-            html5QrcodeScannerUnitA = null; // ✅ Liberar memoria
+            html5QrcodeScannerUnitA = null;
         }
     }
 
-    // ==========================================
-    // CARGA CAJA ABIERTA
-    // ==========================================
     function cargaCajaAbierta() {
 
         var storageA = document.getElementById("txtStorageUnitA").value;
@@ -1189,7 +1168,6 @@ if (strlen($nomina) == 7) {
             return;
         }
 
-        // ✅ Eliminar de faltantes
         eliminarDeFaltantes(storageA);
 
         addedStorageUnits[storageA] = {
@@ -1223,9 +1201,6 @@ if (strlen($nomina) == 7) {
         document.getElementById("txtStorageUnit").value = '';
     }
 
-    // ==========================================
-    // EVENT LISTENERS
-    // ==========================================
     document.getElementById('scanner_input').addEventListener('keyup', function (event) {
         if (event.key === 'Enter' || event.keyCode === 13) {
             manualMarbete();

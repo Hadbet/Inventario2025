@@ -6,9 +6,11 @@ try {
     $folioMarbete = $_POST['folioMarbete'];
     $storageUnits = json_decode($_POST['storageUnits'], true);
 
+    $hayFaltantes = isset($_POST['hayFaltantes']) ? $_POST['hayFaltantes'] : 'true';
+
     $parts = explode('.', $folioMarbete);
 
-    $marbete = intval($parts[0]); // Esto es equivalente a parseInt() en JavaScript
+    $marbete = intval($parts[0]);
     $conteo = isset($parts[1]) ? $parts[1] : null;
 
     $con = new LocalConector();
@@ -20,11 +22,13 @@ try {
     $DateAndTime = $Object->format("Y/m/d h:i:s");
 
     if ($conteo == 1) {
-        $stmt = $conex->prepare("UPDATE `Bitacora_Inventario` SET  `Usuario`=?, `Estatus`='2', `PrimerConteo`=?,`Comentario`=? WHERE `FolioMarbete`=? AND `Estatus` = 0");
+        $nuevoEstatus = ($hayFaltantes === 'false') ? '1' : '2';
+
+        $stmt = $conex->prepare("UPDATE `Bitacora_Inventario` SET `Usuario`=?, `Estatus`=?, `PrimerConteo`=?, `Comentario`=? WHERE `FolioMarbete`=? AND `Estatus` = 0");
     } elseif ($conteo == 2) {
-        $stmt = $conex->prepare("UPDATE `Bitacora_Inventario` SET  `UserSeg`=?, `SegundoConteo`=?, `SegFolio`=1 WHERE `FolioMarbete`=? AND `Estatus` = 1");
+        $stmt = $conex->prepare("UPDATE `Bitacora_Inventario` SET `UserSeg`=?, `SegundoConteo`=?, `SegFolio`=1 WHERE `FolioMarbete`=? AND `Estatus` = 1");
     } elseif ($conteo == 3) {
-        $stmt = $conex->prepare("UPDATE `Bitacora_Inventario` SET  `TercerConteo`=? WHERE `FolioMarbete`=? AND `Estatus` = 1");
+        $stmt = $conex->prepare("UPDATE `Bitacora_Inventario` SET `TercerConteo`=? WHERE `FolioMarbete`=? AND `Estatus` = 1");
     }
 
     $totalCantidad = 0;
@@ -40,15 +44,12 @@ try {
     $tercerConteo = $conteo == 3 ? $totalCantidad : 0;
 
     if ($conteo == 1) {
-        $stmt->bind_param("ssss",  $nombre, $primerConteo, $comentarios, $marbete);
+        $stmt->bind_param("sssss", $nombre, $nuevoEstatus, $primerConteo, $comentarios, $marbete);
     } elseif ($conteo == 2) {
-        $stmt->bind_param("sss",  $nombre, $segundoConteo, $marbete);
+        $stmt->bind_param("sss", $nombre, $segundoConteo, $marbete);
     } elseif ($conteo == 3) {
-        $stmt->bind_param("ss",$tercerConteo, $marbete);
+        $stmt->bind_param("ss", $tercerConteo, $marbete);
     }
-
-
-
 
     if (!$stmt->execute()) {
         echo json_encode(["success" => false]);
@@ -60,15 +61,23 @@ try {
         $stmt3->execute();
         $stmt3->close();
 
-
         $stmt2 = $conex->prepare("UPDATE `Storage_Unit` SET `Estatus`='1',`Conteo`=?,`FolioMarbete`=?,`Cantidad`=? WHERE `Id_StorageUnit` = ?");
         foreach ($storageUnits as $storageUnit => $details) {
             $cantidad = $details['cantidad'];
-            $stmt2->bind_param("ssss", $conteo,$marbete,$cantidad,$storageUnit);
+            $stmt2->bind_param("ssss", $conteo, $marbete, $cantidad, $storageUnit);
             $stmt2->execute();
         }
         $stmt2->close();
-        echo json_encode(["success" => true]);
+
+        $mensaje = ($conteo == 1 && $hayFaltantes === 'false')
+            ? "Conteo completo. No requiere segundo conteo."
+            : "Conteo guardado exitosamente.";
+
+        echo json_encode([
+            "success" => true,
+            "message" => $mensaje,
+            "estatus" => ($conteo == 1) ? $nuevoEstatus : null
+        ]);
     }
 
     $stmt->close();

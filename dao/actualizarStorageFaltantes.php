@@ -9,11 +9,13 @@ try {
     $con = new LocalConector();
     $conex = $con->conectar();
 
+    // ✅ Calcular el total de cantidades agregadas
     $totalCantidadAgregada = 0;
     foreach ($storageUnits as $storageUnit => $details) {
         $totalCantidadAgregada += floatval($details['cantidad']);
     }
 
+    // ✅ 1. Actualizar Storage_Unit (marcar como contados)
     $stmt = $conex->prepare("UPDATE `Storage_Unit` SET `Estatus`='1', `Conteo`=?, `FolioMarbete`=?, `Cantidad`=? WHERE `Id_StorageUnit` = ?");
 
     $successCount = 0;
@@ -32,6 +34,8 @@ try {
 
     $stmt->close();
 
+    // ✅ 2. Actualizar Bitacora_Inventario (sumar al PrimerConteo)
+    // Primero obtenemos el PrimerConteo actual
     $queryBitacora = "SELECT `PrimerConteo` FROM `Bitacora_Inventario` WHERE `FolioMarbete` = ?";
     $stmtBitacora = $conex->prepare($queryBitacora);
     $stmtBitacora->bind_param("s", $folioMarbete);
@@ -41,8 +45,10 @@ try {
     $primerConteoActual = floatval($rowBitacora['PrimerConteo']);
     $stmtBitacora->close();
 
+    // Calculamos el nuevo PrimerConteo
     $nuevoPrimerConteo = $primerConteoActual + $totalCantidadAgregada;
 
+    // Actualizamos la Bitacora_Inventario
     $updateBitacora = "UPDATE `Bitacora_Inventario` SET `PrimerConteo` = ? WHERE `FolioMarbete` = ?";
     $stmtUpdateBitacora = $conex->prepare($updateBitacora);
     $stmtUpdateBitacora->bind_param("ds", $nuevoPrimerConteo, $folioMarbete);

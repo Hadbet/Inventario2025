@@ -70,7 +70,7 @@ if (strlen($nomina) == 7) {
     <main role="main" class="main-content">
         <center><img src="images/tituloInventario.png" style="width: 50%"></center>
 
-        <!-- ✅ NUEVA SECCIÓN: Cards de marbetes con diferencias -->
+        <!-- ✅ SECCIÓN: Cards de marbetes con diferencias -->
         <div class="container-fluid" id="divMarbetesDiferencias">
             <div class="row justify-content-center">
                 <div class="col-12">
@@ -82,165 +82,64 @@ if (strlen($nomina) == 7) {
             </div>
         </div>
 
-        <div class="container-fluid">
+        <!-- ✅ SECCIÓN: Interfaz de verificación (similar a form_registro_conteos_coordinador) -->
+        <div class="container-fluid" id="pasoDos" style="display: none">
             <div class="row justify-content-center">
                 <div class="col-12">
-                    <div class="w-50 mx-auto text-center justify-content-center py-5 my-5">
-                        <h2 class="page-title mb-0">Ingresa o escanea el marbete</h2>
-                        <p class="lead text-muted mb-4">Si lo vas a ingresar manual recuerda que es marbete.conteo.</p>
-                        <input class="form-control form-control-lg bg-white rounded-pill pl-5" type="number" id="txtBuscar">
-                        <p class="help-text mt-2 text-muted">Ejemplo 185.1</p>
-                        <br>
-                        <button class="btn btn-success text-white" onclick="verificacionRegistro()">Buscar</button>
-                    </div>
-                    <!-- .row -->
-                    <div class="my-5 p-5" id="divMarbete" style="display: none">
-                        <div class="text-center">
-                            <h2 class="mb-0">Marbete : <span id="txtFolioMarbete"></span></h2>
-                            <p class="lead text-muted mb-5">Conteo : <span id="txtConteo"></span></p>
-                            <p class="lead text-muted mb-5">Responsable : <span id="txtResponsable"></span></p>
-                        </div>
-                        <br>
-                        <table id="data-table" class="table table-hover">
-                            <thead>
-                            <tr>
-                                <th>Storage Unit</th>
-                                <th>Número Parte</th>
-                                <th>Cantidad</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            </tbody>
-                        </table>
-                        <br>
-                        <div class="text-center">
-                            <h2 class="mb-0">Cantidad Total : <span id="txtCantidadTotal"></span></h2>
-                        </div>
+                    <button class="btn btn-secondary mb-3" onclick="volverACards()">
+                        <i class="fe fe-arrow-left mr-2"></i>Volver a Marbetes
+                    </button>
 
-                        <!-- ✅ NUEVA SECCIÓN: Storage Units Faltantes con botón para contar -->
-                        <div id="divFaltantes" style="display: none;">
-                            <hr>
-                            <h3 class="text-center mb-4">Storage Units Faltantes</h3>
-                            <table id="data-table-faltantes" class="table table-hover">
+                    <h2 class="page-title">Verificación de Marbete: <span id="txtMarbeteActual"></span></h2>
+                    <div class="card shadow mb-4">
+                        <div class="card-header">
+                            <strong id="Ubicacion" class="card-title h4"></strong>
+                        </div>
+                        <div class="card-body">
+
+                            <strong class="card-title h4">Storage Unit Escaneados</strong><br><br>
+                            <label for="" class="card-title h5">Total contado : <strong id="lblTotalContado" class="card-title h4">0</strong></label>
+
+                            <table id="data-table" class="table table-hover">
                                 <thead>
                                 <tr>
                                     <th>Storage Unit</th>
-                                    <th>Número Parte</th>
+                                    <th>Numero Parte</th>
                                     <th>Cantidad</th>
-                                    <th>Acción</th>
                                 </tr>
                                 </thead>
                                 <tbody>
                                 </tbody>
                             </table>
+
+                            <strong class="card-title h4">Storage Unit Faltantes</strong><br><br>
+                            <label for="" class="card-title h5">Total faltante : <strong id="lblTotalFaltante" class="card-title h4">0</strong></label>
+
+                            <table id="data-table-faltantes" class="table table-hover">
+                                <thead>
+                                <tr>
+                                    <th>Storage Unit</th>
+                                    <th>Numero Parte</th>
+                                    <th>Cantidad</th>
+                                    <th>Acciones</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+
                         </div>
-                    </div>
+                        <div class="card-footer">
+                            <button type="submit"
+                                    class="btn mb-2 btn-success float-right text-white" onclick="finalizarVerificacion()">
+                                Finalizar Verificación<span
+                                        class="fe fe-chevron-right fe-16 ml-2"></span></button>
+                        </div>
+                    </div> <!-- / .card -->
                 </div> <!-- .col-12 -->
             </div> <!-- .row -->
-
-            <div class="row">
-
-                <div id="marbeteCompleto" class="col-md-6 col-xl-6 mb-4" style="display: none">
-                    <div class="card shadow">
-                        <div class="card-header">
-                            <span class="card-title">Marbete : <span id="lblFolio"></span></span>
-                            <a class="float-right small text-muted" href="#!"><i class="fe fe-more-vertical fe-12"></i></a>
-                        </div>
-                        <div class="card-body my-n2">
-                            <div class="d-flex">
-                                <div class="flex-fill">
-                                    <span class="card-title">Número de parte</span>
-                                    <h4 class="mb-0" id="lblNumeroParte"></h4>
-                                </div>
-                                <div class="flex-fill text-right">
-                                    <p class="mb-0 small" id="lblCosto"></p>
-                                    <p class="text-muted mb-0 small">Pesos</p>
-                                </div>
-                            </div>
-                            <hr>
-                            <div class="d-flex">
-                                <div class="flex-fill">
-                                    <span class="card-title">Cantidad</span>
-                                    <h4 class="mb-0" id="lblCantidad"> <span id="lblUm"></span></h4>
-                                </div>
-                            </div>
-                            <hr>
-                            <div class="d-flex">
-                                <div class="flex-fill">
-                                    <span class="card-title">Descripción</span>
-                                    <h4 class="mb-0" id="lblDescripcion"></h4>
-                                </div>
-                            </div>
-                            <hr>
-                            <div class="d-flex">
-                                <div class="flex-fill">
-                                    <span class="card-title">Storage Bin</span>
-                                    <h4 class="mb-0" id="lblStorageBin"></h4>
-                                </div>
-                            </div>
-                            <hr>
-                            <div class="d-flex">
-                                <div class="flex-fill">
-                                    <span class="card-title">Monto Total</span>
-                                    <h4 class="mb-0" id="lblMontoTotal"></h4>
-                                </div>
-                            </div>
-                            <hr>
-                            <div class="row align-items-center">
-                                <div class="col-auto">
-                                    <a href="profile-posts.html" class="avatar avatar-md">
-                                        <img id="imagenCapturador" alt="..." class="avatar-img rounded-circle">
-                                    </a>
-                                </div>
-                                <div class="col ml-n2">
-                                    <strong class="mb-1" id="lblNombreCapturador"></strong><span class="dot dot-lg bg-success ml-1"></span>
-                                    <p class="small text-muted mb-1" id="lblRol">Capturista</p>
-                                </div>
-                            </div>
-                            <hr>
-                        </div> <!-- .card-body -->
-                    </div> <!-- .card -->
-                </div> <!-- .col -->
-
-                <div class="col-md-6 col-xl-6 mb-4" id="marbeteValidador" style="display: none">
-                    <div class="card shadow">
-                        <div class="card-header">
-                            <a class="float-right small text-muted" href="#!"><i class="fe fe-more-vertical fe-12"></i></a>
-                        </div>
-                        <div class="card-body my-n2">
-                            <div class="row align-items-center">
-                                <label for="basic-url" id="divCantidadT">Cantidad</label>
-                                <div class="input-group mb-3" id="divCantidad">
-                                    <input type="number" id="txtCantidad" class="form-control" aria-label="Recipient's username" autocomplete="off" aria-describedby="basic-addon2">
-                                    <div class="input-group-append">
-                                        <span class="input-group-text" id="txtUnidadMedida" style=""></span>
-                                    </div>
-                                </div>
-
-                                <div class="col-auto">
-                                    <a href="profile-posts.html" class="avatar avatar-md">
-                                        <img id="imagenVerificador" alt="..." class="avatar-img rounded-circle">
-                                    </a>
-                                </div>
-                                <div class="col ml-n2">
-                                    <strong class="mb-1" id="lblNombreVerificador"></strong><span class="dot dot-lg bg-success ml-1"></span>
-                                    <p class="small text-muted mb-1" id="lblRol">Verificador</p>
-                                </div>
-                                <button id="btnFin" class="btn mb-2 btn-success float-right text-white" onclick="enviarDatos()">Finalizar Captura<span
-                                            class="fe fe-chevron-right fe-16 ml-2" ></span></button>
-
-                                <button id="btnSegundos" class="btn mb-2 btn-warning float-right text-white" onclick="enviarSegundos()">Mandar a segundos conteos<span
-                                            class="fe fe-chevron-right fe-16 ml-2" ></span></button>
-                            </div>
-                            <hr>
-                        </div> <!-- .card-body -->
-                    </div> <!-- .card -->
-                </div> <!-- .col -->
-
-            </div>
-
-
         </div> <!-- .container-fluid -->
+
     </main> <!-- main -->
 </div> <!-- .wrapper -->
 
@@ -253,11 +152,13 @@ if (strlen($nomina) == 7) {
 
 <script>
 
-    var marbete;
-    var auxConteo=0;
+    var marbeteActual;
     var storageBin = '';
     var numeroParte = '';
-    var storageUnitsContados = {}; // ✅ Almacenar storage units contados desde faltantes
+    var storageType = '';
+    var totalContado = 0;
+    var totalFaltante = 0;
+    var storageUnitsContados = {};
 
     // ✅ CARGAR MARBETES CON DIFERENCIAS AL INICIO
     cargarMarbetesDiferencias();
@@ -274,7 +175,7 @@ if (strlen($nomina) == 7) {
 
                     var cardHTML = `
                         <div class="col-md-6 col-lg-4 mb-4">
-                            <div class="card shadow card-marbete" onclick="cargarMarbete('${marbeteData.FolioMarbete}.2')">
+                            <div class="card shadow card-marbete" onclick="cargarMarbeteVerificacion('${marbeteData.FolioMarbete}')">
                                 <div class="card-header bg-warning">
                                     <strong class="card-title text-white">Marbete: ${marbeteData.FolioMarbete}</strong>
                                     <span class="badge badge-danger float-right badge-faltantes">${marbeteData.StorageFaltantes} Faltantes</span>
@@ -292,7 +193,7 @@ if (strlen($nomina) == 7) {
                                     </div>
                                 </div>
                                 <div class="card-footer text-center">
-                                    <button class="btn btn-primary btn-block" onclick="event.stopPropagation(); cargarMarbete('${marbeteData.FolioMarbete}.2')">
+                                    <button class="btn btn-primary btn-block" onclick="event.stopPropagation(); cargarMarbeteVerificacion('${marbeteData.FolioMarbete}')">
                                         <i class="fe fe-check-circle mr-2"></i>Verificar Ahora
                                     </button>
                                 </div>
@@ -312,319 +213,164 @@ if (strlen($nomina) == 7) {
         });
     }
 
-    function cargarMarbete(folioCompleto) {
-        document.getElementById("txtBuscar").value = folioCompleto;
-        verificacionRegistro();
+    function cargarMarbeteVerificacion(folioMarbete) {
+        marbeteActual = folioMarbete;
 
-        // Ocultar las cards y mostrar la sección de verificación
+        // Ocultar cards y mostrar interfaz de verificación
         document.getElementById("divMarbetesDiferencias").style.display = 'none';
-    }
+        document.getElementById("pasoDos").style.display = 'block';
+        document.getElementById("txtMarbeteActual").innerText = folioMarbete;
 
-    function verificacionRegistro() {
+        // Limpiar tablas
+        document.getElementById("data-table").getElementsByTagName('tbody')[0].innerHTML = '';
+        document.getElementById("data-table-faltantes").getElementsByTagName('tbody')[0].innerHTML = '';
 
-        var table = document.getElementById("data-table");
-        while (table.rows.length > 1) {
-            table.deleteRow(1);
-        }
+        totalContado = 0;
+        totalFaltante = 0;
+        storageUnitsContados = {};
 
-        // ✅ Limpiar tabla de faltantes
-        var tableFaltantes = document.getElementById("data-table-faltantes");
-        var tbodyFaltantes = tableFaltantes.getElementsByTagName('tbody')[0];
-        tbodyFaltantes.innerHTML = '';
-
-        $.getJSON('https://grammermx.com/Logistica/Inventario2025/dao/consultaVerificacion.php?marbete='+document.getElementById("txtBuscar").value, function (data) {
-            if (data && data.data && data.data.length > 0) {
-                for (var i = 0; i < data.data.length; i++) {
-                    var row = table.insertRow(-1);
-                    var cell1 = row.insertCell(0);
-                    var cell2 = row.insertCell(1);
-                    var cell3 = row.insertCell(2);
-
-                    if (data.data[i].Id_StorageUnit!==null || data.data[i].Id_StorageUnit!==""){
-                        cell1.innerHTML = data.data[i].Id_StorageUnit;
-                        cell2.innerHTML = data.data[i].NumeroParte;
-                        cell3.innerHTML = data.data[i].PrimerConteo;
-                    }
-
-                    if (i==0){
-                        marbete = data.data[i].FolioMarbete;
-                        storageBin = data.data[i].StorageBin;
-                        numeroParte = data.data[i].NumeroParte;
-
-                        document.getElementById("txtFolioMarbete").innerText = data.data[i].FolioMarbete;
-                        document.getElementById("txtConteo").innerText = parseFloat(data.data[i].Conteo).toFixed(2);
-                        document.getElementById("txtResponsable").innerText = data.data[i].Usuario;
-                        if (data.data[i].Estatus==='2'){
-                            document.getElementById("marbeteValidador").style.display='block';
-                            document.getElementById("divCantidad").style.display='flex';
-                            document.getElementById("divCantidadT").style.display='flex';
-                            document.getElementById("btnFin").style.display='block';
-                            document.getElementById("btnSegundos").style.display='block';
-
-                            // ✅ Cargar faltantes si es estatus 2
-                            cargarFaltantes(data.data[i].FolioMarbete);
-                        }else{
-                            document.getElementById("marbeteValidador").style.display='block';
-                            document.getElementById("divCantidad").style.display='none';
-                            document.getElementById("divCantidadT").style.display='none';
-                            document.getElementById("btnFin").style.display='none';
-                            document.getElementById("btnSegundos").style.display='none';
-                        }
-                    }
-
-                }
-                document.getElementById("txtCantidadTotal").innerText = data.data[0].PrimerConteo;
-                document.getElementById("divMarbete").style.display='flex';
-                document.getElementById("divMarbete").style.flexDirection='column';
-                document.getElementById("marbeteCompleto").style.display='block';
-
-                document.getElementById("divMarbete").scrollIntoView({behavior: "smooth"});
-                verificacionRegistroTotal();
-            }else{
-                Swal.fire({
-                    title: "El marbete no se encontro en su area o no existe.",
-                    text: "Verificalo con nuevamente con tu equipo",
-                    icon: "error"
-                });
-            }
-
-
-
-        });
-    }
-
-    // ✅ NUEVA FUNCIÓN: Cargar storage units faltantes
-    function cargarFaltantes(folioMarbete) {
+        // Cargar datos del marbete
         $.getJSON('https://grammermx.com/Logistica/Inventario2025/dao/consultaMarbeteFaltantesSun.php?marbete=' + folioMarbete, function (data) {
-            var tableFaltantes = document.getElementById("data-table-faltantes");
-            var tbodyFaltantes = tableFaltantes.getElementsByTagName('tbody')[0];
-            tbodyFaltantes.innerHTML = '';
+            if (data.success && data.data.length > 0) {
+                // Obtener info del primer registro
+                storageBin = data.data[0].StorageBin || '';
+                numeroParte = data.data[0].NumeroParte || '';
 
-            var hayFaltantes = false;
+                document.getElementById("Ubicacion").innerHTML = "Ubicación : " + storageBin + " - NP: " + numeroParte;
 
-            for (var i = 0; i < data.data.length; i++) {
-                if (data.data[i].StorageUnit !== 'NA' && data.data[i].EstatusStorage != 1) {
-                    hayFaltantes = true;
-                    var rowFaltantes = tbodyFaltantes.insertRow(-1);
+                // Separar contados y faltantes
+                var tableContados = document.getElementById("data-table").getElementsByTagName('tbody')[0];
+                var tableFaltantes = document.getElementById("data-table-faltantes").getElementsByTagName('tbody')[0];
 
-                    var cell1F = rowFaltantes.insertCell(0);
-                    var cell2F = rowFaltantes.insertCell(1);
-                    var cell3F = rowFaltantes.insertCell(2);
-                    var cell4F = rowFaltantes.insertCell(3);
+                data.data.forEach(function(item) {
+                    var cantidad = parseFloat(item.CantidadStorage);
 
-                    cell1F.innerHTML = data.data[i].StorageUnit;
-                    cell2F.innerHTML = data.data[i].NumeroParte;
-                    cell3F.innerHTML = data.data[i].CantidadStorage;
-                    cell4F.innerHTML = `<button class="btn btn-sm btn-success" onclick="contarFaltante('${data.data[i].StorageUnit}', '${data.data[i].NumeroParte}', ${data.data[i].CantidadStorage})">
-                                            <i class="fe fe-check mr-1"></i>Contar
-                                        </button>`;
-                }
-            }
+                    // Si EstatusStorage = 1 Y tiene el FolioMarbete correcto → Ya contado
+                    if (item.EstatusStorage == 1 && item.FolioMarbete == folioMarbete) {
+                        var rowContado = tableContados.insertRow(-1);
+                        rowContado.insertCell(0).innerHTML = item.StorageUnit;
+                        rowContado.insertCell(1).innerHTML = item.NumeroParte;
+                        rowContado.insertCell(2).innerHTML = cantidad;
+                        rowContado.cells[2].contentEditable = "true";
 
-            if (hayFaltantes) {
-                document.getElementById("divFaltantes").style.display = 'block';
+                        totalContado += cantidad;
+
+                        // Agregar a la lista de contados
+                        storageUnitsContados[item.StorageUnit] = {
+                            numeroParte: item.NumeroParte,
+                            cantidad: cantidad
+                        };
+                    }
+                    // Si NO está contado → Faltante
+                    else if (item.EstatusStorage == 0 || !item.FolioMarbete || item.FolioMarbete != folioMarbete) {
+                        var rowFaltante = tableFaltantes.insertRow(-1);
+                        rowFaltante.insertCell(0).innerHTML = item.StorageUnit;
+                        rowFaltante.insertCell(1).innerHTML = item.NumeroParte;
+                        rowFaltante.insertCell(2).innerHTML = cantidad;
+                        rowFaltante.insertCell(3).innerHTML =
+                            '<button onclick="capturarFaltante(\'' + item.StorageUnit + '\', \'' +
+                            item.NumeroParte + '\', ' + cantidad + ', event)" class="btn btn-sm btn-success">' +
+                            '<i class="fe fe-check mr-1"></i>Capturar</button>';
+
+                        totalFaltante += cantidad;
+                    }
+                });
+
+                document.getElementById("lblTotalContado").innerText = totalContado.toFixed(2);
+                document.getElementById("lblTotalFaltante").innerText = totalFaltante.toFixed(2);
             }
         });
     }
 
-    // ✅ NUEVA FUNCIÓN: Contar un storage unit faltante
-    function contarFaltante(storageUnit, numParte, cant) {
+    function capturarFaltante(storageUnit, numParte, cantidad, event) {
         // Agregar a la lista de contados
         storageUnitsContados[storageUnit] = {
             numeroParte: numParte,
-            cantidad: cant
+            cantidad: cantidad
         };
 
         // Mover a la tabla de contados
-        var tableContados = document.getElementById("data-table");
+        var tableContados = document.getElementById("data-table").getElementsByTagName('tbody')[0];
         var row = tableContados.insertRow(-1);
-        var cell1 = row.insertCell(0);
-        var cell2 = row.insertCell(1);
-        var cell3 = row.insertCell(2);
+        row.insertCell(0).innerHTML = storageUnit;
+        row.insertCell(1).innerHTML = numParte;
+        row.insertCell(2).innerHTML = cantidad;
+        row.cells[2].contentEditable = "true";
 
-        cell1.innerHTML = storageUnit;
-        cell2.innerHTML = numParte;
-        cell3.innerHTML = cant;
+        // Actualizar totales
+        totalContado += parseFloat(cantidad);
+        totalFaltante -= parseFloat(cantidad);
+        document.getElementById("lblTotalContado").innerText = totalContado.toFixed(2);
+        document.getElementById("lblTotalFaltante").innerText = totalFaltante.toFixed(2);
 
         // Eliminar de la tabla de faltantes
-        var tableFaltantes = document.getElementById("data-table-faltantes");
-        var tbody = tableFaltantes.getElementsByTagName('tbody')[0];
+        event.target.closest('tr').remove();
 
-        for (var i = tbody.rows.length - 1; i >= 0; i--) {
-            if (tbody.rows[i].cells[0].innerText === storageUnit) {
-                tbody.deleteRow(i);
-                break;
-            }
-        }
+        // Actualizar en base de datos inmediatamente
+        var formData = new FormData();
+        formData.append('sun', storageUnit);
+        formData.append('marbete', marbeteActual);
+        formData.append('estatus', '1');
 
-        // Verificar si ya no hay más faltantes
-        if (tbody.rows.length === 0) {
-            document.getElementById("divFaltantes").style.display = 'none';
-        }
-
-        // ✅ Actualizar totales en la interfaz
-        var totalActual = parseFloat(document.getElementById("txtCantidadTotal").innerText || 0);
-        var nuevoTotal = totalActual + parseFloat(cant);
-        document.getElementById("txtCantidadTotal").innerText = nuevoTotal.toFixed(2);
-
-        // ✅ También actualizar el lblCantidad (PrimerConteo en la card)
-        var cantidadActual = parseFloat(document.getElementById("lblCantidad").innerText || 0);
-        var nuevaCantidad = cantidadActual + parseFloat(cant);
-        document.getElementById("lblCantidad").innerText = nuevaCantidad.toFixed(2);
-
-        // ✅ Actualizar el monto total
-        var costoUnitario = parseFloat(document.getElementById("lblCosto").innerText || 0);
-        var nuevoMontoTotal = costoUnitario * nuevaCantidad;
-        document.getElementById("lblMontoTotal").innerText = nuevoMontoTotal.toFixed(2);
-
-        Swal.fire({
-            title: "Storage Unit Contado",
-            text: "Unit: " + storageUnit + " - Cantidad agregada: " + cant,
-            icon: "success",
-            timer: 1500,
-            showConfirmButton: false
-        });
-    }
-
-    var cantidad;
-
-    function verificacionRegistroTotal() {
-
-        $.getJSON('https://grammermx.com/Logistica/Inventario2025/dao/consultaVerificacionProduccion.php?marbete='+document.getElementById("txtBuscar").value+'&area='+<?php echo $area;?>, function (data) {
-
-            if (data && data.data && data.data.length > 0){
-
-                for (var i = 0; i < data.data.length; i++) {
-                    if (i==0){
-                        var usuario = data.data[i].Usuario;
-                        var separado = usuario.split("-");
-                        var numeroNomina = separado[0];
-                        var nombre = separado[1];
-
-                        var usuarioVerificador = data.data[i].UsuarioVerificacion;
-                        var separadoVerificador = usuarioVerificador.split("-");
-                        var numeroNominaVerificador = separadoVerificador[0];
-                        var nombreVerificador = separadoVerificador[1];
-
-                        document.getElementById("imagenCapturador").src = 'https://grammermx.com/Fotos/'+numeroNomina+'.png';
-                        document.getElementById("lblNombreCapturador").innerText = nombre;
-
-                        document.getElementById("imagenVerificador").src = 'https://grammermx.com/Fotos/<?php echo $nomina;?>.png';
-                        document.getElementById("lblNombreVerificador").innerText = '<?php echo $nombre;?>';
-
-                        document.getElementById("lblFolio").innerText = data.data[i].FolioMarbete;
-                        document.getElementById("lblNumeroParte").innerText = data.data[i].NumeroParte;
-                        document.getElementById("lblCantidad").innerText = data.data[i].PrimerConteo;
-                        document.getElementById("lblStorageBin").innerText = data.data[i].StorageBin;
-                        cantidad = data.data[i].PrimerConteo;
-                        cargaPrimer(data.data[i].NumeroParte);
-
-
-                    }
-                }
-            }else{
-                Swal.fire({
-                    title: "El marbete no esta capturado aun o no pertenece a tu area",
-                    text: "Verificalo con la mesa de control",
-                    icon: "error"
-                });
-            }
-
-        });
-    }
-
-    function cargaPrimer(numeroParte) {
-        $.getJSON('https://grammermx.com/Logistica/Inventario2025/dao/consultaParte.php?parte='+numeroParte, function (data) {
-            for (var i = 0; i < data.data.length; i++) {
-                if (data.data[i].GrammerNo) {
-                    document.getElementById('lblDescripcion').innerText = data.data[i].Descripcion;
-                    costoUnitario = data.data[i].Costo / data.data[i].Por;
-                    document.getElementById('lblCosto').innerText = costoUnitario;
-                    document.getElementById('lblMontoTotal').innerText = parseFloat(costoUnitario*cantidad).toFixed(2);
-                    document.getElementById('txtUnidadMedida').innerText = data.data[i].UM;
-                    bandera=1;
-
-                    document.getElementById("divMarbete").style.display='flex';
-                    document.getElementById("divMarbete").scrollIntoView({behavior: "smooth"});
-                } else {
-                    bandera=0;
+        fetch('https://grammermx.com/Logistica/Inventario2025/dao/actualizarAgregarSun.php', {
+            method: 'POST',
+            body: formData
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
                     Swal.fire({
-                        title: "El numero de parte no existe",
-                        text: "Verificalo con la mesa de control",
-                        icon: "error"
+                        title: "Storage Unit Capturado",
+                        text: "Unit: " + storageUnit,
+                        icon: "success",
+                        timer: 1500,
+                        showConfirmButton: false
                     });
-                }
-            }
-        });
-    }
-
-    document.getElementById('txtBuscar').addEventListener('keyup', function(event) {
-        if (event.key === 'Enter' || event.keyCode === 13) {
-            verificacionRegistro();
-        }
-    });
-
-    async function enviarDatos() {
-        var cantidadInput = document.getElementById("txtCantidad").value;
-        var cantidadAnterior = document.getElementById("lblCantidad").innerText;
-
-        // ✅ Si hay storage units contados desde faltantes, actualizarlos
-        if (Object.keys(storageUnitsContados).length > 0) {
-            await actualizarStorageUnitsContados();
-        }
-
-        if (cantidadInput === cantidadAnterior || await confirmarCambio()) {
-            enviarSolicitud('<?php echo $nomina;?>-<?php echo $nombre;?>', marbete+'.2', cantidadInput, auxConteo);
-        }
-    }
-
-    // ✅ NUEVA FUNCIÓN: Actualizar storage units contados en la base de datos
-    function actualizarStorageUnitsContados() {
-        return new Promise((resolve) => {
-            var formData = new FormData();
-            formData.append('storageUnits', JSON.stringify(storageUnitsContados));
-            formData.append('folioMarbete', marbete);
-            formData.append('conteo', '2');
-
-            fetch('https://grammermx.com/Logistica/Inventario2025/dao/actualizarStorageFaltantes.php', {
-                method: 'POST',
-                body: formData
-            })
-                .then(response => response.json())
-                .then(data => {
-                    console.log("Storage units faltantes actualizados:", data);
-                    resolve();
-                })
-                .catch(error => {
-                    console.error("Error al actualizar storage units:", error);
-                    resolve();
-                });
-        });
-    }
-
-    function confirmarCambio() {
-        return new Promise(resolve => {
-            Swal.fire({
-                title: "La cantidad ingresada es diferente a la capturada ¿Quieres guardar los cambios?",
-                showDenyButton: true,
-                showCancelButton: true,
-                confirmButtonText: "Guardar",
-                denyButtonText: "No guardar"
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    resolve(true);
-                } else if (result.isDenied) {
-                    Swal.fire("Los cambios no se guardaron", "", "info");
-                    resolve(false);
+                } else {
+                    console.error("Error al actualizar:", data.message);
                 }
             });
-        });
     }
 
-    function enviarSolicitud(nombre, marbete, cantidad,conteo) {
+    function finalizarVerificacion() {
+        // Obtener todas las cantidades de la tabla (por si editaron alguna)
+        var table = document.getElementById("data-table");
+        var rows = table.getElementsByTagName("tbody")[0].getElementsByTagName("tr");
+
+        var cantidadTotal = 0;
+        for (var i = 0; i < rows.length; i++) {
+            var cells = rows[i].getElementsByTagName("td");
+            var cantidad = parseFloat(cells[2].innerText);
+            cantidadTotal += cantidad;
+        }
+
+        // Verificar si quedan faltantes
+        var tableFaltantes = document.getElementById("data-table-faltantes");
+        var filasFaltantes = tableFaltantes.querySelectorAll('tbody tr');
+        var hayFaltantes = filasFaltantes.length > 0;
+
+        if (hayFaltantes) {
+            Swal.fire({
+                title: "¿Finalizar con faltantes?",
+                text: "Aún hay " + filasFaltantes.length + " storage units sin capturar. ¿Deseas continuar?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Sí, finalizar",
+                cancelButtonText: "Cancelar"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    enviarVerificacionFinal(cantidadTotal);
+                }
+            });
+        } else {
+            enviarVerificacionFinal(cantidadTotal);
+        }
+    }
+
+    function enviarVerificacionFinal(cantidad) {
         var formData = new FormData();
-        formData.append('nombre', nombre);
-        formData.append('folioMarbete', marbete);
+        formData.append('nombre', '<?php echo $nomina;?>-<?php echo $nombre;?>');
+        formData.append('folioMarbete', marbeteActual + '.2');
         formData.append('cantidad', cantidad);
 
         fetch('https://grammermx.com/Logistica/Inventario2025/dao/actualizarMarbeteProduccion.php', {
@@ -634,57 +380,50 @@ if (strlen($nomina) == 7) {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    mostrarExito();
+                    let timerInterval;
+                    Swal.fire({
+                        title: "¡Verificación Completada!",
+                        html: "Marbete verificado exitosamente. Regresando... <b></b>",
+                        timer: 2000,
+                        timerProgressBar: true,
+                        icon: "success",
+                        didOpen: () => {
+                            Swal.showLoading();
+                            const timer = Swal.getPopup().querySelector("b");
+                            timerInterval = setInterval(() => {
+                                timer.textContent = Swal.getTimerLeft();
+                            }, 100);
+                        },
+                        willClose: () => {
+                            clearInterval(timerInterval);
+                        }
+                    }).then((result) => {
+                        if (result.dismiss === Swal.DismissReason.timer) {
+                            location.reload();
+                        }
+                    });
                 } else {
-                    console.log("Hubo un error en la operación");
-                    console.log("Las unidades de almacenamiento que fallaron son: ", data.message);
+                    Swal.fire({
+                        title: "Error",
+                        text: "Hubo un problema al finalizar la verificación",
+                        icon: "error"
+                    });
                 }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    title: "Error de conexión",
+                    text: "No se pudo conectar con el servidor",
+                    icon: "error"
+                });
             });
     }
 
-    function enviarSegundos() {
-        var formData = new FormData();
-        formData.append('nombre', '<?php echo $nomina;?>-<?php echo $nombre;?>');
-        formData.append('folioMarbete', marbete);
-
-        fetch('https://grammermx.com/Logistica/Inventario2025/dao/mandarSegundos.php', {
-            method: 'POST',
-            body: formData
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    mostrarExito();
-                } else {
-                    console.log("Hubo un error en la operación");
-                    console.log("Las unidades de almacenamiento que fallaron son: ", data.message);
-                }
-            });
-    }
-
-    function mostrarExito() {
-        let timerInterval;
-        Swal.fire({
-            title: "¡Gracias!.Se finalizo la captura de tu marbete",
-            html: "Te regresaremos a la pagina <b></b> milliseconds.",
-            timer: 1500,
-            timerProgressBar: true,
-            icon: "success",
-            didOpen: () => {
-                Swal.showLoading();
-                const timer = Swal.getPopup().querySelector("b");
-                timerInterval = setInterval(() => {
-                    timer.textContent = `${Swal.getTimerLeft()}`;
-                }, 100);
-            },
-            willClose: () => {
-                clearInterval(timerInterval);
-            }
-        }).then((result) => {
-            if (result.dismiss === Swal.DismissReason.timer) {
-                location.reload();
-            }
-        });
+    function volverACards() {
+        document.getElementById("divMarbetesDiferencias").style.display = 'block';
+        document.getElementById("pasoDos").style.display = 'none';
+        cargarMarbetesDiferencias(); // Recargar para actualizar contadores
     }
 
 </script>

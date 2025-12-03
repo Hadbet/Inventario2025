@@ -230,7 +230,7 @@ if (strlen($nomina) == 7) {
         storageUnitsContados = {};
 
         // Cargar datos del marbete
-        $.getJSON('https://grammermx.com/Logistica/Inventario2025/dao/consultaMarbeteFaltantesSunAlmacen.php?marbete=' + folioMarbete, function (data) {
+        $.getJSON('https://grammermx.com/Logistica/Inventario2025/dao/consultaMarbeteFaltantesSun.php?marbete=' + folioMarbete, function (data) {
             if (data.success && data.data.length > 0) {
                 // Obtener info del primer registro
                 storageBin = data.data[0].StorageBin || '';
@@ -253,6 +253,7 @@ if (strlen($nomina) == 7) {
                         rowContado.insertCell(2).innerHTML = cantidad;
                         rowContado.cells[2].contentEditable = "true";
 
+                        // ✅ Este es el total correcto que ya está en la BD
                         totalContado += cantidad;
 
                         // Agregar a la lista de contados
@@ -276,6 +277,7 @@ if (strlen($nomina) == 7) {
                     }
                 });
 
+                // ✅ El totalContado es el que se guardará en PrimerConteo
                 document.getElementById("lblTotalContado").innerText = totalContado.toFixed(2);
                 document.getElementById("lblTotalFaltante").innerText = totalFaltante.toFixed(2);
             }
@@ -283,13 +285,9 @@ if (strlen($nomina) == 7) {
     }
 
     function capturarFaltante(storageUnit, numParte, cantidad, event) {
-        // Agregar a la lista de contados
-        storageUnitsContados[storageUnit] = {
-            numeroParte: numParte,
-            cantidad: cantidad
-        };
+        // ✅ Solo actualizar en BD y mover visualmente, NO sumar al total
 
-        // Mover a la tabla de contados
+        // Mover a la tabla de contados (solo visual)
         var tableContados = document.getElementById("data-table").getElementsByTagName('tbody')[0];
         var row = tableContados.insertRow(-1);
         row.insertCell(0).innerHTML = storageUnit;
@@ -297,10 +295,8 @@ if (strlen($nomina) == 7) {
         row.insertCell(2).innerHTML = cantidad;
         row.cells[2].contentEditable = "true";
 
-        // Actualizar totales
-        totalContado += parseFloat(cantidad);
+        // ✅ Actualizar solo el contador de faltantes (restar)
         totalFaltante -= parseFloat(cantidad);
-        document.getElementById("lblTotalContado").innerText = totalContado.toFixed(2);
         document.getElementById("lblTotalFaltante").innerText = totalFaltante.toFixed(2);
 
         // Eliminar de la tabla de faltantes
@@ -333,16 +329,8 @@ if (strlen($nomina) == 7) {
     }
 
     function finalizarVerificacion() {
-        // Obtener todas las cantidades de la tabla (por si editaron alguna)
-        var table = document.getElementById("data-table");
-        var rows = table.getElementsByTagName("tbody")[0].getElementsByTagName("tr");
-
-        var cantidadTotal = 0;
-        for (var i = 0; i < rows.length; i++) {
-            var cells = rows[i].getElementsByTagName("td");
-            var cantidad = parseFloat(cells[2].innerText);
-            cantidadTotal += cantidad;
-        }
+        // ✅ Usar el totalContado original (el que ya estaba en la BD)
+        var cantidadFinal = totalContado;
 
         // Verificar si quedan faltantes
         var tableFaltantes = document.getElementById("data-table-faltantes");
@@ -359,11 +347,11 @@ if (strlen($nomina) == 7) {
                 cancelButtonText: "Cancelar"
             }).then((result) => {
                 if (result.isConfirmed) {
-                    enviarVerificacionFinal(cantidadTotal);
+                    enviarVerificacionFinal(cantidadFinal);
                 }
             });
         } else {
-            enviarVerificacionFinal(cantidadTotal);
+            enviarVerificacionFinal(cantidadFinal);
         }
     }
 
@@ -371,7 +359,7 @@ if (strlen($nomina) == 7) {
         var formData = new FormData();
         formData.append('nombre', '<?php echo $nomina;?>-<?php echo $nombre;?>');
         formData.append('folioMarbete', marbeteActual + '.2');
-        formData.append('cantidad', cantidad);
+        formData.append('cantidad', cantidad); // ✅ Este es el total original de la BD
 
         fetch('https://grammermx.com/Logistica/Inventario2025/dao/actualizarMarbeteProduccion.php', {
             method: 'POST',

@@ -10,22 +10,37 @@ function consultarDiferencias($area)
     $con = new LocalConector();
     $conex = $con->conectar();
 
-    // Consulta para obtener marbetes con diferencias (Estatus = 2)
+    // ✅ Consulta corregida: Los faltantes se relacionan por StorageBin y StorageType, NO por FolioMarbete
     $query = "SELECT 
                 bi.FolioMarbete,
                 bi.NumeroParte,
                 bi.StorageBin,
+                bi.StorageType,
                 bi.PrimerConteo,
                 bi.Usuario,
                 bi.Comentario,
                 bi.AreaNombre,
-                COUNT(su.Id_StorageUnit) as TotalStorageUnits,
-                SUM(CASE WHEN su.Estatus = 1 THEN 1 ELSE 0 END) as StorageEscaneados,
-                SUM(CASE WHEN su.Estatus = 0 THEN 1 ELSE 0 END) as StorageFaltantes
+                -- Total de Storage Units en este StorageBin y StorageType
+                (SELECT COUNT(*) 
+                 FROM Storage_Unit su 
+                 WHERE su.Storage_Bin = bi.StorageBin 
+                 AND su.Storage_Type = bi.StorageType) as TotalStorageUnits,
+                -- Storage Units ya escaneados (tienen FolioMarbete asignado)
+                (SELECT COUNT(*) 
+                 FROM Storage_Unit su 
+                 WHERE su.Storage_Bin = bi.StorageBin 
+                 AND su.Storage_Type = bi.StorageType
+                 AND su.FolioMarbete = bi.FolioMarbete
+                 AND su.Estatus = 1) as StorageEscaneados,
+                -- Storage Units faltantes (NO tienen FolioMarbete o tienen Estatus = 0)
+                (SELECT COUNT(*) 
+                 FROM Storage_Unit su 
+                 WHERE su.Storage_Bin = bi.StorageBin 
+                 AND su.Storage_Type = bi.StorageType
+                 AND (su.FolioMarbete IS NULL OR su.FolioMarbete = '' OR su.Estatus = 0)
+                 AND su.FolioMarbete != bi.FolioMarbete) as StorageFaltantes
               FROM `Bitacora_Inventario` bi
-              LEFT JOIN `Storage_Unit` su ON bi.FolioMarbete = su.FolioMarbete
               WHERE bi.Area = '$area' AND bi.Estatus = 2
-              GROUP BY bi.FolioMarbete
               ORDER BY bi.FolioMarbete ASC";
 
     $datos = mysqli_query($conex, $query);

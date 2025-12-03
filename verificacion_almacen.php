@@ -230,7 +230,7 @@ if (strlen($nomina) == 7) {
         storageUnitsContados = {};
 
         // Cargar datos del marbete
-        $.getJSON('https://grammermx.com/Logistica/Inventario2025/dao/consultaMarbeteFaltantesSun.php?marbete=' + folioMarbete, function (data) {
+        $.getJSON('https://grammermx.com/Logistica/Inventario2025/dao/consultaMarbeteFaltantesSunAlmacen.php?marbete=' + folioMarbete, function (data) {
             if (data.success && data.data.length > 0) {
                 // Obtener info del primer registro
                 storageBin = data.data[0].StorageBin || '';

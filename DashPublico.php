@@ -14,6 +14,53 @@
     <link rel="stylesheet" href="css/jquery.timepicker.css">
     <link rel="stylesheet" href="css/quill.snow.css">
     <?php include 'estaticos/stylesEstandar.php'; ?>
+
+    <style>
+        /* ✅ ELIMINAR MARGEN IZQUIERDO Y HACER GRÁFICAS FULL WIDTH */
+        .main-content {
+            margin-left: 0 !important;
+            padding-left: 0 !important;
+            width: 100% !important;
+        }
+
+        .container-fluid {
+            padding-left: 15px !important;
+            padding-right: 15px !important;
+            max-width: 100% !important;
+            width: 100% !important;
+        }
+
+        .card {
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+        }
+
+        /* Hacer las gráficas responsivas */
+        #areaChartTres, #areaChartCuatro {
+            width: 100% !important;
+            min-height: 400px;
+        }
+
+        .apexcharts-canvas {
+            margin: 0 auto !important;
+            width: 100% !important;
+        }
+
+        /* Si tienes sidebar, ocultarlo */
+        .wrapper {
+            padding-left: 0 !important;
+        }
+
+        body.vertical {
+            padding-left: 0 !important;
+        }
+
+        .col-12 {
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+        }
+    </style>
+
 </head>
 <body class="vertical  light  ">
 <div class="wrapper">

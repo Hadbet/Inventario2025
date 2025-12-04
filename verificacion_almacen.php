@@ -230,7 +230,7 @@ if (strlen($nomina) == 7) {
         storageUnitsContados = {};
 
         // Cargar datos del marbete
-        $.getJSON('https://grammermx.com/Logistica/Inventario2025/dao/consultaMarbeteFaltantesSunAlmacen.php?marbete=' + folioMarbete, function (data) {
+        $.getJSON('https://grammermx.com/Logistica/Inventario2025/dao/consultaMarbeteFaltantesSun.php?marbete=' + folioMarbete, function (data) {
             if (data.success && data.data.length > 0) {
                 // Obtener info del primer registro
                 storageBin = data.data[0].StorageBin || '';
@@ -361,7 +361,7 @@ if (strlen($nomina) == 7) {
         formData.append('folioMarbete', marbeteActual + '.2');
         formData.append('cantidad', cantidad); // ✅ Este es el total original de la BD
 
-        fetch('https://grammermx.com/Logistica/Inventario2025/dao/actualizarMarbeteProduccion.php', {
+        fetch('https://grammermx.com/Logistica/Inventario2025/dao/actualizarVerificacionMarbete.php', {
             method: 'POST',
             body: formData
         })
@@ -371,7 +371,7 @@ if (strlen($nomina) == 7) {
                     let timerInterval;
                     Swal.fire({
                         title: "¡Verificación Completada!",
-                        html: "Marbete verificado exitosamente. Regresando... <b></b>",
+                        html: "Marbete " + data.marbete + " verificado con cantidad: " + data.cantidad + "<br>Regresando... <b></b>",
                         timer: 2000,
                         timerProgressBar: true,
                         icon: "success",
@@ -392,10 +392,11 @@ if (strlen($nomina) == 7) {
                     });
                 } else {
                     Swal.fire({
-                        title: "Error",
-                        text: "Hubo un problema al finalizar la verificación",
+                        title: "Error al Verificar",
+                        text: data.message,
                         icon: "error"
                     });
+                    console.error("Error details:", data);
                 }
             })
             .catch(error => {

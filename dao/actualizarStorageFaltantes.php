@@ -16,14 +16,14 @@ try {
     }
 
     // ✅ 1. Actualizar Storage_Unit (marcar como contados)
-    $stmt = $conex->prepare("UPDATE `Storage_Unit` SET `Estatus`='1', `Conteo`='1', `FolioMarbete`=?, `Cantidad`=? WHERE `Id_StorageUnit` = ?");
+    $stmt = $conex->prepare("UPDATE `Storage_Unit` SET `Estatus`='1', `Conteo`=?, `FolioMarbete`=?, `Cantidad`=? WHERE `Id_StorageUnit` = ?");
 
     $successCount = 0;
     $failedUnits = array();
 
     foreach ($storageUnits as $storageUnit => $details) {
         $cantidad = $details['cantidad'];
-        $stmt->bind_param("sss", $folioMarbete, $cantidad, $storageUnit);
+        $stmt->bind_param("ssss", $conteo, $folioMarbete, $cantidad, $storageUnit);
 
         if ($stmt->execute()) {
             $successCount++;

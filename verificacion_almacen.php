@@ -308,7 +308,7 @@ if (strlen($nomina) == 7) {
         formData.append('marbete', marbeteActual);
         formData.append('estatus', '1');
 
-        fetch('https://grammermx.com/Logistica/Inventario2025/dao/actualizarAgregarSun.php', {
+        fetch('https://grammermx.com/Logistica/Inventario2025/dao/actualizarAgregarSunAlmacen.php', {
             method: 'POST',
             body: formData
         })

@@ -296,7 +296,10 @@ if (strlen($nomina) == 7) {
         row.cells[2].contentEditable = "true";
 
         // ✅ Actualizar solo el contador de faltantes (restar)
+        totalContado += parseFloat(cantidad);
         totalFaltante -= parseFloat(cantidad);
+
+        document.getElementById("lblTotalContado").innerText = totalContado.toFixed(2);
         document.getElementById("lblTotalFaltante").innerText = totalFaltante.toFixed(2);
 
         // Eliminar de la tabla de faltantes

@@ -18,7 +18,7 @@ try {
     if ($conteo == 2) {
         $stmt = $conex->prepare("UPDATE `Bitacora_Inventario` 
                                 SET `UsuarioVerificacion`=?, 
-                                    `SegundoConteo`=?, 
+                                    `PrimerConteo`=?, 
                                     `Estatus`='1', 
                                     `SegFolio`='1' 
                                 WHERE `FolioMarbete`=? 

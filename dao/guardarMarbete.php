@@ -24,7 +24,7 @@ try {
     if ($conteo == 1) {
         $nuevoEstatus = ($hayFaltantes === 'false') ? '1' : '2';
 
-        $stmt = $conex->prepare("UPDATE `Bitacora_Inventario` SET `Usuario`=?, `Estatus`=?, `PrimerConteo`=?, `Comentario`=? WHERE `FolioMarbete`=? AND `Estatus` = 0");
+        $stmt = $conex->prepare("UPDATE `Bitacora_Inventario` SET `Fecha`=?, `Usuario`=?, `Estatus`=?, `PrimerConteo`=?, `Comentario`=? WHERE `FolioMarbete`=? AND `Estatus` = 0");
     } elseif ($conteo == 2) {
         $stmt = $conex->prepare("UPDATE `Bitacora_Inventario` SET `UserSeg`=?, `SegundoConteo`=?, `SegFolio`=1 WHERE `FolioMarbete`=? AND `Estatus` = 1");
     } elseif ($conteo == 3) {
@@ -44,7 +44,7 @@ try {
     $tercerConteo = $conteo == 3 ? $totalCantidad : 0;
 
     if ($conteo == 1) {
-        $stmt->bind_param("sssss", $nombre, $nuevoEstatus, $primerConteo, $comentarios, $marbete);
+        $stmt->bind_param("ssssss", $DateAndTime,$nombre, $nuevoEstatus, $primerConteo, $comentarios, $marbete);
     } elseif ($conteo == 2) {
         $stmt->bind_param("sss", $nombre, $segundoConteo, $marbete);
     } elseif ($conteo == 3) {

@@ -29,18 +29,16 @@ function ContadorApu($marbete)
     B.StorageBin, 
     B.StorageType, 
     B.Area, 
-    COALESCE(S.Id_StorageUnit, 'NA') AS StorageUnit,
-    COALESCE(S.Cantidad, 'NA') AS CantidadStorage,
-    S.Estatus AS EstatusStorage
+    COALESCE(S.Id_StorageUnit, 'NA') AS StorageUnit, 
+    COALESCE(S.Cantidad, 'NA') AS CantidadStorage, 
+    COALESCE(S.Estatus, 0) AS EstatusStorage 
 FROM 
     Bitacora_Inventario B 
 LEFT JOIN 
-    Storage_Unit S 
-ON 
-    (B.StorageBin = S.Storage_Bin and B.NumeroParte = S.Numero_Parte)
+    Storage_Unit S ON (B.StorageBin = S.Storage_Bin AND B.NumeroParte = S.Numero_Parte) 
 WHERE 
-    B.StorageBin = S.Storage_Bin and B.NumeroParte = S.Numero_Parte
-    and B.Estatus in(1,0,5) and B.FolioMarbete = '$marbete';");
+    B.FolioMarbete = '$marbete'
+    AND B.Estatus IN (0, 1, 5);");
 
     $resultado = mysqli_fetch_all($datos, MYSQLI_ASSOC);
     echo json_encode(array("data" => $resultado));

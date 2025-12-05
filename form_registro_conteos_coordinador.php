@@ -573,7 +573,6 @@ if (strlen($nomina) == 7) {
                                 document.getElementById("Ubicacion").innerHTML = "Ubicación : " + storageBin;
                                 document.getElementById("pasoDos").style.display = 'block';
                                 document.getElementById("pasoUno").style.display = 'none';
-                                html5QrcodeScanner.clear();
                                 html5QrcodeScanner.pause();
                             } else {
                                 Swal.fire({

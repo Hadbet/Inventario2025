@@ -159,6 +159,9 @@ if (strlen($nomina) == 7) {
 
     function numerosFaltantes() {
         $.getJSON('https://grammermx.com/Logistica/Inventario2025/dao/consultaFaltantes.php?area=<?php echo $area;?>', function (data) {
+
+            verificacion();
+            /*
             if (data && data.data && data.data.length > 0) {
                 var allGrammerNoAreNA = data.data.every(function(item) {
                     return item.GrammerNo === 'NA';
@@ -200,7 +203,7 @@ if (strlen($nomina) == 7) {
                 }
             } else {
                 verificacion();
-            }
+            }*/
         });
     }
 

@@ -435,7 +435,6 @@ if (strlen($nomina) == 7) {
             document.getElementById("txtConteoActual").innerHTML = auxConteo;
             document.getElementById("txtTotalUnit").innerText = 'Total storage unit : ' + totalUnit;
 
-            html5QrcodeScanner.clear();
             html5QrcodeScanner.pause();
         });
     }

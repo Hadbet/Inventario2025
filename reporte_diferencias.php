@@ -230,7 +230,6 @@ if (strlen($nomina) == 7) {
 
 <script>
 
-
     verificacionDiferencia();
 
     function verificacionDiferencia() {
@@ -241,9 +240,21 @@ if (strlen($nomina) == 7) {
 
             if (data && data.data && data.data.length > 0) {
                 for (var i = 0; i < data.data.length; i++) {
-                    totalDinero += parseFloat(data.data[i].Total);
-                    totalCantidad += parseFloat(data.data[i].Cantidad);
+                    // ✅ Validar que los valores sean números válidos
+                    var valorDinero = parseFloat(data.data[i].Total);
+                    var valorCantidad = parseFloat(data.data[i].Cantidad);
+
+                    if (!isNaN(valorDinero)) {
+                        totalDinero += valorDinero;
+                    }
+                    if (!isNaN(valorCantidad)) {
+                        totalCantidad += valorCantidad;
+                    }
                 }
+
+                console.log("Total Dinero Real:", totalDinero);
+                console.log("Total Cantidad Real:", totalCantidad);
+
                 verificarDiferenciaSap(totalDinero, totalCantidad);
             } else {
                 Swal.fire({
@@ -252,6 +263,8 @@ if (strlen($nomina) == 7) {
                     icon: "success"
                 });
             }
+        }).fail(function(jqXHR, textStatus, errorThrown) {
+            console.error("Error al cargar datos reales:", textStatus, errorThrown);
         });
     }
 
@@ -259,7 +272,7 @@ if (strlen($nomina) == 7) {
         $.getJSON('https://grammermx.com/Logistica/Inventario2025/dao/consultaSegundosConteosCostoSapAdminNew.php', function (data) {
             if (data && data.data && data.data.length > 0) {
 
-                // Esto es más rápido y evita el NaN filtrando valores inválidos
+                // ✅ Calcular totales con validación
                 const totalDineroSap = data.data.reduce((sum, item) => {
                     const valor = parseFloat(item.Total);
                     return sum + (isNaN(valor) ? 0 : valor);
@@ -270,18 +283,32 @@ if (strlen($nomina) == 7) {
                     return sum + (isNaN(valor) ? 0 : valor);
                 }, 0);
 
-                // Actualizar interfaz (más limpio con un objeto de configuración)
+                console.log("Total Dinero SAP:", totalDineroSap);
+                console.log("Total Cantidad SAP:", totalCantidadSap);
+
+                // ✅ Validar que los valores no sean NaN antes de mostrar
                 const formatter = new Intl.NumberFormat('es-MX', {
                     style: 'currency',
                     currency: 'MXN'
                 });
 
-                document.getElementById("lblDineroReal").innerText = formatter.format(totalDinero);
-                document.getElementById("lblCantidadReal").innerText = totalCantidad.toFixed(2);
-                document.getElementById("lblDineroSap").innerText = formatter.format(totalDineroSap);
-                document.getElementById("lblCantidadSap").innerText = totalCantidadSap.toFixed(2);
-                document.getElementById("lblDinero").innerText = formatter.format(totalDineroSap - totalDinero);
-                document.getElementById("lblCantidad").innerText = (totalCantidadSap - totalCantidad).toFixed(2);
+                // Mostrar valores reales
+                document.getElementById("lblDineroReal").innerText = isNaN(totalDinero) ? '$0.00' : formatter.format(totalDinero);
+                document.getElementById("lblCantidadReal").innerText = isNaN(totalCantidad) ? '0.00' : totalCantidad.toFixed(2);
+
+                // Mostrar valores SAP
+                document.getElementById("lblDineroSap").innerText = isNaN(totalDineroSap) ? '$0.00' : formatter.format(totalDineroSap);
+                document.getElementById("lblCantidadSap").innerText = isNaN(totalCantidadSap) ? '0.00' : totalCantidadSap.toFixed(2);
+
+                // Calcular y mostrar diferencias
+                var diferenciaDinero = totalDineroSap - totalDinero;
+                var diferenciaCantidad = totalCantidadSap - totalCantidad;
+
+                console.log("Diferencia Dinero:", diferenciaDinero);
+                console.log("Diferencia Cantidad:", diferenciaCantidad);
+
+                document.getElementById("lblDinero").innerText = isNaN(diferenciaDinero) ? '$0.00' : formatter.format(diferenciaDinero);
+                document.getElementById("lblCantidad").innerText = isNaN(diferenciaCantidad) ? '0.00' : diferenciaCantidad.toFixed(2);
 
                 crearTabla();
             } else {
@@ -291,17 +318,19 @@ if (strlen($nomina) == 7) {
                     icon: "success"
                 });
             }
+        }).fail(function(jqXHR, textStatus, errorThrown) {
+            console.error("Error al cargar datos SAP:", textStatus, errorThrown);
         });
     }
 
     function crearTabla() {
         $.ajax({
-            url: 'https://grammermx.com/Logistica/Inventario2025/dao/consultaSegundosConteosCostoAdminAux.php', // Reemplaza esto con la URL de tus datos
+            url: 'https://grammermx.com/Logistica/Inventario2025/dao/consultaSegundosConteosCostoAdminAux.php',
             dataType: 'json',
             success: function (data) {
 
                 var table = $('#dataTable-1').DataTable({
-                    data: data.data, // Usar los datos filtrados
+                    data: data.data,
                     columns: [
                         {data: 'FolioMarbete'},
                         {data: 'NumeroParte'},
@@ -309,19 +338,22 @@ if (strlen($nomina) == 7) {
                         {
                             data: 'CantidadContada',
                             render: function (data, type, row) {
-                                return parseFloat(data).toFixed(2);
+                                var valor = parseFloat(data);
+                                return isNaN(valor) ? '0.00' : valor.toFixed(2);
                             }
                         },
                         {
                             data: 'CantidadInventarioSap',
                             render: function (data, type, row) {
-                                return parseFloat(data).toFixed(2);
+                                var valor = parseFloat(data);
+                                return isNaN(valor) ? '0.00' : valor.toFixed(2);
                             }
                         },
                         {
                             data: 'Diferencia',
                             render: function (data, type, row) {
-                                return parseFloat(data).toFixed(2);
+                                var valor = parseFloat(data);
+                                return isNaN(valor) ? '0.00' : valor.toFixed(2);
                             }
                         },
                         {data: 'AreaNombre'}
@@ -368,6 +400,9 @@ if (strlen($nomina) == 7) {
                         });
                     }
                 });
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                console.error("Error al cargar tabla:", textStatus, errorThrown);
             }
         });
     }

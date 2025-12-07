@@ -432,36 +432,61 @@
             const worksheet = workbook.Sheets[workbook.SheetNames[0]];
             const excelJson = XLSX.utils.sheet_to_json(worksheet);
 
-            // Crear lookup de materiales
+            // Crear lookup de materiales con StorageType y StorageBin
             const materialLookup = {};
             excelJson.forEach(row => {
                 const numeroParte = String(row['NumeroParte'] || '').trim();
-                const cantidad = parseFloat(row['Cantidad'] || 0);
+                const cantidad = parseFloat(row['Cantidad_Total'] || row['Cantidad'] || 0);
                 const um = String(row['UM'] || 'PC').trim();
+                const storageType = row['StorageType'] ? String(Math.floor(row['StorageType'])).trim() : '';
+                const storageBin = String(row['StorageBin'] || '').trim();
 
                 if (numeroParte) {
                     // Limpiar sufijos -A, -B, etc
                     const numeroParteClean = numeroParte.replace(/-[A-Z]$/i, '');
 
-                    // Acumular cantidades
-                    if (materialLookup[numeroParte]) {
-                        materialLookup[numeroParte].cantidad += cantidad;
+                    // Crear clave más específica disponible
+                    let key;
+                    if (storageType && storageBin) {
+                        key = `${numeroParte}|${storageType}|${storageBin}`;
+                    } else if (storageType) {
+                        key = `${numeroParte}|${storageType}|`;
+                    } else if (storageBin) {
+                        key = `${numeroParte}||${storageBin}`;
                     } else {
-                        materialLookup[numeroParte] = { cantidad, um };
+                        key = numeroParte;
                     }
 
-                    // También guardar versión sin sufijo
+                    // Acumular cantidades
+                    if (materialLookup[key]) {
+                        materialLookup[key].cantidad += cantidad;
+                    } else {
+                        materialLookup[key] = { cantidad, um };
+                    }
+
+                    // También crear clave con número parte limpio
                     if (numeroParte !== numeroParteClean) {
-                        if (materialLookup[numeroParteClean]) {
-                            materialLookup[numeroParteClean].cantidad += cantidad;
+                        let keyClean;
+                        if (storageType && storageBin) {
+                            keyClean = `${numeroParteClean}|${storageType}|${storageBin}`;
+                        } else if (storageType) {
+                            keyClean = `${numeroParteClean}|${storageType}|`;
+                        } else if (storageBin) {
+                            keyClean = `${numeroParteClean}||${storageBin}`;
                         } else {
-                            materialLookup[numeroParteClean] = { cantidad, um };
+                            keyClean = numeroParteClean;
+                        }
+
+                        if (materialLookup[keyClean]) {
+                            materialLookup[keyClean].cantidad += cantidad;
+                        } else {
+                            materialLookup[keyClean] = { cantidad, um };
                         }
                     }
                 }
             });
 
-            console.log(`Loaded ${Object.keys(materialLookup).length} unique materials`);
+            console.log(`Loaded ${Object.keys(materialLookup).length} unique material combinations`);
 
             // Leer CSV
             const csvText = await csvFile.text();
@@ -478,6 +503,17 @@
                     break;
                 }
             }
+
+            // Extraer Storage Type del CSV
+            let csvStorageType = '';
+            for (const line of headerLines) {
+                const match = line.match(/Storage type\s*:\s*(\d+)/);
+                if (match) {
+                    csvStorageType = match[1];
+                    break;
+                }
+            }
+            console.log(`CSV Storage Type: ${csvStorageType}`);
 
             // Procesar registros
             const outputLines = [...headerLines];
@@ -498,17 +534,38 @@
 
                     const materialClean = material.replace(/-[A-Z]$/i, '');
 
-                    // Buscar en lookup
+                    // Buscar en lookup con prioridad
                     let cantidad = 0;
                     let um = 'PC';
+                    let found = false;
 
-                    if (materialLookup[material]) {
-                        cantidad = materialLookup[material].cantidad;
-                        um = materialLookup[material].um;
-                        recordsFound++;
-                    } else if (materialLookup[materialClean]) {
-                        cantidad = materialLookup[materialClean].cantidad;
-                        um = materialLookup[materialClean].um;
+                    // Prioridad de búsqueda:
+                    // 1. Material + StorageType + StorageBin (más específico)
+                    // 2. Material + StorageType
+                    // 3. Material + StorageBin
+                    // 4. Solo Material (menos específico)
+
+                    const searchKeys = [
+                        `${material}|${csvStorageType}|${storageBin}`,
+                        `${materialClean}|${csvStorageType}|${storageBin}`,
+                        `${material}|${csvStorageType}|`,
+                        `${materialClean}|${csvStorageType}|`,
+                        `${material}||${storageBin}`,
+                        `${materialClean}||${storageBin}`,
+                        material,
+                        materialClean
+                    ];
+
+                    for (const key of searchKeys) {
+                        if (materialLookup[key]) {
+                            cantidad = materialLookup[key].cantidad;
+                            um = materialLookup[key].um;
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if (found) {
                         recordsFound++;
                     } else {
                         recordsNotFound++;

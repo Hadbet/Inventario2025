@@ -438,7 +438,8 @@
                 const numeroParte = String(row['NumeroParte'] || '').trim();
                 const cantidad = parseFloat(row['Cantidad_Total'] || row['Cantidad'] || 0);
                 const um = String(row['UM'] || 'PC').trim();
-                const storageType = row['StorageType'] ? String(Math.floor(row['StorageType'])).trim() : '';
+                // Normalizar StorageType removiendo ceros a la izquierda
+                const storageType = row['StorageType'] ? String(Math.floor(parseFloat(row['StorageType']))).trim() : '';
                 const storageBin = String(row['StorageBin'] || '').trim();
 
                 if (numeroParte) {
@@ -509,7 +510,8 @@
             for (const line of headerLines) {
                 const match = line.match(/Storage type\s*:\s*(\d+)/);
                 if (match) {
-                    csvStorageType = match[1];
+                    // Remover ceros a la izquierda (011 -> 11, 025 -> 25)
+                    csvStorageType = String(parseInt(match[1]));
                     break;
                 }
             }

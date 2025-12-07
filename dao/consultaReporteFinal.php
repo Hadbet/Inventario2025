@@ -9,10 +9,11 @@ function ContadorApu()
     $con = new LocalConector();
     $conex = $con->conectar();
 
+    // ✅ CAMBIO CRÍTICO: LEFT JOIN desde Bitacora_Inventario para incluir items que NO están en SAP
     $datos = mysqli_query($conex, "SELECT 
-    ISap.GrammerNo, 
-    ISap.STBin, 
-    ISap.Cantidad AS 'Total_InventarioSap', 
+    BInv.NumeroParte AS 'GrammerNo',
+    BInv.StorageBin AS 'STBin',
+    COALESCE(ISap.Cantidad, 0) AS 'Total_InventarioSap',
     BInv.NumeroParte, 
     BInv.StorageBin, 
     SUM(
@@ -25,7 +26,10 @@ function ContadorApu()
     BInv.FolioMarbete,
     Part.Descripcion,
     Part.UM,
-    (Part.Por / Part.Costo) AS 'CostoUnitario',
+    CASE 
+        WHEN Part.Por IS NULL OR Part.Por = 0 OR Part.Costo IS NULL OR Part.Costo = 0 THEN 0
+        ELSE (Part.Por / Part.Costo)
+    END AS 'CostoUnitario',
     CASE 
         WHEN BInv.TercerConteo != 0 THEN 'Con tercer conteo'
         WHEN BInv.SegundoConteo != 0 THEN 'Con segundo conteo'
@@ -33,25 +37,27 @@ function ContadorApu()
         ELSE ''
     END AS 'Comentario'
 FROM 
-    InventarioSap ISap
+    Bitacora_Inventario BInv
 LEFT JOIN 
-    Bitacora_Inventario BInv ON ISap.GrammerNo = BInv.NumeroParte AND ISap.STBin = BInv.StorageBin AND ISap.STType = BInv.StorageType AND BInv.Estatus = 1
+    InventarioSap ISap ON BInv.NumeroParte = ISap.GrammerNo 
+        AND BInv.StorageBin = ISap.STBin 
+        AND BInv.StorageType = ISap.STType
 LEFT JOIN
-    Parte Part ON ISap.GrammerNo = Part.GrammerNo
+    Parte Part ON BInv.NumeroParte = Part.GrammerNo
+WHERE
+    BInv.Estatus = 1
 GROUP BY 
-    ISap.GrammerNo, 
-    ISap.STBin, 
-    BInv.NumeroParte, 
-    BInv.StorageBin, 
+    BInv.NumeroParte,
+    BInv.StorageBin,
     BInv.FolioMarbete,
     Part.Descripcion,
     Part.UM,
     Part.Por,
-    Part.Costo");
+    Part.Costo,
+    ISap.Cantidad");
 
     $resultado = mysqli_fetch_all($datos, MYSQLI_ASSOC);
     echo json_encode(array("data" => $resultado));
 }
-
 
 ?>

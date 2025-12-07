@@ -421,11 +421,9 @@ if (strlen($nomina) == 7) {
         }));
     }
 
-    // ✅ LÓGICA MEJORADA: Completar M cuando no tenga P o L
-
     async function loadData() {
         try {
-            console.time("Tiempo total de carga");
+            console.time("Tiempo total de carga"); // Medimos el tiempo
 
             const urls = {
                 uno: 'https://grammermx.com/Logistica/Inventario2025/dao/consultaReporteFinalUno.php',
@@ -433,223 +431,68 @@ if (strlen($nomina) == 7) {
                 tres: 'https://grammermx.com/Logistica/Inventario2025/dao/consultaReporteFinalTres.php'
             };
 
+            // 3. Peticiones en paralelo. Promise.all ejecuta todas las peticiones a la vez
+            // y espera a que todas terminen. Esto es mucho más rápido.
             const results = await Promise.all([
                 fetchData(urls.uno),
                 fetchData(urls.dos),
                 fetchData(urls.tres)
             ]);
 
-            allData = [];
+            // 4. Procesamos los datos y los unimos en un solo array de forma más limpia.
+            allData = [
+                ...processData(results[0], 'uno'),
+                ...processData(results[1], 'dos'),
+                ...processData(results[2], 'tres')
+            ];
 
-            // ========================================
-            // 1️⃣ TIPO UNO: Agrupado por GrammerNo
-            // ========================================
-            if (results[0]?.data) {
-                results[0].data.forEach(item => {
-                    const sap = parseFloat(item.Total_InventarioSap || 0);
-                    const conteo = parseFloat(item.Total_Bitacora_Inventario || 0);
-                    const diferencia = conteo - sap;
-                    const costoUnitario = parseFloat(item.Costo_Unitario || 0);
-
-                    allData.push({
-                        P: sap > 0 && conteo === 0 ? '*' : '',
-                        L: sap === 0 && conteo > 0 ? '*' : '',
-                        M: sap > 0 && conteo > 0 && diferencia !== 0 ? '*' : '',
-                        GrammerNo: item.GrammerNo || '',
-                        Descripcion: item.Descripcion || '',
-                        UM: item.UM || '',
-                        Costo_Unitario: costoUnitario,
-                        StLocation: '',
-                        StBin: '',
-                        Folio: '',
-                        Sap: sap,
-                        Conteo: conteo,
-                        Dif: diferencia,
-                        Costo: Math.abs(diferencia * costoUnitario),
-                        Comentario: '',
-                        Tipo: 'uno'
-                    });
-                });
-            }
-
-            // ========================================
-            // 2️⃣ TIPO DOS: Agrupado por GrammerNo + Storage Bin
-            // ========================================
-            if (results[1]?.data) {
-                results[1].data.forEach(item => {
-                    const sap = parseFloat(item.Total_InventarioSap || 0);
-                    const conteo = parseFloat(item.Total_Bitacora_Inventario || 0);
-                    const diferencia = conteo - sap;
-                    const costoUnitario = parseFloat(item.Costo_Unitario || 0);
-
-                    allData.push({
-                        P: sap > 0 && conteo === 0 ? '*' : '',
-                        L: sap === 0 && conteo > 0 ? '*' : '',
-                        M: sap > 0 && conteo > 0 && diferencia !== 0 ? '*' : '',
-                        GrammerNo: item.GrammerNo || '',
-                        Descripcion: item.Descripcion || '',
-                        UM: item.UM || '',
-                        Costo_Unitario: costoUnitario,
-                        StLocation: '',
-                        StBin: item.STBin || item.StorageBin || '',
-                        Folio: '',
-                        Sap: sap,
-                        Conteo: conteo,
-                        Dif: diferencia,
-                        Costo: Math.abs(diferencia * costoUnitario),
-                        Comentario: '',
-                        Tipo: 'dos'
-                    });
-                });
-            }
-
-            // ========================================
-            // 3️⃣ TIPO TRES: Detalle de marbetes
-            // ========================================
-            if (results[2]?.data) {
-                results[2].data.forEach(item => {
-                    const conteo = parseFloat(item.Total_Conteo || 0);
-                    const costoUnitario = parseFloat(item.Costo_Unitario || 0);
-
-                    allData.push({
-                        P: '',
-                        L: '',
-                        M: '*',
-                        GrammerNo: item.GrammerNo || '',
-                        Descripcion: item.Descripcion || '',
-                        UM: item.UM || '',
-                        Costo_Unitario: costoUnitario,
-                        StLocation: '',
-                        StBin: item.StorageBin || '',
-                        Folio: item.FolioMarbete || '',
-                        Sap: '',
-                        Conteo: conteo,
-                        Dif: '',
-                        Costo: '',
-                        Comentario: item.Comentario || '',
-                        Tipo: 'tres'
-                    });
-                });
-            }
-
-            // ========================================
-            // ✅ PASO CRÍTICO: Completar datos en M huérfanos
-            // ========================================
-            completarMHuerfanos();
-
-            // Ordenar
+            // La lógica de ordenamiento es correcta y se mantiene igual.
             allData.sort((a, b) => {
-                const grammerCompare = a.GrammerNo.localeCompare(b.GrammerNo);
-                if (grammerCompare !== 0) return grammerCompare;
-                return (a.StBin || '').localeCompare(b.StBin || '');
+                const grammerNoCompare = a.GrammerNo.localeCompare(b.GrammerNo);
+                if (grammerNoCompare !== 0) {
+                    return grammerNoCompare;
+                }
+                return a.StBin.localeCompare(b.StBin);
             });
 
-            renderTable();
-            console.timeEnd("Tiempo total de carga");
+            // 5. La mejora más importante: creamos el HTML para todas las filas
+            // y lo insertamos en el DOM una sola vez.
+            const tableBody = $('#data-table tbody');
+            const rowsHtml = allData.map(item => `
+            <tr>
+                <td>${item.P || ''}</td>
+                <td>${item.L || ''}</td>
+                <td>${item.M || ''}</td>
+                <td>${item.GrammerNo || ''}</td>
+                <td>${item.Descripcion || ''}</td>
+                <td>${item.UM || ''}</td>
+                <td>${(parseFloat(item.Costo_Unitario || 0)).toFixed(4)}</td>
+                <td>${item.StLocation || ''}</td>
+                <td>${item.StBin || ''}</td>
+                <td>${item.Folio || ''}</td>
+                <td>${(parseFloat(item.Sap || 0)).toFixed(2)}</td>
+                <td>${(parseFloat(item.Conteo || 0)).toFixed(2)}</td>
+                <td>${(parseFloat(item.Dif || 0)).toFixed(2)}</td>
+                <td>${(parseFloat(item.Costo || 0)).toFixed(4)}</td>
+                <td>${item.Comentario || ''}</td>
+            </tr>
+        `).join(''); // Unimos todos los strings <tr> en uno solo.
+
+            // Vaciamos el cuerpo de la tabla y añadimos todo el contenido nuevo.
+            tableBody.html(rowsHtml);
+
+            console.timeEnd("Tiempo total de carga"); // Fin de la medición de tiempo
 
         } catch (error) {
             console.error("Error al cargar los datos:", error);
-            $('#data-table tbody').html('<tr><td colspan="15">Error al cargar los datos.</td></tr>');
+            // Opcional: mostrar un mensaje de error al usuario en la página.
+            $('#data-table tbody').html('<tr><td colspan="15">Error al cargar los datos. Por favor, intente de nuevo.</td></tr>');
         }
     }
 
-    /**
-     * ✅ FUNCIÓN CLAVE: Completar SAP, Dif y Costo en registros M que no tienen P o L
-     */
-    function completarMHuerfanos() {
-        // Agrupar por GrammerNo + StBin para identificar familias
-        const grupos = {};
-
-        allData.forEach((item, index) => {
-            const key = `${item.GrammerNo}_${item.StBin}`;
-            if (!grupos[key]) {
-                grupos[key] = [];
-            }
-            grupos[key].push({ item, index });
-        });
-
-        // Procesar cada grupo
-        Object.values(grupos).forEach(grupo => {
-            // Verificar si hay P o L en el grupo
-            const tieneP = grupo.some(g => g.item.P === '*');
-            const tieneL = grupo.some(g => g.item.L === '*');
-            const tieneM = grupo.some(g => g.item.M === '*');
-
-            // ✅ Si solo tiene M (sin P ni L), completar datos
-            if (tieneM && !tieneP && !tieneL) {
-                grupo.forEach(g => {
-                    if (g.item.M === '*' && g.item.Tipo === 'tres') {
-                        // Este M está huérfano, necesita datos completos
-
-                        // Buscar datos de SAP en tipo uno o dos
-                        const datosBase = allData.find(d =>
-                            d.GrammerNo === g.item.GrammerNo &&
-                            d.StBin === g.item.StBin &&
-                            (d.Tipo === 'uno' || d.Tipo === 'dos')
-                        );
-
-                        if (datosBase) {
-                            // ✅ COMPLETAR DATOS FALTANTES
-                            const conteo = parseFloat(g.item.Conteo || 0);
-                            const sap = parseFloat(datosBase.Sap || 0);
-                            const diferencia = conteo - sap;
-                            const costoUnitario = parseFloat(g.item.Costo_Unitario || 0);
-
-                            allData[g.index].Sap = sap;
-                            allData[g.index].Dif = diferencia;
-                            allData[g.index].Costo = Math.abs(diferencia * costoUnitario);
-                        } else {
-                            // No hay SAP, entonces SAP = 0
-                            const conteo = parseFloat(g.item.Conteo || 0);
-                            const costoUnitario = parseFloat(g.item.Costo_Unitario || 0);
-
-                            allData[g.index].Sap = 0;
-                            allData[g.index].Dif = conteo;
-                            allData[g.index].Costo = Math.abs(conteo * costoUnitario);
-                        }
-                    }
-                });
-            }
-            // Si tiene P, L y M, dejar como está (comportamiento actual)
-        });
-    }
-
-    function renderTable() {
-        const tableBody = $('#data-table tbody');
-        const rowsHtml = allData.map(item => `
-        <tr>
-            <td>${item.P || ''}</td>
-            <td>${item.L || ''}</td>
-            <td>${item.M || ''}</td>
-            <td>${item.GrammerNo || ''}</td>
-            <td>${item.Descripcion || ''}</td>
-            <td>${item.UM || ''}</td>
-            <td>${typeof item.Costo_Unitario === 'number' ? item.Costo_Unitario.toFixed(4) : ''}</td>
-            <td>${item.StLocation || ''}</td>
-            <td>${item.StBin || ''}</td>
-            <td>${item.Folio || ''}</td>
-            <td>${typeof item.Sap === 'number' ? item.Sap.toFixed(2) : (item.Sap === '' ? '' : '0.00')}</td>
-            <td>${typeof item.Conteo === 'number' ? item.Conteo.toFixed(2) : ''}</td>
-            <td>${typeof item.Dif === 'number' ? item.Dif.toFixed(2) : (item.Dif === '' ? '' : '0.00')}</td>
-            <td>${typeof item.Costo === 'number' ? item.Costo.toFixed(4) : (item.Costo === '' ? '' : '0.00')}</td>
-            <td>${item.Comentario || ''}</td>
-        </tr>
-    `).join('');
-
-        tableBody.html(rowsHtml);
-    }
-
-    async function fetchData(url) {
-        return $.getJSON(url).fail((jqxhr, textStatus, error) => {
-            console.error(`Error fetching ${url}: ${textStatus}, ${error}`);
-            return Promise.reject(error);
-        });
-    }
-
-    // Iniciar carga
+    // Iniciar la carga de datos
     loadData();
 
-    // Exportar a Excel
     $('#export-button').click(function() {
         if (typeof allData === 'undefined' || allData.length === 0) {
             alert("No hay datos para exportar.");
@@ -658,13 +501,8 @@ if (strlen($nomina) == 7) {
 
         console.time("Tiempo de exportación");
 
-        // Limpiar campo 'Tipo' antes de exportar
-        const dataParaExportar = allData.map(item => {
-            const { Tipo, ...rest } = item;
-            return rest;
-        });
-
-        const worksheet = XLSX.utils.json_to_sheet(dataParaExportar);
+        // Exportación ultra-rápida sin transformaciones
+        const worksheet = XLSX.utils.json_to_sheet(allData);
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, "Reporte Final");
 
@@ -673,31 +511,34 @@ if (strlen($nomina) == 7) {
         console.timeEnd("Tiempo de exportación");
     });
 
-    // Copiar al portapapeles
     $('#copy-button').click(function() {
+        // Verificamos que 'allData' exista y tenga datos.
+        // 'allData' es la variable que creamos en la función loadData()
         if (typeof allData === 'undefined' || allData.length === 0) {
             alert("No hay datos para copiar.");
             return;
         }
 
-        const headers = ['P', 'L', 'M', 'GrammerNo', 'Descripcion', 'UM', 'Costo_Unitario',
-            'StLocation', 'StBin', 'Folio', 'Sap', 'Conteo', 'Dif', 'Costo', 'Comentario'];
-
+        // Convertimos el array de objetos a un string en formato CSV.
+        const headers = Object.keys(allData[0]);
         const csvContent = [
-            headers.join(','),
+            headers.join(','), // La fila de encabezados
             ...allData.map(row => headers.map(header => {
+                // Limpiamos el valor para evitar problemas con comas dentro del texto
                 let value = row[header];
                 if (typeof value === 'string' && value.includes(',')) {
-                    return `"${value}"`;
+                    return `"${value}"`; // Encerrar entre comillas si contiene una coma
                 }
                 return value;
             }).join(','))
-        ].join('\n');
+        ].join('\n'); // Unimos todas las filas con un salto de línea.
 
+        // Usamos la API moderna para copiar al portapapeles.
         navigator.clipboard.writeText(csvContent).then(() => {
+            // Damos feedback al usuario
             const originalText = $(this).text();
             $(this).text("¡Copiado!");
-            setTimeout(() => $(this).text(originalText), 2000);
+            setTimeout(() => $(this).text(originalText), 2000); // Volver al texto original después de 2 segundos
         }).catch(err => {
             console.error('Error al copiar:', err);
             alert('No se pudo copiar al portapapeles.');

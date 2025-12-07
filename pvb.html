@@ -573,8 +573,18 @@
                         recordsNotFound++;
                     }
 
-                    // Formatear cantidad
-                    const newQtyUnit = cantidad > 0 ? `${Math.floor(cantidad)} ${um}` : '0 PC';
+                    // Formatear cantidad con decimales si es necesario
+                    let newQtyUnit;
+                    if (cantidad > 0) {
+                        // Si es número entero, mostrar sin decimales, sino con 2 decimales
+                        if (cantidad === Math.floor(cantidad)) {
+                            newQtyUnit = `${Math.floor(cantidad)} ${um}`;
+                        } else {
+                            newQtyUnit = `${cantidad.toFixed(2)} ${um}`;
+                        }
+                    } else {
+                        newQtyUnit = '0 PC';
+                    }
 
                     // Reconstruir línea
                     const newLine = `"${item}","${storageBin}","${quant}","${plant}","${sloc}","${material}","${batch}","${storageUnit}","${newQtyUnit}"`;

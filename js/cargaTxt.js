@@ -1006,6 +1006,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Función para actualizar el contenido del archivo SUN
     // Función para actualizar el contenido del archivo SUN
+    // ✅ VERSIÓN CON DEBUG - Reemplaza la función actualizarContenidoArchivoSun
+
     async function actualizarContenidoArchivoSun(file, datosBackend) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -1015,8 +1017,17 @@ document.addEventListener('DOMContentLoaded', function() {
                     const contenidoOriginal = event.target.result;
                     const lineasOriginales = contenidoOriginal.split(/\r?\n/);
 
+                    // ✅ DEBUG: Ver qué llega del backend
+                    console.log("📦 Datos del Backend:", datosBackend);
+                    console.log("📦 Total items del backend:", datosBackend.length);
+
+                    // Ver estructura del primer item
+                    if (datosBackend.length > 0) {
+                        console.log("📦 Ejemplo de item del backend:", datosBackend[0]);
+                    }
+
                     // Actualizar las líneas con los datos recibidos del backend
-                    const lineasActualizadas = lineasOriginales.map((linea) => {
+                    const lineasActualizadas = lineasOriginales.map((linea, index) => {
                         // Caso 1: Línea con Storage Unit
                         if (/^0001\s+\w+/.test(linea) && linea.includes("Storage Unit")) {
                             const partes = linea.split(/\s+/);
@@ -1028,15 +1039,17 @@ document.addEventListener('DOMContentLoaded', function() {
                                 // Buscar el Storage Unit
                                 let storageUnit = '';
                                 for (let i = 6; i < partes.length; i++) {
-                                    if (partes[i].match(/^\d{10}$/)) { // Storage Unit típico con 10 dígitos
+                                    if (partes[i].match(/^\d{10}$/)) {
                                         storageUnit = partes[i];
                                         break;
                                     }
                                 }
 
+                                console.log(`🔍 Línea ${index}: StorBin=${storBin}, Material=${materialNo}, SU=${storageUnit}`);
+
                                 // Determinar la unidad de medida
                                 let uom = 'PC';
-                                if (linea.includes(' M')) {
+                                if (linea.includes(' M ')) {
                                     uom = 'M';
                                 } else if (linea.includes(' KG')) {
                                     uom = 'KG';
@@ -1044,27 +1057,44 @@ document.addEventListener('DOMContentLoaded', function() {
 
                                 // Buscar el material en los datos del backend
                                 const materialEncontrado = datosBackend.find(
-                                    (item) => (item.storageUnit === storageUnit)
+                                    (item) => {
+                                        // ✅ DEBUG: Ver cada comparación
+                                        const match = item.storageUnit === storageUnit;
+                                        if (storageUnit === '1022795314') { // Primer Storage Unit del ejemplo
+                                            console.log(`🔎 Comparando SU ${storageUnit} con item:`, {
+                                                itemSU: item.storageUnit,
+                                                itemStorBin: item.storBin,
+                                                itemConteo: item.conteoFinal,
+                                                itemEstado: item.estado,
+                                                match: match
+                                            });
+                                        }
+                                        return match;
+                                    }
                                 );
 
                                 if (materialEncontrado) {
-                                    // Verificar el estado para determinar si usar conteo o 0
+                                    console.log(`✅ Material encontrado:`, {
+                                        storageUnit,
+                                        estado: materialEncontrado.estado,
+                                        conteo: materialEncontrado.conteoFinal
+                                    });
+
                                     if (materialEncontrado.estado === 'Encontrado' ||
                                         materialEncontrado.estado === 'Encontrado por Storage Bin') {
-                                        // Usar el conteo encontrado
                                         let conteoFinal = '0';
                                         if (materialEncontrado.conteoFinal && materialEncontrado.conteoFinal !== '0') {
                                             conteoFinal = materialEncontrado.conteoFinal;
                                         }
 
-                                        // Reemplazar los guiones bajos por la cantidad
+                                        console.log(`💰 Reemplazando con: ${conteoFinal} ${uom}`);
                                         return linea.replace(/____________ (PC|M|KG)/, `${conteoFinal} ${uom}`);
                                     } else {
-                                        // Si está en otra ubicación o tiene otro problema, poner 0
+                                        console.log(`⚠️ Estado no válido: ${materialEncontrado.estado}, poniendo 0`);
                                         return linea.replace(/____________ (PC|M|KG)/, `0 ${uom}`);
                                     }
                                 } else {
-                                    // Si el material no se encuentra, poner 0
+                                    console.log(`❌ No encontrado en backend: SU=${storageUnit}`);
                                     return linea.replace(/____________ (PC|M|KG)/, `0 ${uom}`);
                                 }
                             }
@@ -1076,22 +1106,17 @@ document.addEventListener('DOMContentLoaded', function() {
                             if (partes.length >= 2) {
                                 const storBin = partes[1];
 
-                                // Buscar el storage bin en los datos del backend
                                 const materialEncontrado = datosBackend.find(
                                     (item) => item.storBin === storBin
                                 );
 
                                 if (materialEncontrado && materialEncontrado.estado === 'Encontrado por Storage Bin') {
-                                    // Determinar el valor final del conteo
                                     let conteoFinal = '0';
                                     if (materialEncontrado.conteoFinal && materialEncontrado.conteoFinal !== '0') {
                                         conteoFinal = materialEncontrado.conteoFinal;
                                     }
-
-                                    // Reemplazar los guiones bajos por la cantidad
                                     return linea.replace(/____________/, `${conteoFinal}`);
                                 } else {
-                                    // Si el material no se encuentra o tiene otro estado, poner 0
                                     return linea.replace(/____________/, '0');
                                 }
                             }
@@ -1117,7 +1142,6 @@ document.addEventListener('DOMContentLoaded', function() {
             reader.readAsText(file);
         });
     }
-
     // Función para obtener materiales especiales (faltantes o en otra ubicación)
     async function obtenerMaterialesEspecialesSun(datos) {
         try {

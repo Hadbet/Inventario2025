@@ -1008,6 +1008,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Función para actualizar el contenido del archivo SUN
     // ✅ VERSIÓN CON DEBUG - Reemplaza la función actualizarContenidoArchivoSun
 
+    // ✅ VERSIÓN CORREGIDA - Extracción mejorada de Storage Unit y búsqueda flexible
+
     async function actualizarContenidoArchivoSun(file, datosBackend) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -1017,104 +1019,116 @@ document.addEventListener('DOMContentLoaded', function() {
                     const contenidoOriginal = event.target.result;
                     const lineasOriginales = contenidoOriginal.split(/\r?\n/);
 
-                    // ✅ DEBUG: Ver qué llega del backend
-                    console.log("📦 Datos del Backend:", datosBackend);
-                    console.log("📦 Total items del backend:", datosBackend.length);
+                    console.log("📦 Backend data:", datosBackend);
+                    console.log("📦 Total items:", datosBackend.length);
 
-                    // Ver estructura del primer item
-                    if (datosBackend.length > 0) {
-                        console.log("📦 Ejemplo de item del backend:", datosBackend[0]);
-                    }
-
-                    // Actualizar las líneas con los datos recibidos del backend
-                    const lineasActualizadas = lineasOriginales.map((linea, index) => {
+                    const lineasActualizadas = lineasOriginales.map((linea, lineIndex) => {
                         // Caso 1: Línea con Storage Unit
-                        if (/^0001\s+\w+/.test(linea) && linea.includes("Storage Unit")) {
+                        if (/^0\d{3}\s+\w+/.test(linea)) {
                             const partes = linea.split(/\s+/);
 
-                            if (partes.length >= 10) {
-                                const storBin = partes[1];
-                                const materialNo = partes[5];
+                            // Debug: mostrar la línea completa
+                            if (lineIndex < 5 || lineIndex % 10 === 0) {
+                                console.log(`📝 Línea ${lineIndex}:`, linea);
+                                console.log(`   Partes:`, partes);
+                            }
 
-                                // Buscar el Storage Unit
-                                let storageUnit = '';
-                                for (let i = 6; i < partes.length; i++) {
-                                    if (partes[i].match(/^\d{10}$/)) {
-                                        storageUnit = partes[i];
-                                        break;
-                                    }
+                            // ✅ EXTRACCIÓN MEJORADA: Buscar Storage Unit (10 dígitos consecutivos)
+                            let storageUnit = '';
+                            let storBin = '';
+                            let materialNo = '';
+                            let quantNo = '';
+
+                            // Extraer Storage Bin (siempre es el segundo elemento)
+                            if (partes.length >= 2) {
+                                storBin = partes[1];
+                            }
+
+                            // Si tiene "Storage Unit" en la línea, buscar el número de 10 dígitos
+                            if (linea.includes("Storage Unit")) {
+                                // Buscar número de 10 dígitos en toda la línea
+                                const matchSU = linea.match(/\b(\d{10})\b/);
+                                if (matchSU) {
+                                    storageUnit = matchSU[1];
                                 }
 
-                                console.log(`🔍 Línea ${index}: StorBin=${storBin}, Material=${materialNo}, SU=${storageUnit}`);
+                                // Extraer otros campos
+                                if (partes.length >= 6) {
+                                    quantNo = partes[2];
+                                    materialNo = partes[5];
+                                }
 
-                                // Determinar la unidad de medida
+                                console.log(`🔍 Extracción:`, {
+                                    storBin,
+                                    quantNo,
+                                    materialNo,
+                                    storageUnit,
+                                    lineIndex
+                                });
+
+                                // Determinar unidad de medida
                                 let uom = 'PC';
-                                if (linea.includes(' M ')) {
+                                if (linea.match(/____________\s+M\b/)) {
                                     uom = 'M';
-                                } else if (linea.includes(' KG')) {
+                                } else if (linea.match(/____________\s+KG/)) {
                                     uom = 'KG';
                                 }
 
-                                // Buscar el material en los datos del backend
-                                const materialEncontrado = datosBackend.find(
-                                    (item) => {
-                                        // ✅ DEBUG: Ver cada comparación
-                                        const match = item.storageUnit === storageUnit;
-                                        if (storageUnit === '1022795314') { // Primer Storage Unit del ejemplo
-                                            console.log(`🔎 Comparando SU ${storageUnit} con item:`, {
-                                                itemSU: item.storageUnit,
-                                                itemStorBin: item.storBin,
-                                                itemConteo: item.conteoFinal,
-                                                itemEstado: item.estado,
-                                                match: match
-                                            });
-                                        }
-                                        return match;
+                                // ✅ BÚSQUEDA FLEXIBLE (3 niveles de prioridad)
+                                let materialEncontrado = null;
+
+                                // Prioridad 1: Por Storage Unit exacto
+                                if (storageUnit) {
+                                    materialEncontrado = datosBackend.find(item =>
+                                        item.storageUnit && item.storageUnit.toString() === storageUnit
+                                    );
+                                    if (materialEncontrado) {
+                                        console.log(`✅ Encontrado por SU: ${storageUnit}`, materialEncontrado);
                                     }
+                                }
+
+                                // Prioridad 2: Por StorBin + MaterialNo
+                                if (!materialEncontrado && storBin && materialNo) {
+                                    materialEncontrado = datosBackend.find(item =>
+                                        item.storBin === storBin && item.materialNo === materialNo
+                                    );
+                                    if (materialEncontrado) {
+                                        console.log(`✅ Encontrado por StorBin+Material: ${storBin}+${materialNo}`, materialEncontrado);
+                                    }
+                                }
+
+                                // Prioridad 3: Solo por StorBin
+                                if (!materialEncontrado && storBin) {
+                                    materialEncontrado = datosBackend.find(item =>
+                                        item.storBin === storBin
+                                    );
+                                    if (materialEncontrado) {
+                                        console.log(`✅ Encontrado solo por StorBin: ${storBin}`, materialEncontrado);
+                                    }
+                                }
+
+                                // Aplicar el conteo encontrado
+                                if (materialEncontrado) {
+                                    const conteoFinal = materialEncontrado.conteoFinal || '0';
+                                    console.log(`💰 Reemplazando: ${conteoFinal} ${uom}`);
+                                    return linea.replace(/____________\s+(PC|M|KG)/, `${conteoFinal} ${uom}`);
+                                } else {
+                                    console.log(`❌ No encontrado: SU=${storageUnit}, Bin=${storBin}, Mat=${materialNo}`);
+                                    return linea.replace(/____________\s+(PC|M|KG)/, `0 ${uom}`);
+                                }
+                            }
+                            // Caso 2: Línea sin Storage Unit (solo Storage Bin vacío)
+                            else if (linea.includes("____________")) {
+                                console.log(`📭 Línea vacía (sin SU): Bin=${storBin}`);
+
+                                // Buscar por Storage Bin solamente
+                                const materialEncontrado = datosBackend.find(item =>
+                                    item.storBin === storBin
                                 );
 
                                 if (materialEncontrado) {
-                                    console.log(`✅ Material encontrado:`, {
-                                        storageUnit,
-                                        estado: materialEncontrado.estado,
-                                        conteo: materialEncontrado.conteoFinal
-                                    });
-
-                                    if (materialEncontrado.estado === 'Encontrado' ||
-                                        materialEncontrado.estado === 'Encontrado por Storage Bin') {
-                                        let conteoFinal = '0';
-                                        if (materialEncontrado.conteoFinal && materialEncontrado.conteoFinal !== '0') {
-                                            conteoFinal = materialEncontrado.conteoFinal;
-                                        }
-
-                                        console.log(`💰 Reemplazando con: ${conteoFinal} ${uom}`);
-                                        return linea.replace(/____________ (PC|M|KG)/, `${conteoFinal} ${uom}`);
-                                    } else {
-                                        console.log(`⚠️ Estado no válido: ${materialEncontrado.estado}, poniendo 0`);
-                                        return linea.replace(/____________ (PC|M|KG)/, `0 ${uom}`);
-                                    }
-                                } else {
-                                    console.log(`❌ No encontrado en backend: SU=${storageUnit}`);
-                                    return linea.replace(/____________ (PC|M|KG)/, `0 ${uom}`);
-                                }
-                            }
-                        }
-                        // Caso 2: Línea sin Storage Unit
-                        else if (/^00\d{2}\s+\w+/.test(linea)) {
-                            const partes = linea.split(/\s+/);
-
-                            if (partes.length >= 2) {
-                                const storBin = partes[1];
-
-                                const materialEncontrado = datosBackend.find(
-                                    (item) => item.storBin === storBin
-                                );
-
-                                if (materialEncontrado && materialEncontrado.estado === 'Encontrado por Storage Bin') {
-                                    let conteoFinal = '0';
-                                    if (materialEncontrado.conteoFinal && materialEncontrado.conteoFinal !== '0') {
-                                        conteoFinal = materialEncontrado.conteoFinal;
-                                    }
+                                    const conteoFinal = materialEncontrado.conteoFinal || '0';
+                                    console.log(`✅ Encontrado bin vacío: ${storBin} = ${conteoFinal}`);
                                     return linea.replace(/____________/, `${conteoFinal}`);
                                 } else {
                                     return linea.replace(/____________/, '0');
@@ -1129,13 +1143,13 @@ document.addEventListener('DOMContentLoaded', function() {
                         contenido: lineasActualizadas.join('\n')
                     });
                 } catch (error) {
-                    console.error('Error al actualizar el contenido del archivo:', error);
+                    console.error('❌ Error al actualizar:', error);
                     reject(error);
                 }
             };
 
             reader.onerror = (error) => {
-                console.error('Error al leer el archivo:', error);
+                console.error('❌ Error al leer archivo:', error);
                 reject(error);
             };
 

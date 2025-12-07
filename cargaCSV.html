@@ -3,290 +3,486 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Actualizar CSV con Cantidades</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Convertidor TXT a CSV - Inventario</title>
     <style>
-        .drop-zone {
-            border: 3px dashed #007bff;
-            border-radius: 10px;
-            padding: 50px;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 800px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
             text-align: center;
+        }
+
+        .subtitle {
+            color: #666;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 60px 20px;
+            text-align: center;
+            transition: all 0.3s ease;
             cursor: pointer;
-            transition: all 0.3s;
-            background-color: #f8f9fa;
+            background: #f8f9ff;
         }
-        .drop-zone:hover {
-            background-color: #e3f2fd;
-            border-color: #0056b3;
+
+        .upload-area:hover {
+            border-color: #764ba2;
+            background: #f0f2ff;
         }
-        .drop-zone.active {
-            background-color: #d1ecf1;
-            border-color: #0c5460;
+
+        .upload-area.dragover {
+            border-color: #764ba2;
+            background: #e8ebff;
+            transform: scale(1.02);
         }
-        .stats-card {
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+
+        .upload-text {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .upload-hint {
+            font-size: 14px;
+            color: #666;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .file-info {
             margin-top: 20px;
             padding: 15px;
+            background: #e8f5e9;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .file-info.show {
+            display: block;
+        }
+
+        .file-name {
+            font-weight: bold;
+            color: #2e7d32;
+            margin-bottom: 5px;
+        }
+
+        .file-size {
+            font-size: 14px;
+            color: #558b2f;
+        }
+
+        .btn-container {
+            margin-top: 30px;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        button {
+            padding: 15px 40px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-convert {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-convert:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-convert:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-clear {
+            background: #f44336;
+            color: white;
+        }
+
+        .btn-clear:hover {
+            background: #d32f2f;
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            background: #fff3e0;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .result.show {
+            display: block;
+        }
+
+        .result-header {
+            font-weight: bold;
+            color: #e65100;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .result-info {
+            color: #ef6c00;
+            margin-bottom: 15px;
+        }
+
+        .btn-download {
+            background: #4caf50;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-block;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .btn-download:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+        }
+
+        .preview {
+            margin-top: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+            background: white;
+            padding: 10px;
             border-radius: 5px;
-            background-color: #e7f3ff;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            white-space: pre;
+            border: 1px solid #ddd;
+        }
+
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .error.show {
+            display: block;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <h1 class="text-center mb-4">📊 Actualizar CSV con Cantidades</h1>
+<div class="container">
+    <h1>📦 Convertidor de Inventario</h1>
+    <p class="subtitle">TXT → CSV | Mantiene encabezados originales</p>
 
-            <div class="card">
-                <div class="card-body">
-                    <div class="drop-zone" id="dropZone">
-                        <h4>📁 Arrastra tu archivo CSV aquí</h4>
-                        <p class="text-muted">o haz clic para seleccionar</p>
-                        <input type="file" id="fileInput" accept=".csv,.txt" style="display: none;">
-                    </div>
+    <div class="upload-area" id="uploadArea">
+        <div class="upload-icon">📄</div>
+        <div class="upload-text">Arrastra tu archivo TXT aquí</div>
+        <div class="upload-hint">o haz clic para seleccionar</div>
+        <input type="file" id="fileInput" accept=".txt">
+    </div>
 
-                    <div id="fileInfo" class="mt-3" style="display: none;">
-                        <div class="alert alert-info">
-                            <strong>Archivo seleccionado:</strong> <span id="fileName"></span>
-                        </div>
-                        <button id="btnProcesar" class="btn btn-primary btn-lg w-100">
-                            🚀 Procesar y Actualizar Cantidades
-                        </button>
-                    </div>
+    <div class="file-info" id="fileInfo">
+        <div class="file-name" id="fileName"></div>
+        <div class="file-size" id="fileSize"></div>
+    </div>
 
-                    <div id="stats" class="stats-card" style="display: none;">
-                        <h5>📊 Estadísticas</h5>
-                        <p><strong>Total Storage Units:</strong> <span id="statTotal">0</span></p>
-                        <p><strong>✅ Encontrados en BD:</strong> <span id="statEncontrados">0</span></p>
-                        <p><strong>❌ No encontrados:</strong> <span id="statNoEncontrados">0</span></p>
-                    </div>
-                </div>
-            </div>
+    <div class="btn-container">
+        <button class="btn-convert" id="btnConvert" disabled>Convertir a CSV</button>
+        <button class="btn-clear" id="btnClear" style="display: none;">Limpiar</button>
+    </div>
 
-            <div class="card mt-4">
-                <div class="card-body">
-                    <h5>ℹ️ Instrucciones</h5>
-                    <ol>
-                        <li>Sube tu archivo CSV que contenga la columna <code>StorageUnit</code></li>
-                        <li>El sistema buscará cada Storage Unit en la base de datos</li>
-                        <li>Actualizará la columna <code>Qty_Unit</code> con las cantidades encontradas</li>
-                        <li>Descargará automáticamente el CSV actualizado</li>
-                    </ol>
-                </div>
-            </div>
-        </div>
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <div>Procesando archivo...</div>
+    </div>
+
+    <div class="error" id="error"></div>
+
+    <div class="result" id="result">
+        <div class="result-header">✅ Conversión completada</div>
+        <div class="result-info" id="resultInfo"></div>
+        <a href="#" class="btn-download" id="btnDownload" download>⬇️ Descargar CSV</a>
+        <div class="preview" id="preview"></div>
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     let selectedFile = null;
+    let csvContent = null;
 
-    // Configurar drag & drop
-    const dropZone = document.getElementById('dropZone');
+    const uploadArea = document.getElementById('uploadArea');
     const fileInput = document.getElementById('fileInput');
     const fileInfo = document.getElementById('fileInfo');
     const fileName = document.getElementById('fileName');
-    const btnProcesar = document.getElementById('btnProcesar');
+    const fileSize = document.getElementById('fileSize');
+    const btnConvert = document.getElementById('btnConvert');
+    const btnClear = document.getElementById('btnClear');
+    const loading = document.getElementById('loading');
+    const error = document.getElementById('error');
+    const result = document.getElementById('result');
+    const resultInfo = document.getElementById('resultInfo');
+    const btnDownload = document.getElementById('btnDownload');
+    const preview = document.getElementById('preview');
 
-    dropZone.addEventListener('click', () => fileInput.click());
-
-    dropZone.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        dropZone.classList.add('active');
+    // Click en el área de upload
+    uploadArea.addEventListener('click', () => {
+        fileInput.click();
     });
 
-    dropZone.addEventListener('dragleave', () => {
-        dropZone.classList.remove('active');
-    });
-
-    dropZone.addEventListener('drop', (e) => {
-        e.preventDefault();
-        dropZone.classList.remove('active');
-        handleFile(e.dataTransfer.files[0]);
-    });
-
+    // Selección de archivo
     fileInput.addEventListener('change', (e) => {
         handleFile(e.target.files[0]);
     });
 
+    // Drag & Drop
+    uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.classList.add('dragover');
+    });
+
+    uploadArea.addEventListener('dragleave', () => {
+        uploadArea.classList.remove('dragover');
+    });
+
+    uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+        handleFile(e.dataTransfer.files[0]);
+    });
+
+    // Manejar archivo seleccionado
     function handleFile(file) {
         if (!file) return;
 
-        selectedFile = file;
-        fileName.textContent = file.name;
-        fileInfo.style.display = 'block';
-        console.log('✅ Archivo seleccionado:', file.name);
-    }
-
-    btnProcesar.addEventListener('click', async () => {
-        if (!selectedFile) {
-            Swal.fire('Error', 'Por favor selecciona un archivo', 'error');
+        if (!file.name.toLowerCase().endsWith('.txt')) {
+            showError('Por favor selecciona un archivo .TXT válido');
             return;
         }
 
-        await procesarCSVConCantidades(selectedFile);
-    });
-
-    // ✅ FUNCIÓN PRINCIPAL
-    async function procesarCSVConCantidades(file) {
-        Swal.fire({
-            title: 'Procesando CSV',
-            text: 'Leyendo archivo y consultando base de datos...',
-            allowOutsideClick: false,
-            didOpen: () => Swal.showLoading()
-        });
-
-        try {
-            const reader = new FileReader();
-
-            reader.onload = async (event) => {
-                try {
-                    const contenido = event.target.result;
-                    const lineas = contenido.split(/\r?\n/);
-
-                    console.log("📄 Total líneas:", lineas.length);
-
-                    // Encontrar encabezado
-                    let headerIndex = -1;
-                    for (let i = 0; i < lineas.length; i++) {
-                        if (lineas[i].includes('Item,StorageBin')) {
-                            headerIndex = i;
-                            break;
-                        }
-                    }
-
-                    if (headerIndex === -1) {
-                        throw new Error('No se encontró el encabezado del CSV');
-                    }
-
-                    // Extraer Storage Units
-                    const dataRows = [];
-                    const storageUnits = [];
-
-                    for (let i = headerIndex + 1; i < lineas.length; i++) {
-                        const linea = lineas[i].trim();
-                        if (!linea) continue;
-
-                        const valores = parseCSVLine(linea);
-
-                        if (valores.length >= 9) {
-                            const storageUnit = valores[7].trim();
-
-                            if (storageUnit && storageUnit !== '') {
-                                dataRows.push({
-                                    lineIndex: i,
-                                    storageUnit: storageUnit
-                                });
-
-                                if (!storageUnits.includes(storageUnit)) {
-                                    storageUnits.push(storageUnit);
-                                }
-                            }
-                        }
-                    }
-
-                    console.log("🔢 Storage Units únicos:", storageUnits.length);
-
-                    // Consultar base de datos
-                    const response = await fetch('https://grammermx.com/Logistica/Inventario2025/daoAdmin/daoTest.php', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ storageUnits: storageUnits })
-                    });
-
-                    if (!response.ok) {
-                        throw new Error(`Error del servidor: ${response.status}`);
-                    }
-
-                    const mapaCantidades = await response.json();
-                    console.log("✅ Respuesta BD:", mapaCantidades);
-
-                    // Actualizar líneas
-                    let encontrados = 0;
-                    let noEncontrados = 0;
-
-                    for (const row of dataRows) {
-                        const su = row.storageUnit;
-
-                        if (mapaCantidades[su]) {
-                            const cantidad = mapaCantidades[su].cantidad || '0';
-
-                            lineas[row.lineIndex] = lineas[row.lineIndex].replace(
-                                /"0 PC"$/,
-                                `"${cantidad} PC"`
-                            );
-
-                            encontrados++;
-                            console.log(`✅ ${su} -> ${cantidad}`);
-                        } else {
-                            noEncontrados++;
-                            console.log(`❌ ${su} -> No encontrado`);
-                        }
-                    }
-
-                    // Mostrar estadísticas
-                    document.getElementById('statTotal').textContent = dataRows.length;
-                    document.getElementById('statEncontrados').textContent = encontrados;
-                    document.getElementById('statNoEncontrados').textContent = noEncontrados;
-                    document.getElementById('stats').style.display = 'block';
-
-                    // Descargar CSV actualizado
-                    const csvActualizado = lineas.join('\n');
-                    const blob = new Blob([csvActualizado], { type: 'text/csv' });
-                    const url = URL.createObjectURL(blob);
-                    const link = document.createElement('a');
-                    link.href = url;
-                    link.download = `actualizado_${file.name}`;
-                    link.click();
-                    URL.revokeObjectURL(url);
-
-                    Swal.fire({
-                        icon: 'success',
-                        title: '¡Completado!',
-                        html: `
-                                <p><strong>Total:</strong> ${dataRows.length}</p>
-                                <p><strong>✅ Encontrados:</strong> ${encontrados}</p>
-                                <p><strong>❌ No encontrados:</strong> ${noEncontrados}</p>
-                                <p class="mt-3">El archivo actualizado se ha descargado.</p>
-                            `
-                    });
-
-                } catch (error) {
-                    console.error('Error:', error);
-                    Swal.fire('Error', error.message, 'error');
-                }
-            };
-
-            reader.readAsText(file);
-
-        } catch (error) {
-            console.error('Error:', error);
-            Swal.fire('Error', error.message, 'error');
-        }
+        selectedFile = file;
+        fileName.textContent = `📄 ${file.name}`;
+        fileSize.textContent = `Tamaño: ${formatFileSize(file.size)}`;
+        fileInfo.classList.add('show');
+        btnConvert.disabled = false;
+        btnClear.style.display = 'inline-block';
+        hideError();
+        result.classList.remove('show');
     }
 
-    // Parsear CSV respetando comillas
-    function parseCSVLine(line) {
-        const valores = [];
-        let valorActual = '';
-        let dentroDeComillas = false;
+    // Formatear tamaño de archivo
+    function formatFileSize(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + ' KB';
+        return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+    }
 
-        for (let i = 0; i < line.length; i++) {
-            const char = line[i];
+    // Convertir a CSV
+    btnConvert.addEventListener('click', async () => {
+        if (!selectedFile) return;
 
-            if (char === '"') {
-                dentroDeComillas = !dentroDeComillas;
-            } else if (char === ',' && !dentroDeComillas) {
-                valores.push(valorActual);
-                valorActual = '';
-            } else {
-                valorActual += char;
+        loading.classList.add('show');
+        hideError();
+        result.classList.remove('show');
+
+        try {
+            const text = await selectedFile.text();
+            const csv = convertToCSV(text);
+
+            if (csv.rows.length === 0) {
+                throw new Error('No se encontraron datos válidos en el archivo');
+            }
+
+            csvContent = csv.content;
+
+            // Mostrar resultado
+            resultInfo.textContent = `Se procesaron ${csv.rows.length} registros correctamente`;
+            preview.textContent = csv.preview;
+
+            // Preparar descarga
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const originalName = selectedFile.name.replace('.TXT', '').replace('.txt', '');
+            btnDownload.href = url;
+            btnDownload.download = `${originalName}_inventory.csv`;
+
+            result.classList.add('show');
+            loading.classList.remove('show');
+
+        } catch (err) {
+            showError('Error al procesar el archivo: ' + err.message);
+            loading.classList.remove('show');
+        }
+    });
+
+    // Convertir TXT a CSV
+    function convertToCSV(text) {
+        const lines = text.split('\n');
+        const csvLines = [];
+        const dataRows = [];
+
+        // Mantener encabezados originales (primeras 6 líneas aproximadamente)
+        let headerEndIndex = 0;
+        for (let i = 0; i < Math.min(lines.length, 15); i++) {
+            const line = lines[i];
+            if (line.includes('Itm  Stor.Bin')) {
+                headerEndIndex = i;
+                break;
             }
         }
 
-        valores.push(valorActual);
-        return valores;
+        // Agregar encabezados al CSV
+        for (let i = 0; i <= headerEndIndex; i++) {
+            csvLines.push(lines[i]);
+        }
+
+        // Agregar encabezado CSV
+        csvLines.push('Itm,Stor.Bin,Quant No.,Plnt,SLoc,Material No.,Batch,C,S,Special Stock,Storage Unit,Qty & UoM');
+
+        // Procesar datos
+        for (let i = headerEndIndex + 1; i < lines.length; i++) {
+            const line = lines[i];
+
+            // Saltar líneas vacías, separadores y footers
+            if (!line.trim() || line.includes('=====') ||
+                line.includes('Cnt.date') || line.includes('Name') ||
+                line.includes('Recorder') || line.includes('Date of entry') ||
+                line.includes('Warehouse inventory') || line.includes('Page.........')) {
+                continue;
+            }
+
+            // Detectar líneas con datos (empiezan con 4 dígitos)
+            if (/^\d{4}\s/.test(line)) {
+                const itm = line.substring(0, 4).trim();
+                const storBin = line.substring(5, 15).trim();
+                const quantNo = line.substring(16, 26).trim();
+                const plnt = line.substring(27, 32).trim();
+                const sloc = line.substring(33, 38).trim();
+                const materialNo = line.substring(39, 55).trim();
+                const batch = line.substring(56, 66).trim();
+                const c = line.substring(67, 69).trim();
+                const s = line.substring(70, 72).trim();
+                const specialStock = line.substring(73, 90).trim();
+                const storageUnit = line.substring(91, 110).trim();
+                const qtyUom = line.substring(111).trim();
+
+                // Solo agregar si tiene datos relevantes
+                if (storBin || quantNo || materialNo || storageUnit) {
+                    const csvRow = [
+                        itm, storBin, quantNo, plnt, sloc, materialNo,
+                        batch, c, s, specialStock, storageUnit, qtyUom
+                    ].map(field => `"${field}"`).join(',');
+
+                    csvLines.push(csvRow);
+                    dataRows.push(csvRow);
+                }
+            }
+        }
+
+        const fullContent = csvLines.join('\n');
+        const previewLines = csvLines.slice(0, 20).join('\n');
+
+        return {
+            content: fullContent,
+            preview: previewLines + (csvLines.length > 20 ? '\n\n... y más registros' : ''),
+            rows: dataRows
+        };
+    }
+
+    // Limpiar
+    btnClear.addEventListener('click', () => {
+        selectedFile = null;
+        csvContent = null;
+        fileInput.value = '';
+        fileInfo.classList.remove('show');
+        result.classList.remove('show');
+        btnConvert.disabled = true;
+        btnClear.style.display = 'none';
+        hideError();
+    });
+
+    // Mostrar error
+    function showError(message) {
+        error.textContent = '❌ ' + message;
+        error.classList.add('show');
+    }
+
+    // Ocultar error
+    function hideError() {
+        error.classList.remove('show');
     }
 </script>
 </body>

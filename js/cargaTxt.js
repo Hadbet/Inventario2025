@@ -1014,6 +1014,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // ✅ VERSIÓN FINAL - Maneja tanto guiones bajos como números
 
+    // ✅ VERSIÓN SUPER DEBUG - Para ver exactamente qué devuelve el backend
+
     async function actualizarContenidoArchivoSun(file, datosBackend) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -1023,108 +1025,136 @@ document.addEventListener('DOMContentLoaded', function() {
                     const contenidoOriginal = event.target.result;
                     const lineasOriginales = contenidoOriginal.split(/\r?\n/);
 
-                    console.log("📦 Backend tiene", datosBackend.length, "items");
+                    console.log("=".repeat(80));
+                    console.log("📦 DATOS DEL BACKEND:");
+                    console.log("=".repeat(80));
+                    console.log("Total items:", datosBackend.length);
+                    console.log("Estructura completa:", JSON.stringify(datosBackend, null, 2));
 
-                    // Crear un Map para búsqueda rápida por Storage Unit
+                    // Mostrar cada item individualmente
+                    datosBackend.forEach((item, idx) => {
+                        console.log(`\nItem ${idx}:`, {
+                            storageUnit: item.storageUnit,
+                            storageUnit_TYPE: typeof item.storageUnit,
+                            materialNo: item.materialNo,
+                            storBin: item.storBin,
+                            conteoFinal: item.conteoFinal,
+                            conteoFinal_TYPE: typeof item.conteoFinal,
+                            KEYS: Object.keys(item)
+                        });
+                    });
+
+                    // Crear un Map para búsqueda rápida
                     const mapPorSU = new Map();
                     datosBackend.forEach(item => {
                         if (item.storageUnit) {
-                            mapPorSU.set(item.storageUnit.toString(), item);
+                            const suString = item.storageUnit.toString().trim();
+                            mapPorSU.set(suString, item);
+                            console.log(`🗺️ Map guardado: "${suString}" =>`, item);
                         }
                     });
 
-                    console.log("🗺️ Map creado con", mapPorSU.size, "Storage Units");
+                    console.log("\n🗺️ Map tiene", mapPorSU.size, "Storage Units");
+                    console.log("Keys del Map:", Array.from(mapPorSU.keys()));
 
                     const lineasActualizadas = lineasOriginales.map((linea, lineIndex) => {
-                        // Detectar líneas de datos (empiezan con 0001, 0002, etc.)
+                        // Solo procesar líneas con datos
                         if (/^0\d{3}\s+/.test(linea)) {
-                            console.log(`\n📝 Línea ${lineIndex}: "${linea}"`);
-
-                            // Dividir por espacios múltiples
                             const partes = linea.split(/\s+/).filter(p => p.length > 0);
-                            console.log(`   Partes (${partes.length}):`, partes);
 
-                            let storBin = '';
-                            let materialNo = '';
+                            let storBin = partes.length >= 2 ? partes[1] : '';
                             let storageUnit = '';
+                            let materialNo = '';
                             let uom = 'PC';
 
-                            // Extraer Storage Bin (siempre en posición 1)
-                            if (partes.length >= 2) {
-                                storBin = partes[1];
-                            }
-
-                            // Buscar Storage Unit (10 dígitos) en toda la línea
+                            // Buscar Storage Unit (10 dígitos)
                             const matchStorageUnit = linea.match(/\b(\d{10})\b/);
                             if (matchStorageUnit) {
-                                storageUnit = matchStorageUnit[1];
-                                console.log(`   ✓ Storage Unit encontrado: ${storageUnit}`);
+                                storageUnit = matchStorageUnit[1].trim();
                             }
 
-                            // Buscar Material Number (patrón: XXXXXXX-X)
+                            // Buscar Material Number
                             const matchMaterial = linea.match(/\b(\d{7}-[A-Z])\b/);
                             if (matchMaterial) {
-                                materialNo = matchMaterial[1];
-                                console.log(`   ✓ Material encontrado: ${materialNo}`);
+                                materialNo = matchMaterial[1].trim();
                             }
 
-                            // ✅ DETECCIÓN MEJORADA: Detectar si tiene guiones bajos o número
-                            const tieneGuionesBajos = linea.match(/_+\s+(PC|M|KG)/);
-                            const tieneNumero = linea.match(/\s+\d+\s+(PC|M|KG)\s*$/);
+                            // Detectar UoM
+                            if (linea.match(/\s+M\b/)) uom = 'M';
+                            else if (linea.match(/\s+KG\b/)) uom = 'KG';
 
-                            console.log(`   🔍 Tiene guiones: ${!!tieneGuionesBajos}, Tiene número: ${!!tieneNumero}`);
+                            console.log("\n" + "=".repeat(80));
+                            console.log(`📝 PROCESANDO Línea ${lineIndex}:`);
+                            console.log("Línea completa:", linea);
+                            console.log("Datos extraídos:", {
+                                storageUnit,
+                                storageUnit_LENGTH: storageUnit.length,
+                                storBin,
+                                materialNo,
+                                uom
+                            });
 
-                            // Detectar unidad de medida
-                            if (linea.match(/\s+(M)\b/)) {
-                                uom = 'M';
-                            } else if (linea.match(/\s+(KG)\b/)) {
-                                uom = 'KG';
-                            }
-
-                            console.log(`   📊 Buscar: SU=${storageUnit}, Bin=${storBin}, Mat=${materialNo}, UoM=${uom}`);
-
-                            // BÚSQUEDA en el backend
+                            // BÚSQUEDA DETALLADA
                             let materialEncontrado = null;
 
                             // Prioridad 1: Por Storage Unit
-                            if (storageUnit && mapPorSU.has(storageUnit)) {
-                                materialEncontrado = mapPorSU.get(storageUnit);
-                                console.log(`   ✅ ENCONTRADO por Storage Unit!`, materialEncontrado);
+                            if (storageUnit) {
+                                console.log(`\n🔍 BUSCANDO Storage Unit: "${storageUnit}"`);
+                                console.log("¿Está en el Map?", mapPorSU.has(storageUnit));
+
+                                if (mapPorSU.has(storageUnit)) {
+                                    materialEncontrado = mapPorSU.get(storageUnit);
+                                    console.log("✅ ENCONTRADO en Map:", materialEncontrado);
+                                } else {
+                                    console.log("❌ NO está en el Map");
+                                    console.log("Intentando búsqueda manual en array...");
+
+                                    // Búsqueda manual por si el Map falló
+                                    materialEncontrado = datosBackend.find(item => {
+                                        const itemSU = item.storageUnit ? item.storageUnit.toString().trim() : '';
+                                        const match = itemSU === storageUnit;
+                                        console.log(`  Comparando "${itemSU}" === "${storageUnit}": ${match}`);
+                                        return match;
+                                    });
+
+                                    if (materialEncontrado) {
+                                        console.log("✅ ENCONTRADO manualmente:", materialEncontrado);
+                                    } else {
+                                        console.log("❌ NO encontrado manualmente");
+                                    }
+                                }
                             }
 
                             // Prioridad 2: Por StorBin + Material
                             if (!materialEncontrado && storBin && materialNo) {
+                                console.log(`\n🔍 BUSCANDO por Bin+Material: ${storBin} + ${materialNo}`);
                                 materialEncontrado = datosBackend.find(item =>
                                     item.storBin === storBin && item.materialNo === materialNo
                                 );
                                 if (materialEncontrado) {
-                                    console.log(`   ✅ ENCONTRADO por Bin+Material!`, materialEncontrado);
+                                    console.log("✅ ENCONTRADO por Bin+Material:", materialEncontrado);
                                 }
                             }
 
                             // Prioridad 3: Solo por StorBin
                             if (!materialEncontrado && storBin) {
-                                materialEncontrado = datosBackend.find(item =>
-                                    item.storBin === storBin
-                                );
+                                console.log(`\n🔍 BUSCANDO solo por Bin: ${storBin}`);
+                                materialEncontrado = datosBackend.find(item => item.storBin === storBin);
                                 if (materialEncontrado) {
-                                    console.log(`   ✅ ENCONTRADO por Bin solamente!`, materialEncontrado);
+                                    console.log("✅ ENCONTRADO por Bin:", materialEncontrado);
                                 }
                             }
 
-                            // Reemplazar la cantidad si se encontró
+                            // Aplicar el reemplazo
                             if (materialEncontrado) {
                                 const conteoFinal = materialEncontrado.conteoFinal || '0';
-                                console.log(`   💰 REEMPLAZANDO: ${conteoFinal} ${uom}`);
+                                console.log(`\n💰 REEMPLAZANDO con: ${conteoFinal} ${uom}`);
 
-                                // ✅ REGEX MEJORADO: Busca tanto guiones bajos como números
-                                // Patrón: (_+ o número) seguido de espacio y unidad (PC, M, KG)
                                 const nuevaLinea = linea.replace(/(_+|\d+)\s+(PC|M|KG)\s*$/, `${conteoFinal} ${uom}`);
-                                console.log(`   📄 Nueva línea: "${nuevaLinea}"`);
+                                console.log("Línea actualizada:", nuevaLinea);
                                 return nuevaLinea;
                             } else {
-                                console.log(`   ❌ NO ENCONTRADO - poniendo 0`);
-                                // Reemplazar con 0
+                                console.log("\n❌ NO ENCONTRADO - poniendo 0");
                                 return linea.replace(/(_+|\d+)\s+(PC|M|KG)\s*$/, `0 ${uom}`);
                             }
                         }
@@ -1136,13 +1166,13 @@ document.addEventListener('DOMContentLoaded', function() {
                         contenido: lineasActualizadas.join('\n')
                     });
                 } catch (error) {
-                    console.error('❌ Error al actualizar:', error);
+                    console.error('❌ Error:', error);
                     reject(error);
                 }
             };
 
             reader.onerror = (error) => {
-                console.error('❌ Error al leer archivo:', error);
+                console.error('❌ Error al leer:', error);
                 reject(error);
             };
 

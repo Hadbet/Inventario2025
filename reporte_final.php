@@ -379,24 +379,18 @@ if (strlen($nomina) == 7) {
 
     gtag('js', new Date());
     gtag('config', 'UA-56159088-1');
+    // ✅ CÓDIGO JAVASCRIPT COMPLETO CON CREACIÓN AUTOMÁTICA DE REGISTROS P
 
     let allData = [];
 
-    // 1. Simplificamos fetchData. $.getJSON ya devuelve un objeto "thenable" (similar a una Promesa)
-    // que funciona perfectamente con async/await. No es necesario el constructor new Promise().
     async function fetchData(url) {
         return $.getJSON(url).fail((jqxhr, textStatus, error) => {
-            // Añadimos un mejor log de errores para la depuración
             console.error(`Error fetching ${url}: ${textStatus}, ${error}`);
-            // Rechazamos la promesa para que Promise.all falle si una petición falla
             return Promise.reject(error);
         });
     }
 
-    // 2. Renombramos la función y eliminamos "async", ya que no hace nada asíncrono.
-    // Usamos .map() en lugar de un bucle 'for', es más conciso y moderno para transformar arrays.
     function processData(response, type) {
-        // Si la respuesta no tiene la estructura esperada, devolvemos un array vacío
         if (!response || !Array.isArray(response.data)) {
             console.warn(`Respuesta inesperada para el tipo '${type}':`, response);
             return [];
@@ -423,7 +417,7 @@ if (strlen($nomina) == 7) {
 
     async function loadData() {
         try {
-            console.time("Tiempo total de carga"); // Medimos el tiempo
+            console.time("Tiempo total de carga");
 
             const urls = {
                 uno: 'https://grammermx.com/Logistica/Inventario2025/dao/consultaReporteFinalUno.php',
@@ -431,22 +425,21 @@ if (strlen($nomina) == 7) {
                 tres: 'https://grammermx.com/Logistica/Inventario2025/dao/consultaReporteFinalTres.php'
             };
 
-            // 3. Peticiones en paralelo. Promise.all ejecuta todas las peticiones a la vez
-            // y espera a que todas terminen. Esto es mucho más rápido.
             const results = await Promise.all([
                 fetchData(urls.uno),
                 fetchData(urls.dos),
                 fetchData(urls.tres)
             ]);
 
-            // 4. Procesamos los datos y los unimos en un solo array de forma más limpia.
             allData = [
                 ...processData(results[0], 'uno'),
                 ...processData(results[1], 'dos'),
                 ...processData(results[2], 'tres')
             ];
 
-            // La lógica de ordenamiento es correcta y se mantiene igual.
+            // ✅ PASO CRÍTICO: Crear registros P para items que solo tienen M
+            crearRegistrosP();
+
             allData.sort((a, b) => {
                 const grammerNoCompare = a.GrammerNo.localeCompare(b.GrammerNo);
                 if (grammerNoCompare !== 0) {
@@ -455,8 +448,6 @@ if (strlen($nomina) == 7) {
                 return a.StBin.localeCompare(b.StBin);
             });
 
-            // 5. La mejora más importante: creamos el HTML para todas las filas
-            // y lo insertamos en el DOM una sola vez.
             const tableBody = $('#data-table tbody');
             const rowsHtml = allData.map(item => `
             <tr>
@@ -476,23 +467,90 @@ if (strlen($nomina) == 7) {
                 <td>${(parseFloat(item.Costo || 0)).toFixed(4)}</td>
                 <td>${item.Comentario || ''}</td>
             </tr>
-        `).join(''); // Unimos todos los strings <tr> en uno solo.
+        `).join('');
 
-            // Vaciamos el cuerpo de la tabla y añadimos todo el contenido nuevo.
             tableBody.html(rowsHtml);
 
-            console.timeEnd("Tiempo total de carga"); // Fin de la medición de tiempo
+            console.timeEnd("Tiempo total de carga");
 
         } catch (error) {
             console.error("Error al cargar los datos:", error);
-            // Opcional: mostrar un mensaje de error al usuario en la página.
             $('#data-table tbody').html('<tr><td colspan="15">Error al cargar los datos. Por favor, intente de nuevo.</td></tr>');
         }
+    }
+
+    /**
+     * ✅ FUNCIÓN CLAVE: Crear registros P para items que solo tienen M (no existen en SAP)
+     */
+    function crearRegistrosP() {
+        // Agrupar por GrammerNo + StBin
+        const grupos = {};
+
+        allData.forEach(item => {
+            const key = `${item.GrammerNo}_${item.StBin}`;
+            if (!grupos[key]) {
+                grupos[key] = [];
+            }
+            grupos[key].push(item);
+        });
+
+        // Array para almacenar los nuevos registros P
+        const nuevosRegistrosP = [];
+
+        // Procesar cada grupo
+        Object.entries(grupos).forEach(([key, items]) => {
+            const tieneP = items.some(item => item.P === '*');
+            const tieneL = items.some(item => item.L === '*');
+            const tieneM = items.some(item => item.M === '*');
+
+            // ✅ Si solo tiene M (sin P ni L), crear registro P
+            if (tieneM && !tieneP && !tieneL) {
+                // Tomar datos del primer M
+                const itemM = items.find(item => item.M === '*');
+
+                if (itemM) {
+                    const conteo = parseFloat(itemM.Conteo || 0);
+                    const costoUnitario = parseFloat(itemM.Costo_Unitario || 0);
+                    const sap = 0; // ✅ No existe en SAP = 0
+                    const diferencia = conteo - sap; // Positivo porque conteo > 0
+                    const costo = Math.abs(diferencia * costoUnitario);
+
+                    // Crear registro P nuevo
+                    const nuevoP = {
+                        P: '*',
+                        L: '',
+                        M: '',
+                        GrammerNo: itemM.GrammerNo,
+                        Descripcion: itemM.Descripcion,
+                        UM: itemM.UM,
+                        Costo_Unitario: costoUnitario,
+                        StLocation: '',
+                        StBin: itemM.StBin,
+                        Folio: '',
+                        Sap: sap, // ✅ 0 porque no existe en SAP
+                        Conteo: conteo,
+                        Dif: diferencia, // ✅ Diferencia positiva
+                        Costo: costo, // ✅ Costo calculado
+                        Comentario: ''
+                    };
+
+                    nuevosRegistrosP.push(nuevoP);
+
+                    console.log(`✅ Creado registro P para ${itemM.GrammerNo} (${itemM.StBin}): SAP=0, Conteo=${conteo}, Dif=${diferencia}, Costo=${costo}`);
+                }
+            }
+        });
+
+        // ✅ Agregar los nuevos registros P al inicio del array
+        allData = [...nuevosRegistrosP, ...allData];
+
+        console.log(`📊 Total registros P creados: ${nuevosRegistrosP.length}`);
     }
 
     // Iniciar la carga de datos
     loadData();
 
+    // Exportar a Excel
     $('#export-button').click(function() {
         if (typeof allData === 'undefined' || allData.length === 0) {
             alert("No hay datos para exportar.");
@@ -501,7 +559,6 @@ if (strlen($nomina) == 7) {
 
         console.time("Tiempo de exportación");
 
-        // Exportación ultra-rápida sin transformaciones
         const worksheet = XLSX.utils.json_to_sheet(allData);
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, "Reporte Final");
@@ -511,34 +568,29 @@ if (strlen($nomina) == 7) {
         console.timeEnd("Tiempo de exportación");
     });
 
+    // Copiar al portapapeles
     $('#copy-button').click(function() {
-        // Verificamos que 'allData' exista y tenga datos.
-        // 'allData' es la variable que creamos en la función loadData()
         if (typeof allData === 'undefined' || allData.length === 0) {
             alert("No hay datos para copiar.");
             return;
         }
 
-        // Convertimos el array de objetos a un string en formato CSV.
         const headers = Object.keys(allData[0]);
         const csvContent = [
-            headers.join(','), // La fila de encabezados
+            headers.join(','),
             ...allData.map(row => headers.map(header => {
-                // Limpiamos el valor para evitar problemas con comas dentro del texto
                 let value = row[header];
                 if (typeof value === 'string' && value.includes(',')) {
-                    return `"${value}"`; // Encerrar entre comillas si contiene una coma
+                    return `"${value}"`;
                 }
                 return value;
             }).join(','))
-        ].join('\n'); // Unimos todas las filas con un salto de línea.
+        ].join('\n');
 
-        // Usamos la API moderna para copiar al portapapeles.
         navigator.clipboard.writeText(csvContent).then(() => {
-            // Damos feedback al usuario
             const originalText = $(this).text();
             $(this).text("¡Copiado!");
-            setTimeout(() => $(this).text(originalText), 2000); // Volver al texto original después de 2 segundos
+            setTimeout(() => $(this).text(originalText), 2000);
         }).catch(err => {
             console.error('Error al copiar:', err);
             alert('No se pudo copiar al portapapeles.');

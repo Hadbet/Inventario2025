@@ -1012,6 +1012,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // ✅ VERSIÓN CORREGIDA PARA EL FORMATO REAL DEL TXT
 
+    // ✅ VERSIÓN FINAL - Maneja tanto guiones bajos como números
+
     async function actualizarContenidoArchivoSun(file, datosBackend) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -1036,21 +1038,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     const lineasActualizadas = lineasOriginales.map((linea, lineIndex) => {
                         // Detectar líneas de datos (empiezan con 0001, 0002, etc.)
                         if (/^0\d{3}\s+/.test(linea)) {
-                            // Debug cada línea
                             console.log(`\n📝 Línea ${lineIndex}: "${linea}"`);
 
                             // Dividir por espacios múltiples
                             const partes = linea.split(/\s+/).filter(p => p.length > 0);
                             console.log(`   Partes (${partes.length}):`, partes);
-
-                            // Estructura esperada:
-                            // [0] = Item (0001, 0002, etc.)
-                            // [1] = Storage Bin (R06A27)
-                            // [2] = Quant No. (19275356) - OPCIONAL
-                            // [3] = Plnt (3330) - OPCIONAL
-                            // [4] = SLoc (3331) - OPCIONAL
-                            // [5] = Material No. (1502796-A) - OPCIONAL
-                            // [6+] = Batch, Storage Unit, cantidad, unidad
 
                             let storBin = '';
                             let materialNo = '';
@@ -1076,10 +1068,16 @@ document.addEventListener('DOMContentLoaded', function() {
                                 console.log(`   ✓ Material encontrado: ${materialNo}`);
                             }
 
+                            // ✅ DETECCIÓN MEJORADA: Detectar si tiene guiones bajos o número
+                            const tieneGuionesBajos = linea.match(/_+\s+(PC|M|KG)/);
+                            const tieneNumero = linea.match(/\s+\d+\s+(PC|M|KG)\s*$/);
+
+                            console.log(`   🔍 Tiene guiones: ${!!tieneGuionesBajos}, Tiene número: ${!!tieneNumero}`);
+
                             // Detectar unidad de medida
-                            if (linea.match(/\d+\s+M\b/)) {
+                            if (linea.match(/\s+(M)\b/)) {
                                 uom = 'M';
-                            } else if (linea.match(/\d+\s+KG\b/)) {
+                            } else if (linea.match(/\s+(KG)\b/)) {
                                 uom = 'KG';
                             }
 
@@ -1119,19 +1117,15 @@ document.addEventListener('DOMContentLoaded', function() {
                                 const conteoFinal = materialEncontrado.conteoFinal || '0';
                                 console.log(`   💰 REEMPLAZANDO: ${conteoFinal} ${uom}`);
 
-                                // Buscar el patrón de cantidad actual (puede ser 0, _, o cualquier número)
-                                // Patrón: número seguido de espacio y unidad al final de la línea
-                                const nuevaLinea = linea.replace(/\s+\d+\s+(PC|M|KG)\s*$/, ` ${conteoFinal} ${uom}`);
+                                // ✅ REGEX MEJORADO: Busca tanto guiones bajos como números
+                                // Patrón: (_+ o número) seguido de espacio y unidad (PC, M, KG)
+                                const nuevaLinea = linea.replace(/(_+|\d+)\s+(PC|M|KG)\s*$/, `${conteoFinal} ${uom}`);
                                 console.log(`   📄 Nueva línea: "${nuevaLinea}"`);
                                 return nuevaLinea;
                             } else {
-                                console.log(`   ❌ NO ENCONTRADO - dejando 0`);
-                                // Si ya tiene 0, dejarlo; si no, ponerlo
-                                if (linea.match(/\s+0\s+(PC|M|KG)\s*$/)) {
-                                    return linea;
-                                } else {
-                                    return linea.replace(/\s+\d+\s+(PC|M|KG)\s*$/, ` 0 ${uom}`);
-                                }
+                                console.log(`   ❌ NO ENCONTRADO - poniendo 0`);
+                                // Reemplazar con 0
+                                return linea.replace(/(_+|\d+)\s+(PC|M|KG)\s*$/, `0 ${uom}`);
                             }
                         }
 

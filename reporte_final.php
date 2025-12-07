@@ -390,29 +390,115 @@ if (strlen($nomina) == 7) {
         });
     }
 
+    // ✅ VERSIÓN CON DEBUG PARA VER QUÉ DATOS LLEGAN
+
     function processData(response, type) {
         if (!response || !Array.isArray(response.data)) {
             console.warn(`Respuesta inesperada para el tipo '${type}':`, response);
             return [];
         }
 
-        return response.data.map(item => ({
-            P: type === 'uno' ? '*' : '',
-            L: type === 'dos' ? '*' : '',
-            M: type === 'tres' ? '*' : '',
-            GrammerNo: item.GrammerNo,
-            Descripcion: item.Descripcion,
-            UM: item.UM,
-            Costo_Unitario: item.Costo_Unitario,
-            StLocation: '',
-            StBin: type === 'uno' ? '' : item.STBin || item.StorageBin,
-            Folio: type === 'tres' ? item.FolioMarbete : '',
-            Sap: type === 'tres' ? '' : item.Total_InventarioSap,
-            Conteo: type === 'tres' ? item.Total_Conteo : item.Total_Bitacora_Inventario,
-            Dif: type === 'tres' ? '' : item.Diferencia,
-            Costo: parseFloat(item.Costo_Unitario || 0) * parseFloat(item.Diferencia || 0),
-            Comentario: type === 'tres' ? item.Comentario : ''
-        }));
+        // ✅ DEBUG: Ver el primer registro de cada tipo
+        if (response.data.length > 0) {
+            console.log(`📋 Datos tipo ${type}:`, response.data[0]);
+        }
+
+        return response.data.map(item => {
+            // ✅ DEBUG: Verificar Costo_Unitario
+            if (type === 'tres' && !item.Costo_Unitario) {
+                console.error(`❌ Item tipo TRES sin Costo_Unitario:`, item);
+            }
+
+            return {
+                P: type === 'uno' ? '*' : '',
+                L: type === 'dos' ? '*' : '',
+                M: type === 'tres' ? '*' : '',
+                GrammerNo: item.GrammerNo,
+                Descripcion: item.Descripcion,
+                UM: item.UM,
+                Costo_Unitario: item.Costo_Unitario, // ✅ No hacer parseFloat aquí
+                StLocation: '',
+                StBin: type === 'uno' ? '' : item.STBin || item.StorageBin,
+                Folio: type === 'tres' ? item.FolioMarbete : '',
+                Sap: type === 'tres' ? '' : item.Total_InventarioSap,
+                Conteo: type === 'tres' ? item.Total_Conteo : item.Total_Bitacora_Inventario,
+                Dif: type === 'tres' ? '' : item.Diferencia,
+                Costo: parseFloat(item.Costo_Unitario || 0) * parseFloat(item.Diferencia || 0),
+                Comentario: type === 'tres' ? item.Comentario : ''
+            };
+        });
+    }
+
+    function crearRegistrosP() {
+        const grupos = {};
+
+        allData.forEach(item => {
+            const key = `${item.GrammerNo}_${item.StBin}`;
+            if (!grupos[key]) {
+                grupos[key] = [];
+            }
+            grupos[key].push(item);
+        });
+
+        const nuevosRegistrosP = [];
+
+        Object.entries(grupos).forEach(([key, items]) => {
+            const tieneP = items.some(item => item.P === '*');
+            const tieneL = items.some(item => item.L === '*');
+            const tieneM = items.some(item => item.M === '*');
+
+            if (tieneM && !tieneP && !tieneL) {
+                const itemM = items.find(item => item.M === '*');
+
+                if (itemM) {
+                    // ✅ DEBUG: Ver qué tiene el itemM
+                    console.log(`🔍 Item M encontrado:`, {
+                        GrammerNo: itemM.GrammerNo,
+                        StBin: itemM.StBin,
+                        Costo_Unitario_RAW: itemM.Costo_Unitario,
+                        Costo_Unitario_TYPE: typeof itemM.Costo_Unitario,
+                        Conteo: itemM.Conteo
+                    });
+
+                    const conteo = parseFloat(itemM.Conteo || 0);
+                    const costoUnitario = parseFloat(itemM.Costo_Unitario || 0);
+                    const sap = 0;
+                    const diferencia = conteo - sap;
+                    const costo = diferencia * costoUnitario;
+
+                    console.log(`💰 Cálculos:`, {
+                        conteo,
+                        costoUnitario,
+                        diferencia,
+                        costo
+                    });
+
+                    const nuevoP = {
+                        P: '*',
+                        L: '',
+                        M: '',
+                        GrammerNo: itemM.GrammerNo,
+                        Descripcion: itemM.Descripcion,
+                        UM: itemM.UM,
+                        Costo_Unitario: costoUnitario,
+                        StLocation: '',
+                        StBin: itemM.StBin,
+                        Folio: '',
+                        Sap: sap,
+                        Conteo: conteo,
+                        Dif: diferencia,
+                        Costo: costo,
+                        Comentario: ''
+                    };
+
+                    nuevosRegistrosP.push(nuevoP);
+                }
+            }
+        });
+
+        allData = [...nuevosRegistrosP, ...allData];
+
+        console.log(`📊 Total registros P creados: ${nuevosRegistrosP.length}`);
     }
 
     async function loadData() {

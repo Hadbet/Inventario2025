@@ -527,31 +527,28 @@
             console.log(`CSV index created: ${csvIndex.size} entries`);
 
             // Analizar diferencias
-            const wrongLocation = [];
             const missingInCSV = [];
+
+            // Obtener todos los StorageBins únicos del CSV
+            const csvStorageBins = new Set();
+            Object.values(csvMaterials).forEach(locations => {
+                locations.forEach(loc => {
+                    csvStorageBins.add(loc.storageBin);
+                });
+            });
+
+            console.log(`CSV Storage Bins: ${Array.from(csvStorageBins).join(', ')}`);
 
             // Revisar cada entrada del archivo base
             Object.keys(baseIndex).forEach(key => {
                 const baseEntry = baseIndex[key];
 
-                // Verificar si existe exactamente en CSV
-                if (!csvIndex.has(key)) {
-                    // No existe en la ubicación exacta
-
-                    // Verificar si el material existe en otra ubicación
-                    if (csvMaterials[baseEntry.material]) {
-                        // Existe pero en ubicación diferente
-                        wrongLocation.push({
-                            Libro: libro,
-                            StorageType: baseEntry.storageType,
-                            StorageBin: baseEntry.storageBin,
-                            StorageUnit: baseEntry.storageUnit,
-                            MaterialNo: baseEntry.material,
-                            Cantidad: formatQuantity(baseEntry.cantidad),
-                            Estado: 'Ubicación Incorrecta'
-                        });
-                    } else {
-                        // No existe en ninguna ubicación del CSV
+                // Solo revisar si coincide con el StorageType del CSV
+                // Y si el StorageBin está presente en el CSV
+                if (baseEntry.storageType === csvStorageType && csvStorageBins.has(baseEntry.storageBin)) {
+                    // Verificar si existe en el CSV
+                    if (!csvIndex.has(key)) {
+                        // No existe en el CSV pero debería estar
                         missingInCSV.push({
                             Libro: libro,
                             StorageType: baseEntry.storageType,
@@ -565,11 +562,10 @@
                 }
             });
 
-            // Combinar todas las diferencias
-            const allDifferences = [...wrongLocation, ...missingInCSV];
+            const allDifferences = missingInCSV;
 
             // Mostrar resultados
-            document.getElementById('wrongLocation').textContent = wrongLocation.length;
+            document.getElementById('wrongLocation').textContent = 0;
             document.getElementById('missingInCSV').textContent = missingInCSV.length;
             document.getElementById('totalDifferences').textContent = allDifferences.length;
 

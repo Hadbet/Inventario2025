@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resumen de Inventario - Formato Simplificado</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #00b4db 0%, #0083b0 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+        }
+
+        h1 {
+            color: #0083b0;
+            margin-bottom: 10px;
+            font-size: 28px;
+            text-align: center;
+        }
+
+        .subtitle {
+            color: #666;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .step {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            border-left: 4px solid #0083b0;
+        }
+
+        .step-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #0083b0;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .step-number {
+            background: #0083b0;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .upload-area {
+            border: 2px dashed #0083b0;
+            border-radius: 10px;
+            padding: 30px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .upload-area:hover {
+            border-color: #00b4db;
+            background: #e6f7ff;
+        }
+
+        .upload-area.has-file {
+            border-color: #28a745;
+            background: #e8f5e9;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .file-info {
+            margin-top: 10px;
+            padding: 10px;
+            background: #e3f2fd;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #1565c0;
+        }
+
+        .btn-container {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        button {
+            padding: 15px 40px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 0 10px;
+        }
+
+        .btn-process {
+            background: linear-gradient(135deg, #00b4db 0%, #0083b0 100%);
+            color: white;
+        }
+
+        .btn-process:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 131, 176, 0.4);
+        }
+
+        .btn-process:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .btn-clear {
+            background: #f44336;
+            color: white;
+        }
+
+        .btn-clear:hover {
+            background: #d32f2f;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #0083b0;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .result {
+            display: none;
+            margin-top: 30px;
+            padding: 25px;
+            background: #e8f5e9;
+            border-radius: 15px;
+            border-left: 4px solid #4caf50;
+        }
+
+        .result.show {
+            display: block;
+        }
+
+        .result-header {
+            font-size: 20px;
+            font-weight: bold;
+            color: #2e7d32;
+            margin-bottom: 15px;
+        }
+
+        .result-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #0083b0;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .btn-download {
+            background: #4caf50;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-block;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .btn-download:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+        }
+
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .error.show {
+            display: block;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            font-size: 14px;
+            color: #1565c0;
+        }
+
+        .info-box strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .preview {
+            margin-top: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            border: 1px solid #ddd;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background: #0083b0;
+            color: white;
+            font-weight: bold;
+        }
+
+        tr:hover {
+            background: #f5f5f5;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>📋 Resumen de Inventario</h1>
+    <p class="subtitle">Genera un resumen simplificado: Storage Bin | Numero Parte | Cantidad</p>
+
+    <!-- PASO 1: Subir Excel base -->
+    <div class="step">
+        <div class="step-title">
+            <span class="step-number">1</span>
+            Subir archivo Excel base
+        </div>
+        <div class="upload-area" id="excelUploadArea">
+            <div>📊 Haz clic o arrastra tu archivo Excel aquí</div>
+            <div style="font-size: 12px; color: #666; margin-top: 5px;">Formato: .xlsx o .csv</div>
+            <input type="file" id="excelInput" accept=".xlsx,.csv">
+        </div>
+        <div id="excelInfo" style="display: none;" class="file-info"></div>
+    </div>
+
+    <!-- PASO 2: Subir CSV -->
+    <div class="step">
+        <div class="step-title">
+            <span class="step-number">2</span>
+            Subir archivo CSV de inventario
+        </div>
+        <div class="upload-area" id="csvUploadArea">
+            <div>📄 Haz clic o arrastra tu archivo CSV aquí</div>
+            <div style="font-size: 12px; color: #666; margin-top: 5px;">Formato: .csv</div>
+            <input type="file" id="csvInput" accept=".csv">
+        </div>
+        <div id="csvInfo" style="display: none;" class="file-info"></div>
+
+        <div class="info-box">
+            <strong>ℹ️ Información:</strong>
+            El archivo generado contendrá solo 3 columnas: Storage Bin, Numero Parte y Cantidad.
+            Las cantidades se buscarán en el Excel base usando Material + StorageType + StorageBin.
+        </div>
+    </div>
+
+    <!-- Botones de acción -->
+    <div class="btn-container">
+        <button class="btn-process" id="btnProcess" disabled>Generar Resumen</button>
+        <button class="btn-clear" id="btnClear" style="display: none;">Limpiar Todo</button>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <div style="color: #0083b0; font-weight: bold;">Procesando archivo...</div>
+        <div style="color: #666; font-size: 14px; margin-top: 5px;">Generando resumen simplificado</div>
+    </div>
+
+    <!-- Error -->
+    <div class="error" id="error"></div>
+
+    <!-- Resultado -->
+    <div class="result" id="result">
+        <div class="result-header">✅ Resumen Generado</div>
+
+        <div class="result-stats">
+            <div class="stat-card">
+                <div class="stat-number" id="totalRecords">0</div>
+                <div class="stat-label">Registros Procesados</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="foundRecords">0</div>
+                <div class="stat-label">Cantidades Encontradas</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="notFoundRecords">0</div>
+                <div class="stat-label">Sin Datos</div>
+            </div>
+        </div>
+
+        <div id="preview" class="preview"></div>
+
+        <div style="text-align: center; margin-top: 20px;">
+            <a href="#" class="btn-download" id="btnDownload" download>⬇️ Descargar Resumen CSV</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    let excelFile = null;
+    let csvFile = null;
+
+    const excelUploadArea = document.getElementById('excelUploadArea');
+    const csvUploadArea = document.getElementById('csvUploadArea');
+    const excelInput = document.getElementById('excelInput');
+    const csvInput = document.getElementById('csvInput');
+    const excelInfo = document.getElementById('excelInfo');
+    const csvInfo = document.getElementById('csvInfo');
+    const btnProcess = document.getElementById('btnProcess');
+    const btnClear = document.getElementById('btnClear');
+    const loading = document.getElementById('loading');
+    const error = document.getElementById('error');
+    const result = document.getElementById('result');
+    const btnDownload = document.getElementById('btnDownload');
+    const preview = document.getElementById('preview');
+
+    // Setup Excel upload
+    setupFileUpload(excelUploadArea, excelInput, (file) => {
+        if (!file.name.match(/\.(xlsx|csv)$/i)) {
+            showError('Por favor selecciona un archivo .xlsx o .csv válido');
+            return;
+        }
+        excelFile = file;
+        excelInfo.textContent = `✓ ${file.name} (${formatFileSize(file.size)})`;
+        excelInfo.style.display = 'block';
+        excelUploadArea.classList.add('has-file');
+        checkReadyToProcess();
+    });
+
+    // Setup CSV upload
+    setupFileUpload(csvUploadArea, csvInput, (file) => {
+        if (!file.name.match(/\.csv$/i)) {
+            showError('Por favor selecciona un archivo .csv válido');
+            return;
+        }
+        csvFile = file;
+        csvInfo.textContent = `✓ ${file.name} (${formatFileSize(file.size)})`;
+        csvInfo.style.display = 'block';
+        csvUploadArea.classList.add('has-file');
+        checkReadyToProcess();
+    });
+
+    function setupFileUpload(area, input, callback) {
+        area.addEventListener('click', () => input.click());
+        input.addEventListener('change', (e) => callback(e.target.files[0]));
+
+        area.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            area.style.background = '#e6f7ff';
+        });
+
+        area.addEventListener('dragleave', () => {
+            area.style.background = '';
+        });
+
+        area.addEventListener('drop', (e) => {
+            e.preventDefault();
+            area.style.background = '';
+            callback(e.dataTransfer.files[0]);
+        });
+    }
+
+    function checkReadyToProcess() {
+        if (excelFile && csvFile) {
+            btnProcess.disabled = false;
+            btnClear.style.display = 'inline-block';
+        }
+    }
+
+    function formatFileSize(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + ' KB';
+        return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+    }
+
+    // Procesar archivos
+    btnProcess.addEventListener('click', async () => {
+        if (!excelFile || !csvFile) return;
+
+        loading.classList.add('show');
+        result.classList.remove('show');
+        hideError();
+
+        try {
+            // Cargar Excel
+            let excelJson;
+            if (excelFile.name.endsWith('.csv')) {
+                const excelText = await excelFile.text();
+                excelJson = parseCSVToJSON(excelText);
+            } else {
+                const excelArrayBuffer = await excelFile.arrayBuffer();
+                const workbook = XLSX.read(excelArrayBuffer);
+                const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+                excelJson = XLSX.utils.sheet_to_json(worksheet);
+            }
+
+            // Crear lookup de materiales
+            const materialLookup = {};
+            excelJson.forEach(row => {
+                const numeroParte = String(row['NumeroParte'] || '').trim();
+                const cantidad = parseFloat(row['Cantidad_Total'] || row['Cantidad'] || 0);
+                const um = String(row['UM'] || 'PC').trim();
+                const storageType = row['StorageType'] ? String(Math.floor(parseFloat(row['StorageType']))).trim() : '';
+                const storageBin = String(row['StorageBin'] || '').trim();
+
+                if (numeroParte) {
+                    const numeroParteClean = numeroParte.replace(/-[A-Z]$/i, '');
+
+                    let key;
+                    if (storageType && storageBin) {
+                        key = `${numeroParte}|${storageType}|${storageBin}`;
+                    } else if (storageType) {
+                        key = `${numeroParte}|${storageType}|`;
+                    } else if (storageBin) {
+                        key = `${numeroParte}||${storageBin}`;
+                    } else {
+                        key = numeroParte;
+                    }
+
+                    if (materialLookup[key]) {
+                        materialLookup[key].cantidad += cantidad;
+                    } else {
+                        materialLookup[key] = { cantidad, um };
+                    }
+
+                    if (numeroParte !== numeroParteClean) {
+                        let keyClean;
+                        if (storageType && storageBin) {
+                            keyClean = `${numeroParteClean}|${storageType}|${storageBin}`;
+                        } else if (storageType) {
+                            keyClean = `${numeroParteClean}|${storageType}|`;
+                        } else if (storageBin) {
+                            keyClean = `${numeroParteClean}||${storageBin}`;
+                        } else {
+                            keyClean = numeroParteClean;
+                        }
+
+                        if (materialLookup[keyClean]) {
+                            materialLookup[keyClean].cantidad += cantidad;
+                        } else {
+                            materialLookup[keyClean] = { cantidad, um };
+                        }
+                    }
+                }
+            });
+
+            console.log(`Loaded ${Object.keys(materialLookup).length} unique material combinations`);
+
+            // Leer CSV
+            const csvText = await csvFile.text();
+            const lines = csvText.split('\n');
+
+            // Extraer Storage Type
+            let csvStorageType = '';
+            for (const line of lines) {
+                const match = line.match(/Storage type\s*:\s*(\d+)/);
+                if (match) {
+                    csvStorageType = String(parseInt(match[1]));
+                    break;
+                }
+            }
+
+            // Encontrar inicio de datos
+            let csvStartIndex = 0;
+            for (let i = 0; i < lines.length; i++) {
+                if (lines[i].includes('Item,StorageBin')) {
+                    csvStartIndex = i + 1;
+                    break;
+                }
+            }
+
+            // Procesar y crear resumen simplificado
+            const summaryData = [];
+            let recordsFound = 0;
+            let recordsNotFound = 0;
+            let totalRecords = 0;
+
+            for (let i = csvStartIndex; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+
+                const match = line.match(/"([^"]*)","([^"]*)","([^"]*)","([^"]*)","([^"]*)","([^"]*)"/);
+
+                if (match) {
+                    totalRecords++;
+                    const [_, item, storageBin, quant, plant, sloc, material] = match;
+                    const materialClean = material.replace(/-[A-Z]$/i, '');
+
+                    let cantidad = 0;
+                    let um = 'PC';
+                    let found = false;
+
+                    const searchKeys = [
+                        `${material}|${csvStorageType}|${storageBin}`,
+                        `${materialClean}|${csvStorageType}|${storageBin}`,
+                        `${material}|${csvStorageType}|`,
+                        `${materialClean}|${csvStorageType}|`,
+                        `${material}||${storageBin}`,
+                        `${materialClean}||${storageBin}`,
+                        material,
+                        materialClean
+                    ];
+
+                    for (const key of searchKeys) {
+                        if (materialLookup[key]) {
+                            cantidad = materialLookup[key].cantidad;
+                            um = materialLookup[key].um;
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if (found) {
+                        recordsFound++;
+                    } else {
+                        recordsNotFound++;
+                    }
+
+                    // Formatear cantidad
+                    let cantidadFormatted;
+                    if (cantidad === Math.floor(cantidad)) {
+                        cantidadFormatted = `${Math.floor(cantidad)} ${um}`;
+                    } else {
+                        cantidadFormatted = `${cantidad.toFixed(2)} ${um}`;
+                    }
+
+                    summaryData.push({
+                        'Storage Bin': storageBin,
+                        'Numero Parte': material,
+                        'Cantidad': cantidadFormatted
+                    });
+                }
+            }
+
+            // Crear CSV simplificado
+            const csvOutput = [
+                'Storage Bin,Numero Parte,Cantidad',
+                ...summaryData.map(row => `"${row['Storage Bin']}","${row['Numero Parte']}","${row['Cantidad']}"`)
+            ].join('\n');
+
+            const blob = new Blob([csvOutput], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+
+            const originalName = csvFile.name.replace('.csv', '');
+            btnDownload.href = url;
+            btnDownload.download = `${originalName}_resumen.csv`;
+
+            // Mostrar resultados
+            document.getElementById('totalRecords').textContent = totalRecords;
+            document.getElementById('foundRecords').textContent = recordsFound;
+            document.getElementById('notFoundRecords').textContent = recordsNotFound;
+
+            // Mostrar preview
+            const previewHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Storage Bin</th>
+                            <th>Numero Parte</th>
+                            <th>Cantidad</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${summaryData.slice(0, 10).map(row => `
+                            <tr>
+                                <td>${row['Storage Bin']}</td>
+                                <td>${row['Numero Parte']}</td>
+                                <td>${row['Cantidad']}</td>
+                            </tr>
+                        `).join('')}
+                        ${summaryData.length > 10 ? '<tr><td colspan="3" style="text-align: center; color: #666;"><em>... y ' + (summaryData.length - 10) + ' registros más</em></td></tr>' : ''}
+                    </tbody>
+                </table>
+            `;
+            preview.innerHTML = previewHTML;
+
+            result.classList.add('show');
+            loading.classList.remove('show');
+
+        } catch (err) {
+            console.error(err);
+            showError('Error al procesar archivos: ' + err.message);
+            loading.classList.remove('show');
+        }
+    });
+
+    function parseCSVToJSON(csvText) {
+        const lines = csvText.split('\n');
+        const headers = lines[0].split(',').map(h => h.trim());
+        const result = [];
+
+        for (let i = 1; i < lines.length; i++) {
+            const line = lines[i].trim();
+            if (!line) continue;
+
+            const values = line.split(',');
+            const obj = {};
+            headers.forEach((header, index) => {
+                obj[header] = values[index] ? values[index].trim() : '';
+            });
+            result.push(obj);
+        }
+
+        return result;
+    }
+
+    // Limpiar
+    btnClear.addEventListener('click', () => {
+        excelFile = null;
+        csvFile = null;
+        excelInput.value = '';
+        csvInput.value = '';
+        excelInfo.style.display = 'none';
+        csvInfo.style.display = 'none';
+        excelUploadArea.classList.remove('has-file');
+        csvUploadArea.classList.remove('has-file');
+        btnProcess.disabled = true;
+        btnClear.style.display = 'none';
+        result.classList.remove('show');
+        hideError();
+    });
+
+    function showError(message) {
+        error.textContent = '❌ ' + message;
+        error.classList.add('show');
+    }
+
+    function hideError() {
+        error.classList.remove('show');
+    }
+</script>
+</body>
+</html>
